@@ -1,0 +1,302 @@
+import {
+  Controller, Get, Post, Put, Delete, Body, Param, Query, Req,
+  UseGuards, HttpCode, HttpStatus,
+} from '@nestjs/common';
+import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { Request } from 'express';
+import { LicensePlan, LicenseStatus } from '@prisma/client';
+import { AdminService } from './admin.service';
+import { LicenseService } from '../license/license.service';
+import { AdminAuthGuard } from '../../common/guards/auth.guard';
+import { RateLimit, RateLimitGuard } from '../../common/guards/rate-limit.guard';
+import {
+  IsString, IsNotEmpty, IsOptional, IsEnum, IsInt, Min, Max,
+  IsBoolean, IsNumber, MinLength,
+} from 'class-validator';
+
+// ── DTOs ──
+class LoginDto {
+  @IsString() @IsNotEmpty() username: string;
+  @IsString() @IsNotEmpty() password: string;
+}
+class CreateLicenseBody {
+  @IsEnum(LicensePlan) plan: LicensePlan;
+  @IsOptional() @IsString() email?: string;
+  @IsOptional() @IsString() discordId?: string;
+  @IsOptional() @IsInt() @Min(1) @Max(10) maxActivations?: number;
+}
+class GenerateBatchBody {
+  @IsEnum(LicensePlan) plan: LicensePlan;
+  @IsInt() @Min(1) @Max(500) count: number;
+}
+class BanBody {
+  @IsString() @IsNotEmpty() reason: string;
+}
+class ExtendBody {
+  @IsInt() @Min(1) @Max(3650) days: number;
+}
+class UpdatePlanBody {
+  @IsOptional() @IsString() name?: string;
+  @IsOptional() @IsNumber() price?: number;
+  @IsOptional() @IsBoolean() active?: boolean;
+  @IsOptional() @IsString() stripePrice?: string;
+}
+class UpdateSettingsBody {
+  @IsOptional() @IsString() downloadUrl?: string;
+  @IsOptional() @IsBoolean() maintenanceMode?: boolean;
+  @IsOptional() @IsString() announcement?: string;
+}
+class ChangePasswordBody {
+  @IsString() @IsNotEmpty() currentPassword: string;
+  @IsString() @MinLength(8) newPassword: string;
+}
+
+@ApiTags('admin')
+@Controller('admin')
+export class AdminController {
+  constructor(
+    private adminService: AdminService,
+    private licenseService: LicenseService,
+  ) {}
+
+  // ── Auth ──
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(RateLimitGuard)
+  @RateLimit({ max: 5, window: 60, keyPrefix: 'admin-login' })
+  async login(@Body() dto: LoginDto) {
+    return this.adminService.login(dto);
+  }
+
+  @Put('password')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  async changePassword(@Req() req: Request, @Body() dto: ChangePasswordBody) {
+    const { adminId } = (req as any).admin;
+    await this.adminService.changeAdminPassword(adminId, dto.currentPassword, dto.newPassword);
+    return { success: true };
+  }
+
+  // ── Stats ──
+  @Get('stats')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Dashboard statistics' })
+  async getStats() {
+    return this.adminService.getEnhancedStats();
+  }
+
+  // ── Analytics ──
+  @Get('analytics')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Detailed analytics charts' })
+  async getAnalytics() {
+    return this.adminService.getAnalytics();
+  }
+
+  // ── Licenses ──
+  @Get('licenses')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  async listLicenses(
+    @Query('status') status?: LicenseStatus,
+    @Query('plan') plan?: LicensePlan,
+    @Query('search') search?: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    return this.licenseService.findAll({ status, plan, search, page, limit });
+  }
+
+  @Get('licenses/:id')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  async getLicense(@Param('id') id: string) {
+    return this.licenseService.findOne(id);
+  }
+
+  @Post('licenses')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  async createLicense(@Body() dto: CreateLicenseBody) {
+    return this.licenseService.create(dto);
+  }
+
+  @Post('licenses/batch')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  async generateBatch(@Body() dto: GenerateBatchBody) {
+    const keys = await this.licenseService.generateBatch(dto);
+    return { success: true, count: keys.length, keys };
+  }
+
+  @Put('licenses/:id/ban')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  async banLicense(@Param('id') id: string, @Body() dto: BanBody) {
+    return this.licenseService.ban(id, dto.reason);
+  }
+
+  @Put('licenses/:id/unban')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  async unbanLicense(@Param('id') id: string) {
+    return this.licenseService.unban(id);
+  }
+
+  @Put('licenses/:id/reset-hwid')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  async resetHwid(@Param('id') id: string) {
+    return this.licenseService.resetHwid(id);
+  }
+
+  @Put('licenses/:id/extend')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  async extendLicense(@Param('id') id: string, @Body() dto: ExtendBody) {
+    return this.licenseService.extend(id, dto.days);
+  }
+
+  @Delete('licenses/:id')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteLicense(@Param('id') id: string) {
+    await this.licenseService.delete(id);
+  }
+
+  // ── Customers ──
+  @Get('customers')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  async listCustomers(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+  ) {
+    return this.adminService.listCustomers(page, limit, search);
+  }
+
+  @Get('customers/:id')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  async getCustomer(@Param('id') id: string) {
+    return this.adminService.getCustomer(id);
+  }
+
+  @Put('customers/:id/ban')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  async banCustomer(@Param('id') id: string) {
+    return this.adminService.banCustomer(id);
+  }
+
+  @Put('customers/:id/unban')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  async unbanCustomer(@Param('id') id: string) {
+    return this.adminService.unbanCustomer(id);
+  }
+
+  @Delete('customers/:id')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteCustomer(@Param('id') id: string) {
+    await this.adminService.deleteCustomer(id);
+  }
+
+  @Post('customers/:id/send-reset')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  async sendPasswordReset(@Param('id') id: string) {
+    return this.adminService.sendPasswordResetToCustomer(id);
+  }
+
+  @Post('customers/:id/revoke-licenses')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  async revokeCustomerLicenses(@Param('id') id: string) {
+    return this.adminService.revokeCustomerLicenses(id);
+  }
+
+  // ── Orders ──
+  @Get('orders')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'List all orders' })
+  async listOrders(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('status') status?: string,
+    @Query('plan') plan?: string,
+  ) {
+    return this.adminService.listOrders(page, limit, status, plan);
+  }
+
+  // ── Plans ──
+  @Get('plans')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  async getPlans() {
+    return this.adminService.getPlans();
+  }
+
+  @Put('plans/:plan')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  async updatePlan(@Param('plan') plan: string, @Body() dto: UpdatePlanBody) {
+    return this.adminService.updatePlan(plan, dto);
+  }
+
+  // ── Settings ──
+  @Get('settings')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get site settings' })
+  async getSettings() {
+    return this.adminService.getSettings();
+  }
+
+  @Put('settings')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update site settings' })
+  async updateSettings(@Body() dto: UpdateSettingsBody) {
+    return this.adminService.updateSettings(dto);
+  }
+
+  // ── Blocked IPs ──
+  @Get('blocked-ips')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'List blocked IPs' })
+  async listBlockedIps(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    return this.adminService.listBlockedIps(page, limit);
+  }
+
+  @Delete('blocked-ips/:id')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async unblockIp(@Param('id') id: string) {
+    await this.adminService.unblockIp(id);
+  }
+
+  // ── Logs ──
+  @Get('logs')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  async getLogs(@Query('page') page?: number, @Query('limit') limit?: number) {
+    return this.adminService.getActivationLogs(page, limit);
+  }
+}
