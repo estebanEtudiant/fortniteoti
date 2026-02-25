@@ -16,7 +16,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { extname, join } from 'path';
+import { extname, join, resolve } from 'path';
 import { Response } from 'express';
 import { createReadStream } from 'fs';
 import { IsString, IsNotEmpty } from 'class-validator';
@@ -28,8 +28,11 @@ class UploadDto {
   @IsString() @IsNotEmpty() changelog: string;
 }
 
+// __dirname = dist/modules/software/ → 4 niveaux au-dessus = racine backend/
+const UPLOAD_DIR = resolve(__dirname, '..', '..', '..', '..', 'uploads', 'software');
+
 const softwareStorage = diskStorage({
-  destination: join(process.cwd(), 'uploads', 'software'),
+  destination: UPLOAD_DIR,
   filename: (_req, file, cb) => {
     const unique = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     cb(null, `upload-${unique}${extname(file.originalname)}`);

@@ -34,7 +34,9 @@ export class SoftwareService {
     private redis: RedisService,
     private config: ConfigService,
   ) {
-    this.uploadDir = path.join(process.cwd(), 'uploads', 'software');
+    // __dirname = dist/modules/software/ → remonter 4 niveaux = racine backend/
+    // Utiliser __dirname plutôt que process.cwd() pour éviter les problèmes de cwd PM2
+    this.uploadDir = path.join(__dirname, '..', '..', '..', '..', 'uploads', 'software');
     fs.mkdirSync(this.uploadDir, { recursive: true });
   }
 
