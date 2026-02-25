@@ -23,6 +23,7 @@ const COMMANDS = [
     category: '⚙️ Utilitaires',
     commands: [
       { name: '/help',  desc: 'Affiche cette aide.' },
+      { name: '/tuto',  desc: 'Guide complet pour acheter et activer une licence 404 Tweaks.' },
       { name: '/ping',  desc: 'Affiche la latence du bot.' },
       { name: '/stats', desc: 'Statistiques du serveur et du bot.' },
     ],
