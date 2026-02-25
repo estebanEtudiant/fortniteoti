@@ -1,0 +1,22 @@
+{
+  "name": "fortniteopt-bot",
+  "version": "1.0.0",
+  "description": "Bot Discord officiel FortniteOpti — vérification de licences, support, modération",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "deploy": "node deploy-commands.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.7",
+    "better-sqlite3": "^9.4.3",
+    "discord.js": "^14.16.3",
+    "dotenv": "^16.4.5",
+    "winston": "^3.11.0",
+    "winston-daily-rotate-file": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

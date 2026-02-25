@@ -7,6 +7,7 @@ import { LicenseService } from '../license/license.service';
 import { PrismaService } from '../../database/prisma.service';
 import { RedisService } from '../../database/redis.service';
 import { MailService } from '../customer/mail.service';
+import { BotNotifyService } from '../bot/bot-notify.service';
 
 const PLANS_CONFIG_KEY = 'admin:plans_config';
 const DEFAULT_PLANS: Record<string, { name: string; price: number; active: boolean; stripePrice: string }> = {
@@ -33,6 +34,7 @@ export class PaymentService {
     private prisma: PrismaService,
     private redis: RedisService,
     private mail: MailService,
+    private botNotify: BotNotifyService,
   ) {
     const secretKey = config.get<string>('stripe.secretKey', '');
     this.webhookSecret = config.get<string>('stripe.webhookSecret', '');
@@ -133,6 +135,10 @@ export class PaymentService {
     }
 
     this.logger.log(`License assigned on confirm: ${license.licenseKey} for customer ${customerId}`);
+
+    // Notification Discord bot (non bloquant)
+    this.botNotify.notifySale(planKey, order.amount).catch(() => {});
+
     return { licenseKey: license.licenseKey };
   }
 
@@ -272,6 +278,10 @@ export class PaymentService {
     }
 
     this.logger.log(`License created via Stripe: ${license.licenseKey} for ${email}`);
+
+    // Notification Discord bot (non bloquant)
+    const amount = typeof session.amount_total === 'number' ? session.amount_total : 0;
+    this.botNotify.notifySale(planId, amount).catch(() => {});
 
     // Send license key by email
     if (email) {

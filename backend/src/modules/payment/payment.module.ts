@@ -6,10 +6,12 @@ import { PaymentService } from './payment.service';
 import { LicenseModule } from '../license/license.module';
 import { CustomerAuthGuard } from '../../common/guards/auth.guard';
 import { MailService } from '../customer/mail.service';
+import { BotModule } from '../bot/bot.module';
 
 @Module({
   imports: [
     LicenseModule,
+    BotModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
