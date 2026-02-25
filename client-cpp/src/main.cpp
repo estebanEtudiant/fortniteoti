@@ -5,9 +5,11 @@
 #define _WIN32_WINNT 0x0A00   // Windows 10 minimum (DPI V2 + tweaks modernes)
 #define NOMINMAX
 #include <windows.h>
+#include <windowsx.h>
 #include <shellapi.h>
 #include <d3d11.h>
 #include <dxgi.h>
+#include <dwmapi.h>
 #include <string>
 #include <thread>
 
@@ -15,12 +17,17 @@
 #include "hwid.h"
 #include "anti_debug.h"
 #include "gui.h"
+#include "updater.h"
 
 // ── API URL ──
 
 //static const std::string API_URL = "http://localhost:3000";
 
 static const std::string API_URL = "http://57.128.255.1:3000";
+
+// ── Window dimensions (used by WM_NCHITTEST for borderless drag) ──
+static int W = 1100;
+static int H = 680;
 
 // ── DX11 globals ──
 static ID3D11Device*           g_pd3dDevice          = nullptr;
@@ -111,6 +118,21 @@ static LRESULT WINAPI WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         case WM_DESTROY:
             PostQuitMessage(0);
             return 0;
+        case WM_NCHITTEST: {
+            // Allow native drag on the custom titlebar area (top 40px)
+            // Exclude the right 88px (minimize + close ImGui buttons)
+            LRESULT hit = DefWindowProcW(hwnd, msg, wParam, lParam);
+            if (hit == HTCLIENT) {
+                POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+                ScreenToClient(hwnd, &pt);
+                if (pt.y < 40) {
+                    if (pt.x > W - 44) return HTCLIENT;  // close button zone
+                    if (pt.x > W - 88) return HTCLIENT;  // minimize button zone
+                    return HTCAPTION;                     // drag zone
+                }
+            }
+            return hit;
+        }
     }
     return DefWindowProcW(hwnd, msg, wParam, lParam);
 }
@@ -179,11 +201,11 @@ int main() {
     wc.lpszClassName = L"FTNOptiWnd";
     RegisterClassExW(&wc);
 
-    // ── Create window (1100×680, centered on primary monitor) ──
-    const int W = 1100, H = 680;
+    // ── Create window (1100×680, centered on primary monitor, borderless) ──
     HWND hwnd = CreateWindowExW(
-        0, L"FTNOptiWnd", L"FortniteOptimizer 2026",
-        WS_OVERLAPPEDWINDOW,
+        WS_EX_APPWINDOW,
+        L"FTNOptiWnd", L"FortniteOptimizer 2026",
+        WS_POPUP | WS_VISIBLE,
         (GetSystemMetrics(SM_CXSCREEN) - W) / 2,
         (GetSystemMetrics(SM_CYSCREEN) - H) / 2,
         W, H,
@@ -198,6 +220,10 @@ int main() {
     ShowWindow(hwnd, SW_SHOWDEFAULT);
     UpdateWindow(hwnd);
 
+    // ── DWM shadow — gives the borderless window a native drop-shadow ──
+    MARGINS margins = { 1, 1, 1, 1 };
+    DwmExtendFrameIntoClientArea(hwnd, &margins);
+
     // ── Initialize ImGui ──
     if (!GuiInit(hwnd, g_pd3dDevice, g_pd3dDeviceContext)) {
         CleanupDeviceD3D();
@@ -207,8 +233,10 @@ int main() {
 
     // ── Build AppState ──
     AppState state;
-    state.hwid  = hwid::generate();
-    state.osVer = hwid::getOsVersion();
+    state.hwid   = hwid::generate();
+    state.osVer  = hwid::getOsVersion();
+    state.apiUrl = API_URL;
+    state.hwnd   = hwnd;
 
     licensing::LicenseClient licClient(API_URL);
     state.client = &licClient;
@@ -225,6 +253,15 @@ int main() {
                 state.statusMsg = "";
                 licClient.startHeartbeatLoop(300);
                 state.screen = Screen::MAIN;
+                // Check for update after session restore
+                updater::UpdateChecker upd(API_URL);
+                auto upInfo = upd.check();
+                if (upInfo.available) {
+                    state.updateVersion   = upInfo.latestVersion;
+                    state.updateUrl       = upInfo.downloadUrl;
+                    state.updateChangelog = upInfo.changelog;
+                    state.updateAvailable.store(true);
+                }
             } else {
                 state.statusMsg  = (status == licensing::Status::NETWORK_ERROR)
                     ? "[X] Serveur inaccessible. Connexion internet requise."
@@ -255,6 +292,10 @@ int main() {
             g_ResizeWidth = g_ResizeHeight = 0;
             CreateRenderTarget();
         }
+
+        // Handle titlebar button flags from ImGui
+        if (state.wantClose)    { done = true; state.wantClose = false; }
+        if (state.wantMinimize) { ShowWindow(hwnd, SW_MINIMIZE); state.wantMinimize = false; }
 
         // Build and render ImGui frame
         GuiBeginFrame();

@@ -6,6 +6,7 @@
 #include "gui.h"
 #include "licensing.h"
 #include "tweaks.h"
+#include "updater.h"
 
 #include "imgui.h"
 #include "imgui_impl_win32.h"
@@ -67,6 +68,8 @@ static const ImVec4 C_WARN     = { 0.97f, 0.70f, 0.26f, 1.f };
 static const ImVec4 C_ERR      = { 0.90f, 0.26f, 0.28f, 1.f };
 
 static const ImVec4 LOG_COLORS[6] = { C_TEXT, C_OK, C_ERR, C_WARN, C_ACCENT, C_VIOLET };
+
+static const ImVec4 C_TITLEBAR = { 0.04f, 0.045f, 0.06f, 1.f };  // barre titre custom
 
 // ════════════════════════════════════════════════════════════════════
 //  THEME
@@ -147,18 +150,51 @@ bool GuiInit(HWND hwnd, ID3D11Device* dev, ID3D11DeviceContext* ctx) {
     cfg.PixelSnapH         = true;
     cfg.RasterizerMultiply = 1.0f;
 
+    // ── Plages texte : segoeui.ttf — uniquement Latin + ponctuation ──
+    // Les symboles/icônes sont intentionnellement exclus ici : ils viennent de seguisym.ttf
+    // (plus fiable que segoeui.ttf dont la couverture des symboles varie selon la version Windows)
+    static const ImWchar text_ranges[] = {
+        0x0020, 0x00FF,  // Latin de base + Latin-1 (accents FR : é è ê à ù ç…)
+        0x2010, 0x206F,  // Ponctuation générale (— tiret cadratin, «» guillemets…)
+        0,
+    };
+    cfg.GlyphRanges = text_ranges;
+
+    // ── Plages symboles : seguisym.ttf fusionné ──
+    // seguisym.ttf = Segoe UI Symbol — couverture complète garantie sur Windows 10/11
+    // Inclut Geometric Shapes (◆ ▶ ● ■) ET Misc Symbols (⚙ ⚡ ☰) ET Dingbats (✓ ✗)
+    static const ImWchar sym_ranges[] = {
+        0x25A0, 0x25FF,  // Formes géométriques (◆ ▶ ● ■ ○ — icônes sidebar + spinner)
+        0x2600, 0x26FF,  // Misc Symbols (⚙ U+2699, ⚡ U+26A1, ☰ U+2630…)
+        0x2700, 0x27BF,  // Dingbats (✓ ✗ ➜…)
+        0,
+    };
+    ImFontConfig cfgM;          // config merge — doit rester valide jusqu'au Build()
+    cfgM.MergeMode   = true;    // fusionne dans la police précédemment chargée
+    cfgM.OversampleH = 2;
+    cfgM.OversampleV = 1;
+    cfgM.PixelSnapH  = true;
+    cfgM.GlyphRanges = sym_ranges;
+
     // ── Hiérarchie typographique ─────────────────────────────────────
     // Ne jamais utiliser FontGlobalScale pour agrandir une seule taille :
     // ça floute. Charger chaque taille à sa vraie valeur.
-    const char* SEGOE  = "C:\\Windows\\Fonts\\segoeui.ttf";
-    const char* SEGOEB = "C:\\Windows\\Fonts\\segoeuib.ttf";
-    const char* MONO   = "C:\\Windows\\Fonts\\consola.ttf";
+    const char* SEGOE    = "C:\\Windows\\Fonts\\segoeui.ttf";
+    const char* SEGOEB   = "C:\\Windows\\Fonts\\segoeuib.ttf";
+    const char* MONO     = "C:\\Windows\\Fonts\\consola.ttf";
+    const char* SEGUISYM = "C:\\Windows\\Fonts\\seguisym.ttf";
 
-    g_fontSmall = io.Fonts->AddFontFromFileTTF(SEGOE,  13.f, &cfg);
-    g_fontMain  = io.Fonts->AddFontFromFileTTF(SEGOE,  16.f, &cfg);
-    g_fontMono  = io.Fonts->AddFontFromFileTTF(MONO,   14.f, &cfg);
-    g_fontH2    = io.Fonts->AddFontFromFileTTF(SEGOE,  20.f, &cfg);
-    g_fontH1    = io.Fonts->AddFontFromFileTTF(SEGOEB, 26.f, &cfg);
+    // Pour chaque taille : 1) charge Segoe UI pour le texte,
+    //                      2) fusionne Segoe UI Symbol pour les symboles ⚙⚡☰
+    g_fontSmall = io.Fonts->AddFontFromFileTTF(SEGOE,    13.f, &cfg);
+                  io.Fonts->AddFontFromFileTTF(SEGUISYM, 13.f, &cfgM);
+    g_fontMain  = io.Fonts->AddFontFromFileTTF(SEGOE,    16.f, &cfg);
+                  io.Fonts->AddFontFromFileTTF(SEGUISYM, 16.f, &cfgM);
+    g_fontMono  = io.Fonts->AddFontFromFileTTF(MONO,     14.f, &cfg);
+    g_fontH2    = io.Fonts->AddFontFromFileTTF(SEGOE,    20.f, &cfg);
+                  io.Fonts->AddFontFromFileTTF(SEGUISYM, 20.f, &cfgM);
+    g_fontH1    = io.Fonts->AddFontFromFileTTF(SEGOEB,   26.f, &cfg);
+                  io.Fonts->AddFontFromFileTTF(SEGUISYM, 26.f, &cfgM);
 
     // Fallback : si une font ne se charge pas (fichier absent), ImGui
     // utilise sa police interne sans crash.
@@ -199,7 +235,10 @@ static bool BeginCard(const char* id, ImVec2 sz = { 0.f, 0.f }, bool scrollY = f
     ImGui::PushStyleColor(ImGuiCol_Border,   C_BORDER);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 14.f, 14.f });
     ImGuiWindowFlags wf = scrollY ? 0 : (ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-    return ImGui::BeginChild(id, sz, ImGuiChildFlags_Borders, wf);
+    // sz.y == 0 → auto-resize to content height (sinon ImGui prend l'espace restant)
+    ImGuiChildFlags cf = ImGuiChildFlags_Borders;
+    if (sz.y == 0.f) cf |= ImGuiChildFlags_AutoResizeY;
+    return ImGui::BeginChild(id, sz, cf, wf);
 }
 static void EndCard() {
     ImGui::EndChild();
@@ -357,9 +396,151 @@ static int CountEnabledTweaks() {
 }
 
 // ════════════════════════════════════════════════════════════════════
+//  DÉCORATION DE FOND — glows subtils dessinés dans le BackgroundDrawList
+// ════════════════════════════════════════════════════════════════════
+static void DrawBgDecor() {
+    ImDrawList* bg = ImGui::GetBackgroundDrawList();
+    const ImVec2 ds = ImGui::GetIO().DisplaySize;
+    bg->AddCircleFilled({ ds.x,   0.f  }, 340.f, IM_COL32(  0, 155, 220,  7));
+    bg->AddCircleFilled({ 0.f,    ds.y }, 270.f, IM_COL32(100,  55, 210,  6));
+    bg->AddCircleFilled({ ds.x * 0.5f, ds.y * 0.5f }, 180.f, IM_COL32(0, 100, 160, 3));
+}
+
+// ════════════════════════════════════════════════════════════════════
+//  BOUTON GRADIENT — CTA principal avec gradient cyan→bleu + glow hover
+// ════════════════════════════════════════════════════════════════════
+static bool GradientBtn(const char* label, ImVec2 size, bool disabled = false) {
+    // Résoudre les tailles négatives/nulles avant tout (comme ImGui::Button le fait)
+    ImVec2 avail = ImGui::GetContentRegionAvail();
+    if (size.x <= 0.f) size.x = avail.x + size.x;
+    if (size.y <= 0.f) size.y = ImGui::GetFrameHeight() + size.y;
+    if (size.x < 1.f)  size.x = 1.f;
+    if (size.y < 1.f)  size.y = 1.f;
+
+    // Vérifier si on est déjà dans un contexte BeginDisabled (outer ou inner)
+    bool outerDisabled = disabled || (ImGui::GetStyle().Alpha < 0.99f);
+
+    if (disabled) ImGui::BeginDisabled();
+    ImVec2 pos = ImGui::GetCursorScreenPos();
+    ImGui::InvisibleButton(label, size);
+    bool hovered = ImGui::IsItemHovered();
+    bool active  = ImGui::IsItemActive();
+    bool clicked = ImGui::IsItemClicked();
+    if (disabled) ImGui::EndDisabled();
+
+    // Appliquer l'alpha global du style (pour BeginDisabled externe)
+    float sa  = ImGui::GetStyle().Alpha;
+    auto  A   = [&](int a) -> int { return (int)(a * sa); };
+    bool  dis = outerDisabled;
+
+    ImDrawList* dl  = ImGui::GetWindowDrawList();
+    ImVec2 br       = { pos.x + size.x, pos.y + size.y };
+
+    // Glow halo au survol
+    if (hovered && !dis)
+        dl->AddRectFilled({ pos.x - 4, pos.y - 4 }, { br.x + 4, br.y + 4 },
+            IM_COL32(0, 155, 220, A(30)), 12.f);
+
+    // Gradient principal : cyan → bleu profond
+    ImU32 col_l = dis    ? IM_COL32(50,80,100,A(120))
+                : active ? IM_COL32(0,115,175,A(255))
+                         : IM_COL32(0,155,220,A(255));
+    ImU32 col_r = dis    ? IM_COL32(30,50, 80,A(120))
+                : active ? IM_COL32(25,55,135,A(255))
+                         : IM_COL32(45,75,175,A(255));
+    dl->AddRectFilledMultiColor(pos, br, col_l, col_r, col_r, col_l);
+
+    // Highlight blanc (brillance haut)
+    dl->AddRectFilledMultiColor(
+        pos, { br.x, pos.y + size.y * 0.42f },
+        IM_COL32(255,255,255, A(22)), IM_COL32(255,255,255, A(22)),
+        IM_COL32(255,255,255,    0), IM_COL32(255,255,255,    0));
+
+    // Texte centré — utilise la police courante
+    ImFont* font = ImGui::GetFont();
+    ImVec2  ts   = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.f, label);
+    ImU32   tc   = dis ? IM_COL32(180,180,180,A(130)) : IM_COL32(255,255,255,A(255));
+    dl->AddText(font, font->FontSize,
+        { pos.x + (size.x - ts.x) * 0.5f, pos.y + (size.y - font->FontSize) * 0.5f },
+        tc, label);
+
+    return clicked && !dis;
+}
+
+// ════════════════════════════════════════════════════════════════════
+//  POINT PULSANT — indicateur de statut animé
+// ════════════════════════════════════════════════════════════════════
+static void PulsingDot(const ImVec4& col, float radius = 4.5f) {
+    float alpha = 0.55f + 0.45f * sinf((float)ImGui::GetTime() * 2.8f);
+    ImVec2 cp   = ImGui::GetCursorScreenPos();
+    cp.x += radius + 1.f;
+    cp.y += ImGui::GetTextLineHeight() * 0.5f;
+    ImGui::GetWindowDrawList()->AddCircleFilled(
+        cp, radius,
+        ImGui::ColorConvertFloat4ToU32({ col.x, col.y, col.z, alpha }));
+    ImGui::Dummy({ (radius + 1.f) * 2.f, ImGui::GetTextLineHeight() });
+}
+
+// ════════════════════════════════════════════════════════════════════
+//  TITLEBAR CUSTOM — 40px en haut de la fenêtre principale
+// ════════════════════════════════════════════════════════════════════
+static void DrawTitleBar(AppState& state) {
+    const float W = ImGui::GetIO().DisplaySize.x;
+
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, C_TITLEBAR);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.f, 0.f });
+    ImGui::BeginChild("##titlebar", { W, 40.f }, false,
+        ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+
+    // Ligne d'accent gradient en bas de la titlebar
+    ImVec2 p  = ImGui::GetWindowPos();
+    ImDrawList* dl = ImGui::GetWindowDrawList();
+    dl->AddRectFilledMultiColor(
+        { p.x,           p.y + 38.f }, { p.x + W * 0.55f, p.y + 40.f },
+        IM_COL32(0, 155, 220, 200), IM_COL32(0, 0, 0, 0),
+        IM_COL32(0, 0, 0, 0),       IM_COL32(0, 155, 220, 200));
+
+    // Logo — aligné verticalement
+    ImGui::SetCursorPos({ 18.f, 8.f });
+    if (g_fontH2) ImGui::PushFont(g_fontH2);
+    ImGui::TextColored(C_ACCENT, "404 Tweaks");
+    if (g_fontH2) ImGui::PopFont();
+
+    ImGui::SameLine(0.f, 10.f);
+    ImGui::SetCursorPosY(13.f);
+    if (g_fontSmall) ImGui::PushFont(g_fontSmall);
+    ImGui::TextColored(C_DIM, "v2026");
+    if (g_fontSmall) ImGui::PopFont();
+
+    // ── Boutons minimize / close (extrême droite) ──
+    ImGui::PushStyleColor(ImGuiCol_Button,        { 0.f, 0.f, 0.f, 0.f });
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, { 1.f, 1.f, 1.f, 0.09f });
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive,  { 1.f, 1.f, 1.f, 0.15f });
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.f);
+
+    ImGui::SetCursorPos({ W - 88.f, 8.f });
+    if (ImGui::Button(" \xe2\x80\x94 ##min", { 44.f, 24.f }))  // —
+        state.wantMinimize = true;
+
+    ImGui::SameLine(0.f, 0.f);
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, { 0.75f, 0.10f, 0.10f, 0.90f });
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive,  { 0.55f, 0.06f, 0.06f, 1.00f });
+    if (ImGui::Button("  X ##cls", { 44.f, 24.f }))
+        state.wantClose = true;
+    ImGui::PopStyleColor(5);
+    ImGui::PopStyleVar();
+
+    ImGui::EndChild();
+    ImGui::PopStyleVar();
+    ImGui::PopStyleColor();
+}
+
+// ════════════════════════════════════════════════════════════════════
 //  ÉCRAN LICENCE
 // ════════════════════════════════════════════════════════════════════
 static void DrawLicenseScreen(AppState& state) {
+    DrawBgDecor();
+
     const ImGuiIO& io = ImGui::GetIO();
     ImGui::SetNextWindowPos({ io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f },
                             ImGuiCond_Always, { 0.5f, 0.5f });
@@ -369,8 +550,20 @@ static void DrawLicenseScreen(AppState& state) {
         ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
         ImGuiWindowFlags_NoMove     | ImGuiWindowFlags_AlwaysAutoResize);
 
+    // Ligne d'accent cyan en haut de la card
+    {
+        ImVec2 wp  = ImGui::GetWindowPos();
+        float  ww  = ImGui::GetWindowWidth();
+        ImDrawList* dl = ImGui::GetWindowDrawList();
+        dl->AddRectFilledMultiColor(
+            { wp.x + 20.f, wp.y + 2.f }, { wp.x + ww - 20.f, wp.y + 4.f },
+            IM_COL32(0,0,0,0), IM_COL32(0,155,220,200),
+            IM_COL32(0,155,220,200), IM_COL32(0,0,0,0));
+    }
+
     // Titre
     if (g_fontH1) ImGui::PushFont(g_fontH1);
+    //p
     Centered("404 Tweaks", C_ACCENT);
     if (g_fontH1) ImGui::PopFont();
     if (g_fontH2) ImGui::PushFont(g_fontH2);
@@ -411,9 +604,7 @@ static void DrawLicenseScreen(AppState& state) {
     ImGui::Dummy({ 0, 14.f });
 
     bool busy = state.checking;
-    if (busy) ImGui::BeginDisabled();
-    bool clicked = BtnAccent(busy ? Spinner() : "ACTIVATE THE LICENSE", { -1.f, 46.f });
-    if (busy) ImGui::EndDisabled();
+    bool clicked = GradientBtn(busy ? Spinner() : "ACTIVATE THE LICENSE", { -1.f, 46.f }, busy);
 
     if (!state.statusMsg.empty()) {
         ImGui::Dummy({ 0, 8.f });
@@ -440,6 +631,17 @@ static void DrawLicenseScreen(AppState& state) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(600));
                 state.client->startHeartbeatLoop(300);
                 state.screen = Screen::MAIN;
+                // Check for update after activation
+                {
+                    updater::UpdateChecker upd(state.apiUrl);
+                    auto upInfo = upd.check();
+                    if (upInfo.available) {
+                        state.updateVersion   = upInfo.latestVersion;
+                        state.updateUrl       = upInfo.downloadUrl;
+                        state.updateChangelog = upInfo.changelog;
+                        state.updateAvailable.store(true);
+                    }
+                }
             } else {
                 state.statusType = 2;
                 switch (info.status) {
@@ -473,18 +675,24 @@ static void DrawLicenseScreen(AppState& state) {
 static void DrawSidebar(AppState& state) {
     ImGui::PushStyleColor(ImGuiCol_ChildBg, C_SIDEBAR);
     ImGui::PushStyleColor(ImGuiCol_Border,  { 0.f, 0.f, 0.f, 0.f });
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 14.f, 18.f });
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 18.f, 18.f });
     ImGui::BeginChild("##sidebar", { 226.f, -1.f }, false,
                       ImGuiWindowFlags_NoScrollbar);
+
+    // Gradient splash derrière le logo (zone haute de la sidebar)
+    {
+        ImVec2 sp = ImGui::GetWindowPos();
+        ImGui::GetWindowDrawList()->AddRectFilledMultiColor(
+            sp, { sp.x + 226.f, sp.y + 76.f },
+            IM_COL32(0, 140, 210, 28), IM_COL32(0, 0, 0, 0),
+            IM_COL32(0, 0, 0, 0),      IM_COL32(0, 0, 0, 0));
+    }
 
     // Logo
     ImGui::Dummy({ 0, 4.f });
     if (g_fontH2) ImGui::PushFont(g_fontH2);
-    ImGui::TextColored(C_ACCENT, "404 Tweaks");
+    //ImGui::TextColored(C_ACCENT, "404 Tweaks");
     if (g_fontH2) ImGui::PopFont();
-    if (g_fontMain) ImGui::PushFont(g_fontMain);
-    ImGui::TextColored(C_DIM, "Performance Utility");
-    if (g_fontMain) ImGui::PopFont();
 
     ImGui::Dummy({ 0, 14.f });
     ImGui::PushStyleColor(ImGuiCol_Separator, C_BORDER);
@@ -494,10 +702,11 @@ static void DrawSidebar(AppState& state) {
 
     // Navigation
     float bw = ImGui::GetContentRegionAvail().x;
-    if (BtnNav("   Dashboard",  g_tab == MainTab::Dashboard, bw)) g_tab = MainTab::Dashboard;
-    if (BtnNav("   Modules",    g_tab == MainTab::Modules,   bw)) g_tab = MainTab::Modules;
-    if (BtnNav("   Logs",       g_tab == MainTab::Logs,      bw)) g_tab = MainTab::Logs;
-    if (BtnNav("   Parametres", g_tab == MainTab::Settings,  bw)) g_tab = MainTab::Settings;
+    // Icons — seguisym.ttf mergé fournit les Misc Symbols ⚙⚡☰
+    if (BtnNav(u8"  \u25C6  Dashboard",  g_tab == MainTab::Dashboard, bw)) g_tab = MainTab::Dashboard;
+    if (BtnNav(u8"  \u26A1  Modules",    g_tab == MainTab::Modules,   bw)) g_tab = MainTab::Modules;
+    if (BtnNav(u8"  \u2630  Logs",       g_tab == MainTab::Logs,      bw)) g_tab = MainTab::Logs;
+    if (BtnNav(u8"  \u2699  Parametres", g_tab == MainTab::Settings,  bw)) g_tab = MainTab::Settings;
 
     // ── Bas de la sidebar : infos session ──
     float bottomY = ImGui::GetWindowHeight() - 148.f;
@@ -515,12 +724,12 @@ static void DrawSidebar(AppState& state) {
     ImGui::BeginChild("##sess", { -1.f, 110.f }, ImGuiChildFlags_Borders,
                       ImGuiWindowFlags_NoScrollbar);
 
-    // Statut actif
+    // Statut actif — point pulsant animé
     if (state.running.load()) {
-        ImGui::TextColored(C_WARN, "●"); ImGui::SameLine();
+        PulsingDot(C_WARN); ImGui::SameLine(0.f, 6.f);
         ImGui::TextColored(C_WARN, "Optimisation en cours");
     } else {
-        ImGui::TextColored(C_OK,   "●"); ImGui::SameLine();
+        PulsingDot(C_OK);   ImGui::SameLine(0.f, 6.f);
         ImGui::TextColored(C_OK,   "Session active");
     }
     ImGui::Spacing();
@@ -578,6 +787,17 @@ static void DrawDashboard(AppState& state) {
     auto StatCard = [&](const char* id, const char* label,
                         const char* value, const ImVec4& col) {
         if (BeginCard(id, { cw, 88.f })) {
+            // Barre couleur en haut de la card
+            {
+                ImVec2 cp = ImGui::GetWindowPos();
+                float  cw2 = ImGui::GetWindowWidth();
+                ImGui::GetWindowDrawList()->AddRectFilledMultiColor(
+                    { cp.x + 12.f, cp.y + 1.f }, { cp.x + cw2 - 12.f, cp.y + 3.f },
+                    IM_COL32(0,0,0,0),
+                    ImGui::ColorConvertFloat4ToU32({col.x,col.y,col.z,0.7f}),
+                    ImGui::ColorConvertFloat4ToU32({col.x,col.y,col.z,0.7f}),
+                    IM_COL32(0,0,0,0));
+            }
             // Label en 13px, valeur en 20px
             if (g_fontSmall) ImGui::PushFont(g_fontSmall);
             ImGui::TextColored(C_DIM, "%s", label);
@@ -605,17 +825,17 @@ static void DrawDashboard(AppState& state) {
     float rw = ImGui::GetContentRegionAvail().x - lw - ImGui::GetStyle().ItemSpacing.x;
 
     // Colonne gauche — Actions rapides
-    if (BeginCard("##qa", { lw, 210.f })) {
+    if (BeginCard("##qa", { lw, 0.f })) {
         if (g_fontH2) ImGui::PushFont(g_fontH2);
         ImGui::TextColored(C_TEXT, "Actions rapides");
         if (g_fontH2) ImGui::PopFont();
         ImGui::TextColored(C_DIM, "Optimise selon les modules actives dans l'onglet Modules.");
         ImGui::Dummy({ 0, 10.f });
 
-        if (busy) ImGui::BeginDisabled();
-        if (BtnAccent("  LANCER L'OPTIMISATION  ", { -1.f, 48.f }))
+        if (GradientBtn("  LANCER L'OPTIMISATION  ", { -1.f, 48.f }, busy))
             Launch(state, "Optimisation globale", tweaks::applyAll);
         ImGui::Dummy({ 0, 6.f });
+        if (busy) ImGui::BeginDisabled();
         if (BtnDanger("  Restaurer les parametres Windows  ", { -1.f, 36.f }))
             Launch(state, "Restauration", tweaks::revertAll);
         if (busy) ImGui::EndDisabled();
@@ -633,7 +853,7 @@ static void DrawDashboard(AppState& state) {
     ImGui::SameLine();
 
     // Colonne droite — Informations système + licence
-    if (BeginCard("##sysinfo", { rw, 210.f })) {
+    if (BeginCard("##sysinfo", { rw, 0.f })) {
         if (g_fontH2) ImGui::PushFont(g_fontH2);
         ImGui::TextColored(C_TEXT, "Informations");
         if (g_fontH2) ImGui::PopFont();
@@ -709,7 +929,7 @@ static void DrawModules(AppState& state) {
     if (BeginCard("##modtoolbar", { -1.f, 0.f })) {
         if (busy) ImGui::BeginDisabled();
 
-        if (BtnAccent("Lancer la selection", { 170.f, 34.f })) {
+        if (GradientBtn("Lancer la selection", { 170.f, 34.f }, false)) {
             Launch(state, "Modules selectionnes", [](AppState& s) {
                 GuiLog(s, "== MODULES SELECTIONNES ==", 5);
                 if (g_modBackup)  tweaks::applyBackup(s);
@@ -743,7 +963,7 @@ static void DrawModules(AppState& state) {
         ImGui::SameLine(0, 16.f);
         char tweakBuf[48];
         snprintf(tweakBuf, sizeof(tweakBuf), "%d tweaks selectionnes", CountEnabledTweaks());
-        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8.f);
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + (34.f - ImGui::GetTextLineHeight()) * 0.5f);
         ImGui::TextColored(C_DIM, "%s", tweakBuf);
 
         if (busy) ImGui::EndDisabled();
@@ -769,22 +989,34 @@ static void DrawModules(AppState& state) {
         ImGui::BeginChild(cardId, { cardW, CARD_H }, ImGuiChildFlags_Borders,
                           ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-        // ── En-tête : couleur accent gauche ──
+        // ── En-tête : barre couleur gauche + gradient horizontal subtil ──
         {
-            ImVec2 p = ImGui::GetWindowPos();
-            ImGui::GetWindowDrawList()->AddRectFilled(
+            ImVec2 p  = ImGui::GetWindowPos();
+            ImDrawList* cdl = ImGui::GetWindowDrawList();
+            // Barre verticale gauche
+            cdl->AddRectFilled(
                 { p.x, p.y + 6.f }, { p.x + 3.f, p.y + CARD_H - 6.f },
                 ImGui::GetColorU32(m.color), 2.f);
+            // Gradient horizontal depuis la barre (glow subtil)
+            cdl->AddRectFilledMultiColor(
+                { p.x + 3.f, p.y },
+                { p.x + cardW * 0.45f, p.y + CARD_H },
+                ImGui::ColorConvertFloat4ToU32({m.color.x, m.color.y, m.color.z, 0.06f}),
+                IM_COL32(0,0,0,0), IM_COL32(0,0,0,0),
+                ImGui::ColorConvertFloat4ToU32({m.color.x, m.color.y, m.color.z, 0.06f}));
         }
         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 8.f);
 
-        // Titre + checkbox sur la même ligne
-        float cw2 = ImGui::GetContentRegionAvail().x;
+        // Titre sur sa propre ligne (largeur limitée pour ne pas déborder sur la checkbox)
+        float innerW = ImGui::GetContentRegionAvail().x;
+        float checkW = 58.f;  // largeur réservée pour la checkbox + label
+        ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + innerW - checkW - 4.f);
         ImGui::TextColored(C_TEXT, "%s", m.title);
+        ImGui::PopTextWrapPos();
         float titleEndY = ImGui::GetCursorPosY();
 
-        // Checkbox à droite du titre
-        ImGui::SetCursorPos({ cw2 - 52.f + 8.f, titleEndY - 22.f });
+        // Checkbox épinglée en haut à droite de la card
+        ImGui::SetCursorPos({ innerW - checkW + 8.f, 10.f });
         ImGui::PushID(i);
         ImGui::PushStyleColor(ImGuiCol_Text, C_DIM);
         ImGui::Checkbox("Actif", m.enabled);
@@ -1027,6 +1259,8 @@ static void DrawSettings(AppState& state) {
 //  LAYOUT PRINCIPAL — Sidebar + Contenu
 // ════════════════════════════════════════════════════════════════════
 static void DrawMainUI(AppState& state) {
+    DrawBgDecor();
+
     const ImGuiIO& io = ImGui::GetIO();
     ImGui::SetNextWindowPos({ 0.f, 0.f }, ImGuiCond_Always);
     ImGui::SetNextWindowSize(io.DisplaySize, ImGuiCond_Always);
@@ -1035,6 +1269,9 @@ static void DrawMainUI(AppState& state) {
         ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
         ImGuiWindowFlags_NoMove     | ImGuiWindowFlags_NoBringToFrontOnFocus);
     ImGui::PopStyleVar();
+
+    // Titlebar custom 40px
+    DrawTitleBar(state);
 
     if (ImGui::BeginTable("##rootlayout", 2,
         ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_NoPadOuterX)) {
@@ -1068,6 +1305,85 @@ static void DrawMainUI(AppState& state) {
         state.statusMsg  = "[!] Session expiree ou licence revoquee.";
         state.statusType = 2;
     }
+
+    // ── Update notification popup ──────────────────────────────────
+    static bool s_wantOpenUpdate = false;
+    if (state.updateAvailable.exchange(false)) {
+        s_wantOpenUpdate = true;
+    }
+    if (s_wantOpenUpdate && !state.updateDismissed) {
+        ImGui::OpenPopup("Mise a jour disponible##upd");
+        s_wantOpenUpdate = false;
+    }
+
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Always, { 0.5f, 0.5f });
+    ImGui::SetNextWindowSize({ 520.f, 0.f }, ImGuiCond_Always);
+    ImGui::PushStyleColor(ImGuiCol_PopupBg, C_CARD);
+    if (ImGui::BeginPopupModal("Mise a jour disponible##upd", nullptr,
+        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove)) {
+
+        // ── Titre ──
+        ImGui::PushFont(g_fontH2);
+        ImGui::TextColored(C_ACCENT, "  Mise a jour disponible !");
+        ImGui::PopFont();
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        // ── Versions ──
+        ImGui::PushFont(g_fontMain);
+        ImGui::TextColored(C_DIM, "Version actuelle :"); ImGui::SameLine();
+        ImGui::TextColored(C_TEXT, " %s", updater::CURRENT_VERSION);
+        ImGui::TextColored(C_DIM, "Nouvelle version :"); ImGui::SameLine();
+        ImGui::TextColored(C_OK,  " %s", state.updateVersion.c_str());
+        ImGui::PopFont();
+
+        ImGui::Spacing();
+
+        // ── Changelog ──
+        ImGui::PushFont(g_fontSmall);
+        ImGui::TextColored(C_DIM, "CHANGELOG");
+        ImGui::Spacing();
+        ImGui::PushStyleColor(ImGuiCol_ChildBg, C_CARD2);
+        ImGui::BeginChild("##upd_changelog", { 0.f, 120.f }, true);
+        ImGui::PushFont(g_fontMono);
+        ImGui::TextWrapped("%s", state.updateChangelog.c_str());
+        ImGui::PopFont();
+        ImGui::EndChild();
+        ImGui::PopStyleColor();
+        ImGui::PopFont();
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        // ── Boutons ──
+        const float btnW = 190.f;
+        const float totalW = btnW * 2.f + 12.f;
+        ImGui::SetCursorPosX((ImGui::GetContentRegionAvail().x - totalW) * 0.5f + ImGui::GetCursorPosX());
+
+        ImGui::PushStyleColor(ImGuiCol_Button,        { 0.02f, 0.52f, 0.80f, 1.f });
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, { 0.04f, 0.68f, 1.00f, 1.f });
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive,  { 0.01f, 0.40f, 0.64f, 1.f });
+        if (ImGui::Button("Telecharger la mise a jour", { btnW, 40.f })) {
+            std::wstring wUrl(state.updateUrl.begin(), state.updateUrl.end());
+            ShellExecuteW(nullptr, L"open", wUrl.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+            state.updateDismissed = true;
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::PopStyleColor(3);
+
+        ImGui::SameLine(0.f, 12.f);
+        if (ImGui::Button("Plus tard", { btnW, 40.f })) {
+            state.updateDismissed = true;
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::Spacing();
+        ImGui::EndPopup();
+    }
+    ImGui::PopStyleColor(); // PopupBg
 
     ImGui::End();
 }

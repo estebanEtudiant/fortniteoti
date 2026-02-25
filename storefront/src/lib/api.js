@@ -101,6 +101,11 @@ class ApiClient {
   async resendVerification() {
     return this.request('POST', '/customer/resend-verification');
   }
+
+  // Software
+  async getLatestSoftware() {
+    return this.request('GET', '/software/latest');
+  }
 }
 
 export const api = new ApiClient();

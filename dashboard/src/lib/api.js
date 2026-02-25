@@ -109,6 +109,29 @@ class ApiClient {
     const qs = new URLSearchParams(params).toString();
     return this.get(`/admin/logs${qs ? '?' + qs : ''}`);
   }
+
+  // ── Software ──
+  getSoftwareStats() { return this.get('/software/stats'); }
+  getSoftwareVersions() { return this.get('/software/versions'); }
+  deleteSoftwareVersion(version) { return this.del(`/software/${encodeURIComponent(version)}`); }
+  async uploadSoftware(formData) {
+    const res = await fetch(`${this.baseUrl}/software/upload`, {
+      method: 'POST',
+      headers: this.token ? { Authorization: `Bearer ${this.token}` } : {},
+      body: formData,
+    });
+    if (res.status === 401 && this.token) {
+      this.clearToken();
+      window.location.hash = '/';
+      throw new Error('Session expirée, veuillez vous reconnecter');
+    }
+    const data = res.status === 204 ? null : await res.json();
+    if (!res.ok) {
+      const m = data?.message;
+      throw new Error(Array.isArray(m) ? m[0] : (m || `Erreur ${res.status}`));
+    }
+    return data;
+  }
 }
 
 export const api = new ApiClient();

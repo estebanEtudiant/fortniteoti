@@ -8,6 +8,7 @@ const COMMANDS = [
     category: '🔑 Licence',
     commands: [
       { name: '/verify <clé>',  desc: 'Lie ta clé de licence à ton compte Discord et obtient tes rôles automatiquement.' },
+      { name: '/badge',         desc: 'Réclame ton rôle badge (nécessite une licence active liée avec /verify).' },
       { name: '/status',        desc: 'Vérifie le statut et la durée restante de ta licence liée.' },
     ],
   },

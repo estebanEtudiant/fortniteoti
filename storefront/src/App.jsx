@@ -1,7 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import api from './lib/api.js';
 
-const DOWNLOAD_URL = import.meta.env.VITE_DOWNLOAD_URL || '#';
+function useDownloadUrl() {
+  const [url, setUrl] = useState(import.meta.env.VITE_DOWNLOAD_URL || '#');
+  useEffect(() => {
+    api.getLatestSoftware()
+      .then(data => { if (data?.url) setUrl(data.url); })
+      .catch(() => {});
+  }, []);
+  return url;
+}
 
 // ══════════════════════════════════════════════════════
 //  Simple Hash Router
@@ -803,6 +811,7 @@ function RegisterPage({ onRegister }) {
 //  PROFILE PAGE
 // ══════════════════════════════════════════════════════
 function ProfilePage({ customer, onLogout, onRefresh }) {
+  const downloadUrl = useDownloadUrl();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
@@ -922,7 +931,7 @@ function ProfilePage({ customer, onLogout, onRefresh }) {
               </div>
               {lic.status === 'ACTIVE' && (
                 <a
-                  href={DOWNLOAD_URL}
+                  href={downloadUrl}
                   target="_blank"
                   rel="noreferrer"
                   className="cta-primary"
@@ -1289,6 +1298,7 @@ function PaymentPage({ customer }) {
 //  PAYMENT SUCCESS PAGE
 // ══════════════════════════════════════════════════════
 function PaymentSuccessPage() {
+  const downloadUrl = useDownloadUrl();
   const [licenseKey, setLicenseKey] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -1363,7 +1373,7 @@ function PaymentSuccessPage() {
             </button>
 
             <a
-              href={DOWNLOAD_URL}
+              href={downloadUrl}
               target="_blank"
               rel="noreferrer"
               className="cta-primary"

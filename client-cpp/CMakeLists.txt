@@ -40,6 +40,7 @@ set(HEADERS
     include/anti_debug.h
     include/gui.h
     include/tweaks.h
+    include/updater.h
 )
 
 # ── Sources ──
@@ -51,6 +52,7 @@ set(SOURCES
     src/crypto_utils.cpp
     src/gui.cpp
     src/tweaks.cpp
+    src/updater.cpp
 )
 
 if(ENABLE_ANTI_DEBUG)
@@ -82,6 +84,7 @@ if(WIN32)
         shell32
         d3d11
         dxgi
+        dwmapi
     )
 endif()
 

@@ -50,6 +50,21 @@ struct AppState {
 
     // License client (owned by main)
     licensing::LicenseClient* client = nullptr;
+
+    // API base URL (set by main, used for update check in gui threads)
+    std::string apiUrl;
+
+    // Update notification (set by background thread, read by render thread)
+    std::atomic<bool> updateAvailable{false};
+    bool              updateDismissed = false;
+    std::string       updateVersion;
+    std::string       updateUrl;
+    std::string       updateChangelog;
+
+    // Window management (borderless titlebar)
+    HWND hwnd         = nullptr;
+    bool wantClose    = false;
+    bool wantMinimize = false;
 };
 
 // ── GUI API ──
