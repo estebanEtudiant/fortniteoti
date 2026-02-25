@@ -13,6 +13,7 @@ import {
   IsString, IsNotEmpty, IsOptional, IsEnum, IsInt, Min, Max,
   IsBoolean, IsNumber, MinLength,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
 // ── DTOs ──
 class LoginDto {
@@ -21,13 +22,15 @@ class LoginDto {
 }
 class CreateLicenseBody {
   @IsEnum(LicensePlan) plan: LicensePlan;
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(3650) customDays?: number;
   @IsOptional() @IsString() email?: string;
   @IsOptional() @IsString() discordId?: string;
-  @IsOptional() @IsInt() @Min(1) @Max(10) maxActivations?: number;
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(10) maxActivations?: number;
 }
 class GenerateBatchBody {
   @IsEnum(LicensePlan) plan: LicensePlan;
-  @IsInt() @Min(1) @Max(500) count: number;
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(3650) customDays?: number;
+  @Type(() => Number) @IsInt() @Min(1) @Max(500) count: number;
 }
 class BanBody {
   @IsString() @IsNotEmpty() reason: string;
@@ -38,7 +41,17 @@ class ExtendBody {
 class UpdatePlanBody {
   @IsOptional() @IsString() name?: string;
   @IsOptional() @IsNumber() price?: number;
+  @IsOptional() @IsNumber() originalPrice?: number;
   @IsOptional() @IsBoolean() active?: boolean;
+  @IsOptional() @IsBoolean() popular?: boolean;
+  @IsOptional() @IsString() stripePrice?: string;
+}
+class CreatePlanBody {
+  @IsString() key: string;
+  @IsString() name: string;
+  @IsNumber() price: number;
+  @IsOptional() @IsNumber() originalPrice?: number;
+  @IsOptional() @IsBoolean() popular?: boolean;
   @IsOptional() @IsString() stripePrice?: string;
 }
 class UpdateSettingsBody {
@@ -247,11 +260,25 @@ export class AdminController {
     return this.adminService.getPlans();
   }
 
+  @Post('plans')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  async createPlan(@Body() dto: CreatePlanBody) {
+    return this.adminService.createPlan(dto.key, dto);
+  }
+
   @Put('plans/:plan')
   @UseGuards(AdminAuthGuard)
   @ApiBearerAuth()
   async updatePlan(@Param('plan') plan: string, @Body() dto: UpdatePlanBody) {
     return this.adminService.updatePlan(plan, dto);
+  }
+
+  @Delete('plans/:plan')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  async deletePlan(@Param('plan') plan: string) {
+    return this.adminService.deletePlan(plan);
   }
 
   // ── Settings ──

@@ -84,7 +84,7 @@ function Header({ customer, onLogout }) {
   return (
     <header>
       <div className="header-content">
-        <div className="logo" onClick={() => navigate('/')}>FORTNITE.OPTI</div>
+        <div className="logo" onClick={() => navigate('/')}>404 Tweaks</div>
         <div className="header-nav">
           {customer ? (
             <>
@@ -206,20 +206,20 @@ function HomePage({ customer }) {
       <section className="section" style={{ background: 'var(--card-bg)' }}>
         <div className="secret-container">
           <div className="secret-content">
-            <h2>La Methode <span className="highlight">Pro-Zero</span></h2>
+            <h2>Le Logiciel <span className="highlight">404 Tweaks</span></h2>
             <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.8 }}>
-              Nous avons analyse les reglages des meilleurs joueurs mondiaux et condense 100+ pages de pure optimisation technique.
+              Nous avons automatise les optimisations des meilleurs joueurs mondiaux dans un logiciel simple et puissant. Un clic, des resultats.
             </p>
             <ul className="secret-list">
-              <li><i className="fa-solid fa-check"></i> Aucune application tierce risquee</li>
-              <li><i className="fa-solid fa-check"></i> Optimisation materielle profonde (BIOS, GPU, CPU)</li>
-              <li><i className="fa-solid fa-check"></i> Secrets de latence reseau chirurgicale</li>
-              <li><i className="fa-solid fa-check"></i> Configuration in-game Meta 2025</li>
-              <li><i className="fa-solid fa-check"></i> Checklist complete etape par etape</li>
+              <li><i className="fa-solid fa-check"></i> Tweaks Windows appliques automatiquement</li>
+              <li><i className="fa-solid fa-check"></i> Optimisation GPU, CPU et reseau integree</li>
+              <li><i className="fa-solid fa-check"></i> Interface claire, aucune competence requise</li>
+              <li><i className="fa-solid fa-check"></i> Restauration en un clic si besoin</li>
+              <li><i className="fa-solid fa-check"></i> Mises a jour automatiques incluses</li>
             </ul>
           </div>
           <div className="book-preview">
-            <i className="fa-solid fa-book-open"></i>
+            <i className="fa-solid fa-laptop-code"></i>
           </div>
         </div>
       </section>
@@ -227,7 +227,7 @@ function HomePage({ customer }) {
       {/* Results Chart */}
       <section className="section">
         <h2 className="section-title">Resultats <span className="highlight">Mesurables</span></h2>
-        <p className="section-subtitle">Performances avant/apres application du guide</p>
+        <p className="section-subtitle">Performances avant/apres utilisation du logiciel</p>
         <div className="chart-container">
           <div className="comparison-bars">
             <div className="bar-group">
@@ -236,7 +236,7 @@ function HomePage({ customer }) {
             </div>
             <div className="bar-group">
               <div className="bar bar-highlight" style={{ height: '90%' }}><span className="bar-value">240+</span></div>
-              <p className="bar-label">FPS Moyen<br/>(Avec Guide)</p>
+              <p className="bar-label">FPS Moyen<br/>(Avec 404 Tweaks)</p>
             </div>
             <div className="bar-group">
               <div className="bar bar-negative" style={{ height: '70%' }}><span className="bar-value">35ms</span></div>
@@ -244,33 +244,33 @@ function HomePage({ customer }) {
             </div>
             <div className="bar-group">
               <div className="bar bar-highlight" style={{ height: '25%' }}><span className="bar-value">12ms</span></div>
-              <p className="bar-label">Input Delay<br/>(Avec Guide)</p>
+              <p className="bar-label">Input Delay<br/>(Avec 404 Tweaks)</p>
             </div>
           </div>
           <p className="chart-note">*Donnees moyennes observees sur une configuration milieu de gamme (RTX 4060 / i5-13400)</p>
         </div>
       </section>
 
-      {/* Contents */}
+      {/* Features */}
       <section className="section" style={{ background: 'var(--card-bg)' }}>
-        <h2 className="section-title">Au Sommaire <span className="highlight">(100+ pages)</span></h2>
-        <p className="section-subtitle">11 chapitres ultra-detailles pour dominer techniquement</p>
+        <h2 className="section-title">Fonctionnalites <span className="highlight">Incluses</span></h2>
+        <p className="section-subtitle">Tout ce dont vous avez besoin pour dominer techniquement</p>
         <div className="contents-grid">
           {[
-            { num: '01', title: 'Le Coeur du Systeme', desc: 'Liberez votre CPU des processus Windows inutiles qui volent vos FPS. Registry tweaks avances.' },
-            { num: '02', title: "L'Unreal Engine Decode", desc: 'Comprenez pourquoi Fortnite lag et comment exploiter son architecture pour des gains massifs.' },
-            { num: '03', title: 'Windows Ultra Avance', desc: 'Services a desactiver, scheduler CPU optimise, plan d\'alimentation Ultimate Performance.' },
-            { num: '04', title: 'Latence de l\'Ombre (BIOS)', desc: 'Le reglage BIOS meconnu qui reduit l\'input delay de 15% instantanement. XMP, C-States, HPET.' },
-            { num: '05', title: 'NVIDIA/AMD Unleashed', desc: 'Low Latency Mode Ultra, NVIDIA Reflex, Anti-Lag. Reduisez l\'input delay de 40%.' },
-            { num: '06', title: 'Settings Meta 2025', desc: 'Les reglages in-game secrets pour une visibilite parfaite sans sacrifier la fluidite.' },
-            { num: '07', title: 'Input Delay = 0', desc: 'Optimisation souris, clavier, USB, ecran. Atteignez 12-18ms de system latency totale.' },
-            { num: '08', title: 'FPS Boost Extreme', desc: 'RAM optimisee, Overclocking securise, Process Priority. +30% de FPS en endgame.' },
-            { num: '09', title: 'Reseau Chirurgical', desc: 'Optimisez votre Windows pour que chaque paquet arrive avant celui de votre adversaire.' },
-            { num: '10', title: "Checklist '0 Delay'", desc: 'Verifiez que toutes les optimisations sont actives. Tests de performance et mesures.' },
-            { num: '11', title: 'Maintenance Continue', desc: 'Gardez vos performances optimales dans le temps. Mises a jour et monitoring.' },
+            { num: '01', title: 'Sauvegarde & Restauration', desc: 'Point de restauration Windows et backup registre crees automatiquement avant toute modification.' },
+            { num: '02', title: 'Tweaks Windows', desc: 'Desactivation des services inutiles, optimisation multimedia et UI pour maximiser les ressources jeu.' },
+            { num: '03', title: 'GPU Optimizer', desc: 'HAGS, PCIe power management, TDR et DWM optimises pour des FPS stables et un input delay reduit.' },
+            { num: '04', title: 'CPU Optimizer', desc: 'Power throttling, scheduler, boost et core parking configures pour des performances processeur maximales.' },
+            { num: '05', title: 'RAM Optimizer', desc: 'Flush de la memoire standby, paging et compression RAM pour liberer de la memoire vive en continu.' },
+            { num: '06', title: 'Nettoyage Systeme', desc: 'Suppression des fichiers TEMP, shader cache, flush DNS et corbeille. PC toujours propre.' },
+            { num: '07', title: 'Reseau Chirurgical', desc: 'Desactivation de Nagle, optimisation TCP/IP, DNS et reset du stack reseau pour reduire le ping.' },
+            { num: '08', title: 'Stockage Optimise', desc: 'TRIM SSD, NTFS, prefetch et write cache configures pour des temps de chargement minimaux.' },
+            { num: '09', title: 'Input & Peripheriques', desc: 'Souris 1:1 sans acceleration, clavier et USB power optimises. Latence input au minimum absolu.' },
+            { num: '10', title: 'Power Plan Ultimate', desc: 'Plan Ultimate Performance actif, CPU a 100%, boost et ASPM configures pour 0 compromis.' },
+            { num: '11', title: 'Verification Etat', desc: 'Scan read-only de votre systeme pour verifier quels tweaks sont actifs et quels modules appliquer.' },
           ].map(ch => (
             <div className="content-card" key={ch.num}>
-              <span className="content-number">CHAPITRE {ch.num}</span>
+              <span className="content-number">MODULE {ch.num}</span>
               <h3 className="content-title">{ch.title}</h3>
               <p className="content-description">{ch.desc}</p>
             </div>
@@ -284,8 +284,8 @@ function HomePage({ customer }) {
         <p className="section-subtitle">Des resultats concrets de joueurs competitifs</p>
         <div className="testimonials-grid">
           {[
-            { text: "J'ai gagne 80 FPS constants en endgame et mon input delay a ete divise par 2. Le chapitre sur le BIOS et le Low Latency Mode ont tout change. Mes edits n'ont jamais ete aussi rapides.", author: 'Thomas L.', role: 'Champion Division, 6000 pts Arena' },
-            { text: "Guide ultra complet. J'ai enfin compris pourquoi j'avais du stutter en endgame. L'optimisation Windows et les parametres NVIDIA m'ont sauve. Je peux enfin jouer en 240 FPS stable.", author: 'Kevin M.', role: 'Joueur competitif EU' },
+            { text: "J'ai gagne 80 FPS constants en endgame et mon input delay a ete divise par 2. Le module GPU et le Low Latency Mode ont tout change. Mes edits n'ont jamais ete aussi rapides.", author: 'Thomas L.', role: 'Champion Division, 6000 pts Arena' },
+            { text: "Logiciel incroyable. J'ai enfin regle mon stutter en endgame. L'optimisation Windows et les parametres NVIDIA sont appliques en 30 secondes. Je joue maintenant en 240 FPS stable.", author: 'Kevin M.', role: 'Joueur competitif EU' },
             { text: "Meilleur investissement pour ma carriere gaming. Mon setup tourne maintenant a 240 FPS stables avec 15ms de latency totale. J'ai gagne mes 3 derniers tournois Discord. Incroyable.", author: 'Alex D.', role: 'Streamer et competiteur' },
           ].map((t, i) => (
             <div className="testimonial" key={i}>
@@ -308,20 +308,58 @@ function HomePage({ customer }) {
               <p style={{ color: 'var(--text-secondary)' }}>Chargement des plans...</p>
             </div>
           ) : plans.map(plan => (
-            <div className="price-box" key={plan.key} style={{ flex: '1 1 220px', maxWidth: 260 }}>
+
+              <div
+                  className="price-box"
+                  key={plan.key}
+                  style={{
+                    flex: '1 1 320px',
+                    maxWidth: 360,
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}
+              >
               <div style={{ fontSize: '2rem', color: 'var(--accent)', marginBottom: '0.5rem' }}>
                 <i className={`fa-solid ${planIcons[plan.key] || 'fa-key'}`}></i>
               </div>
-              {plan.key === 'LIFETIME' && (
-                <span style={{ display: 'inline-block', fontSize: '0.7rem', background: 'var(--accent)', color: '#000', borderRadius: 4, padding: '2px 8px', fontWeight: 700, marginBottom: '0.5rem', textTransform: 'uppercase' }}>
-                  POPULAIRE
-                </span>
+
+                {plan.popular && (
+                    <div
+                        style={{
+                          position: 'absolute',
+                          top: 14,
+                          left: -42,
+                          background: 'linear-gradient(135deg, #ffffff, #f2f2f2)',
+                          color: '#000',
+                          padding: '6px 52px',
+                          fontSize: '0.7rem',
+                          fontWeight: 900,
+                          letterSpacing: '0.1em',
+                          textTransform: 'uppercase',
+                          transform: 'rotate(-45deg)',
+                          boxShadow: '0 10px 28px rgba(0,0,0,.45)',
+                          border: '1px solid rgba(0,0,0,.25)',
+                          zIndex: 3
+                        }}
+                    >
+                      Populaire
+                    </div>
+                )}
+              {plan.originalPrice > 0 && (
+                <p style={{ color: 'var(--text-secondary)', textDecoration: 'line-through', fontSize: '1rem', marginBottom: '0.1rem' }}>
+                  {(plan.originalPrice / 100).toFixed(2)} EUR
+                </p>
               )}
               <p className="price-new" style={{ fontSize: '1.8rem' }}>{(plan.price / 100).toFixed(2)} EUR</p>
+              {plan.originalPrice > 0 && (
+                <span style={{ display: 'inline-block', fontSize: '0.75rem', background: '#22c55e', color: '#000', borderRadius: 4, padding: '2px 8px', fontWeight: 700, marginBottom: '0.5rem' }}>
+                  -{Math.round((1 - plan.price / plan.originalPrice) * 100)}% DE REDUCTION
+                </span>
+              )}
               <p className="price-note" style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '1rem' }}>{plan.name}</p>
               <div className="included-list" style={{ marginBottom: '1.25rem' }}>
                 <ul>
-                  <li><i className="fa-solid fa-check"></i> Guide PDF complet</li>
+                  <li><i className="fa-solid fa-check"></i> Logiciel d'optimisation complet</li>
                   <li><i className="fa-solid fa-check"></i> Discord VIP prive</li>
                   <li><i className="fa-solid fa-check"></i> Mises a jour incluses</li>
                   <li><i className="fa-solid fa-check"></i> Support technique</li>
@@ -333,12 +371,7 @@ function HomePage({ customer }) {
             </div>
           ))}
         </div>
-        <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-            <i className="fa-solid fa-shield-halved" style={{ marginRight: 6, color: 'var(--accent)' }}></i>
-            Garantie satisfait ou rembourse 30 jours — Paiement securise via Stripe
-          </p>
-        </div>
+
       </section>
 
       {/* Protection */}
@@ -347,12 +380,12 @@ function HomePage({ customer }) {
         <p className="section-subtitle">Votre achat est securise et personnalise</p>
         <div className="protection-grid">
           {[
-            { icon: 'fa-shield-halved', title: 'PDF Watermarke', desc: 'Chaque exemplaire est unique et contient votre identifiant. Protection anti-piratage.' },
-            { icon: 'fa-link', title: 'Lien Securise', desc: 'Votre lien est personnel, limite dans le temps (7 jours) et en nombre (3 telechargements).' },
+            { icon: 'fa-shield-halved', title: 'Licence HWID', desc: 'Votre licence est liee a votre machine. Protection anti-partage integree.' },
+            { icon: 'fa-link', title: 'Lien Securise', desc: 'Votre lien de telechargement est personnel et protege par votre cle de licence.' },
             { icon: 'fa-brands fa-discord', title: 'Discord VIP', desc: 'Communaute privee avec support direct, discussions et bonus exclusifs.' },
-            { icon: 'fa-rotate', title: 'Mises a Jour', desc: 'Versions pirates = obsoletes. Vous recevez toutes les nouvelles optimisations gratuitement.' },
-            { icon: 'fa-headset', title: 'Support Illimite', desc: 'Questions sur une optimisation ? Support technique direct du createur.' },
-            { icon: 'fa-star', title: 'Bonus Mensuels', desc: 'Nouvelles optimisations, tests et tweaks exclusifs chaque mois.' },
+            { icon: 'fa-rotate', title: 'Mises a Jour', desc: 'Versions pirates = obsoletes. Vous recevez toutes les nouvelles versions gratuitement.' },
+            { icon: 'fa-headset', title: 'Support Illimite', desc: 'Un probleme avec le logiciel ? Support technique direct du createur.' },
+            { icon: 'fa-star', title: 'Modules Mensuels', desc: 'Nouveaux modules d\'optimisation et tweaks exclusifs ajoutes chaque mois.' },
           ].map((p, i) => (
             <div className="protection-card" key={i}>
               <i className={`fa-solid ${p.icon} protection-icon`}></i>
@@ -364,8 +397,8 @@ function HomePage({ customer }) {
         <div className="warning-box">
           <h3><i className="fa-solid fa-triangle-exclamation"></i> Message Important</h3>
           <p>
-            Ce guide represente des centaines d'heures de travail, de tests et de recherche. En l'achetant legalement, vous soutenez la creation de contenu de qualite et vous obtenez bien plus qu'un simple PDF.<br/><br/>
-            <strong>Les versions pirates ne donnent pas acces au Discord VIP, aux mises a jour, au support ni aux bonus.</strong> Le prix de 29.99EUR est volontairement accessible pour que tout le monde puisse optimiser son setup.
+            Ce logiciel represente des centaines d'heures de developpement, de tests et de recherche. En l'achetant legalement, vous soutenez le developpement et vous obtenez bien plus qu'un simple outil.<br/><br/>
+            <strong>Les versions pirates ne donnent pas acces au Discord VIP, aux mises a jour, au support ni aux nouveaux modules.</strong> Le prix est volontairement accessible pour que tout le monde puisse optimiser son setup.
           </p>
         </div>
       </section>
@@ -375,28 +408,28 @@ function HomePage({ customer }) {
         <h2 className="section-title">Questions <span className="highlight">Frequentes</span></h2>
         <div className="faq-container">
           <FaqItem
-            question="Ce guide fonctionne-t-il pour tous les PC ?"
-            answer="Oui ! Le guide couvre les optimisations pour tous types de configurations, des PC d'entree de gamme aux setups haut de gamme. Chaque optimisation indique son impact selon votre materiel (Intel/AMD, NVIDIA/AMD)."
+            question="Le logiciel fonctionne-t-il pour tous les PC ?"
+            answer="Oui ! Le logiciel supporte toutes les configurations, des PC d'entree de gamme aux setups haut de gamme. Chaque module detecte automatiquement votre materiel (Intel/AMD, NVIDIA/AMD) et adapte les optimisations."
           />
           <FaqItem
             question="Est-ce que je risque d'endommager mon PC ?"
-            answer="Non. Toutes les optimisations sont sures et reversibles. Les parametres avances comme l'overclocking sont clairement indiques avec des avertissements de securite. Un point de restauration Windows est recommande avant toute modification majeure."
+            answer="Non. Toutes les optimisations sont sures et reversibles. Le logiciel cree automatiquement un point de restauration Windows avant chaque modification majeure. Un clic suffit pour revenir en arriere."
           />
           <FaqItem
             question="Combien de temps faut-il pour tout appliquer ?"
-            answer="Entre 2 et 4 heures pour une optimisation complete de A a Z. Vous pouvez aussi appliquer les optimisations par chapitre selon vos besoins. La checklist finale vous aide a verifier rapidement ce qui est fait."
+            answer="Moins de 5 minutes pour une optimisation complete. Le logiciel applique tous les tweaks en automatique. Vous pouvez aussi activer les modules un par un selon vos besoins."
           />
           <FaqItem
-            question="Le guide est-il compatible avec AMD et NVIDIA ?"
-            answer="Absolument. Le chapitre 5 couvre en detail les optimisations pour les cartes NVIDIA (RTX 2000/3000/4000) et AMD (RX 6000/7000) avec les parametres specifiques a chaque marque (Low Latency Mode, Anti-Lag, Reflex, etc.)."
+            question="Le logiciel est-il compatible avec AMD et NVIDIA ?"
+            answer="Absolument. Le module GPU detecte automatiquement votre carte et applique les parametres optimaux : Low Latency Mode, NVIDIA Reflex, Anti-Lag, selon votre marque (RTX 2000/3000/4000, RX 6000/7000)."
           />
           <FaqItem
             question="Y a-t-il des mises a jour ?"
-            answer="Oui, le guide est mis a jour regulierement avec les nouvelles optimisations Fortnite, les updates de drivers et les changements de meta. Tous les acheteurs recoivent les mises a jour gratuitement par email."
+            answer="Oui, le logiciel se met a jour automatiquement avec les nouvelles optimisations Fortnite, les updates de drivers et les changements de meta. Tous les acheteurs recoivent les mises a jour gratuitement."
           />
           <FaqItem
             question="Puis-je obtenir un remboursement ?"
-            answer="Garantie satisfait ou rembourse 30 jours. Si vous n'observez pas d'amelioration mesurable de vos performances apres avoir applique le guide, contactez-nous pour un remboursement integral sans justification."
+            answer="Garantie satisfait ou rembourse 30 jours. Si vous n'observez pas d'amelioration mesurable de vos performances apres avoir utilise le logiciel, contactez-nous pour un remboursement integral sans justification."
           />
         </div>
       </section>
@@ -907,7 +940,7 @@ function ProfilePage({ customer, onLogout, onRefresh }) {
             Aucune licence pour le moment.
             <br/>
             <button className="cta-primary" style={{ marginTop: '1rem', padding: '0.8rem 2rem', fontSize: '1rem' }} onClick={() => navigate('/payment')}>
-              Acheter le Guide
+              Acheter le Logiciel
             </button>
           </div>
         )}
@@ -1142,7 +1175,7 @@ function PaymentPage({ customer }) {
     <div className="auth-page" style={{ padding: '3rem 1rem' }}>
       <div className="auth-card" style={{ maxWidth: 560 }}>
         <h2 className="auth-title">Choisissez votre plan</h2>
-        <p className="auth-subtitle">Guide FortniteOpti &mdash; Acces instantane</p>
+        <p className="auth-subtitle">404 Tweaks &mdash; Logiciel d'optimisation &mdash; Acces instantane</p>
 
         {plansLoading ? (
           <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
@@ -1183,16 +1216,28 @@ function PaymentPage({ customer }) {
                           <i className={`fa-solid ${planIcons[plan.key] || 'fa-key'}`} style={{ marginRight: 8, color: 'var(--accent)' }}></i>
                           {plan.name}
                         </span>
-                        {plan.key === 'LIFETIME' && (
+                        {plan.popular && (
                           <span style={{ marginLeft: 8, fontSize: '0.7rem', background: 'var(--accent)', color: '#000', borderRadius: 4, padding: '1px 6px', fontWeight: 700 }}>
                             POPULAIRE
                           </span>
                         )}
                       </div>
                     </div>
-                    <span style={{ fontFamily: "'JetBrains Mono', monospace", color: 'var(--accent)', fontWeight: 700, fontSize: '1.1rem' }}>
-                      {(plan.price / 100).toFixed(2)} EUR
-                    </span>
+                    <div style={{ textAlign: 'right' }}>
+                      {plan.originalPrice > 0 && (
+                        <div style={{ color: 'var(--text-secondary)', textDecoration: 'line-through', fontSize: '0.8rem' }}>
+                          {(plan.originalPrice / 100).toFixed(2)} EUR
+                        </div>
+                      )}
+                      <span style={{ fontFamily: "'JetBrains Mono', monospace", color: 'var(--accent)', fontWeight: 700, fontSize: '1.1rem' }}>
+                        {(plan.price / 100).toFixed(2)} EUR
+                      </span>
+                      {plan.originalPrice > 0 && (
+                        <div style={{ fontSize: '0.7rem', color: '#22c55e', fontWeight: 700 }}>
+                          -{Math.round((1 - plan.price / plan.originalPrice) * 100)}%
+                        </div>
+                      )}
+                    </div>
                   </div>
                 );
               })}
@@ -1202,8 +1247,7 @@ function PaymentPage({ customer }) {
             <div style={{ background: 'var(--card-bg)', borderRadius: 10, padding: '1rem 1.25rem', marginBottom: '1.25rem', border: '1px solid var(--border-subtle)' }}>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Inclus avec votre achat</p>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: 'var(--text-secondary)', fontSize: '0.88rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                <li><i className="fa-solid fa-check" style={{ color: 'var(--accent)', marginRight: 8 }}></i>Guide PDF complet (100+ pages)</li>
-                <li><i className="fa-solid fa-check" style={{ color: 'var(--accent)', marginRight: 8 }}></i>Logiciel d'optimisation</li>
+                <li><i className="fa-solid fa-check" style={{ color: 'var(--accent)', marginRight: 8 }}></i>Logiciel d'optimisation complet</li>
                 <li><i className="fa-solid fa-check" style={{ color: 'var(--accent)', marginRight: 8 }}></i>Acces Discord VIP prive</li>
                 <li><i className="fa-solid fa-check" style={{ color: 'var(--accent)', marginRight: 8 }}></i>Mises a jour incluses</li>
                 <li><i className="fa-solid fa-check" style={{ color: 'var(--accent)', marginRight: 8 }}></i>Support technique direct</li>
@@ -1457,11 +1501,11 @@ function VerifyEmailPage({ onRefresh }) {
             </div>
             <h2 className="auth-title">Email verifie !</h2>
             <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', lineHeight: 1.7 }}>
-              Ton adresse email a ete verifiee avec succes. Tu peux maintenant acheter le guide.
+              Ton adresse email a ete verifiee avec succes. Tu peux maintenant acheter le logiciel.
             </p>
             <button className="cta-primary" style={{ padding: '0.9rem 2rem' }} onClick={() => navigate('/payment')}>
               <i className="fa-solid fa-cart-shopping" style={{ marginRight: 8 }}></i>
-              Acheter le guide
+              Acheter le logiciel
             </button>
           </>
         )}

@@ -39,6 +39,7 @@ set(HEADERS
     include/crypto_utils.h
     include/anti_debug.h
     include/gui.h
+    include/tweaks.h
 )
 
 # ── Sources ──
@@ -49,6 +50,7 @@ set(SOURCES
     src/http_client.cpp
     src/crypto_utils.cpp
     src/gui.cpp
+    src/tweaks.cpp
 )
 
 if(ENABLE_ANTI_DEBUG)

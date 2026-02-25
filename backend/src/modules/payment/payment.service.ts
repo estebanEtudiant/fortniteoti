@@ -10,10 +10,13 @@ import { MailService } from '../customer/mail.service';
 
 const PLANS_CONFIG_KEY = 'admin:plans_config';
 const DEFAULT_PLANS: Record<string, { name: string; price: number; active: boolean; stripePrice: string }> = {
-  DAYS_30:  { name: '30 Jours',  price: 999,  active: true, stripePrice: '' },
-  DAYS_90:  { name: '90 Jours',  price: 1999, active: true, stripePrice: '' },
-  DAYS_365: { name: '1 An',      price: 2499, active: true, stripePrice: '' },
-  LIFETIME: { name: 'Lifetime',  price: 2999, active: true, stripePrice: '' },
+  DAYS_1:   { name: '1 Jour',   price: 199,  active: false, stripePrice: '' },
+  DAYS_7:   { name: '7 Jours',  price: 499,  active: false, stripePrice: '' },
+  DAYS_14:  { name: '14 Jours', price: 799,  active: false, stripePrice: '' },
+  DAYS_30:  { name: '30 Jours', price: 999,  active: true,  stripePrice: '' },
+  DAYS_90:  { name: '90 Jours', price: 1999, active: true,  stripePrice: '' },
+  DAYS_365: { name: '1 An',     price: 2499, active: true,  stripePrice: '' },
+  LIFETIME: { name: 'Lifetime', price: 2999, active: true,  stripePrice: '' },
 };
 
 @Injectable()
@@ -49,7 +52,7 @@ export class PaymentService {
     }
     return Object.entries(plans)
       .filter(([, cfg]) => cfg.active)
-      .map(([key, cfg]) => ({ key, name: cfg.name, price: cfg.price }));
+      .map(([key, cfg]) => ({ key, name: cfg.name, price: cfg.price, originalPrice: (cfg as any).originalPrice || 0, popular: (cfg as any).popular || false }));
   }
 
   async confirmPayment(customerId: string, sessionId: string): Promise<{ licenseKey: string }> {
@@ -312,13 +315,19 @@ export class PaymentService {
 
   private mapPlan(planId: string): LicensePlan {
     const map: Record<string, LicensePlan> = {
-      'DAYS_30': LicensePlan.DAYS_30,
-      'DAYS_90': LicensePlan.DAYS_90,
+      'DAYS_1':   LicensePlan.DAYS_1,
+      'DAYS_7':   LicensePlan.DAYS_7,
+      'DAYS_14':  LicensePlan.DAYS_14,
+      'DAYS_30':  LicensePlan.DAYS_30,
+      'DAYS_90':  LicensePlan.DAYS_90,
       'DAYS_365': LicensePlan.DAYS_365,
       'LIFETIME': LicensePlan.LIFETIME,
-      '30d': LicensePlan.DAYS_30,
-      '90d': LicensePlan.DAYS_90,
-      '365d': LicensePlan.DAYS_365,
+      '1d':       LicensePlan.DAYS_1,
+      '7d':       LicensePlan.DAYS_7,
+      '14d':      LicensePlan.DAYS_14,
+      '30d':      LicensePlan.DAYS_30,
+      '90d':      LicensePlan.DAYS_90,
+      '365d':     LicensePlan.DAYS_365,
       'lifetime': LicensePlan.LIFETIME,
     };
     return map[planId] || LicensePlan.DAYS_30;

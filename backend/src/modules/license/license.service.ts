@@ -7,6 +7,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 // ── DTOs ──
 export interface CreateLicenseDto {
   plan: LicensePlan;
+  customDays?: number;
   email?: string;
   discordId?: string;
   maxActivations?: number;
@@ -15,6 +16,7 @@ export interface CreateLicenseDto {
 
 export interface GenerateBatchDto {
   plan: LicensePlan;
+  customDays?: number;
   count: number;
   prefix?: string;
 }
@@ -36,7 +38,7 @@ export class LicenseService {
   // ── Create single license ──
   async create(dto: CreateLicenseDto): Promise<any> {
     const licenseKey = generateLicenseKey();
-    const expiresAt = this.calculateExpiry(dto.plan);
+    const expiresAt = this.calculateExpiry(dto.plan, dto.customDays);
 
     const license = await this.prisma.license.create({
       data: {
@@ -65,7 +67,7 @@ export class LicenseService {
   // ── Generate batch of keys ──
   async generateBatch(dto: GenerateBatchDto): Promise<string[]> {
     const keys: string[] = [];
-    const expiresAt = this.calculateExpiry(dto.plan);
+    const expiresAt = this.calculateExpiry(dto.plan, dto.customDays);
 
     for (let i = 0; i < dto.count; i++) {
       const licenseKey = generateLicenseKey();
@@ -310,11 +312,17 @@ export class LicenseService {
 
   // ── Private helpers ──
 
-  private calculateExpiry(plan: LicensePlan): Date | null {
+  private calculateExpiry(plan: LicensePlan, customDays?: number): Date | null {
     const now = new Date();
+    if (customDays && customDays > 0) {
+      return new Date(now.setDate(now.getDate() + customDays));
+    }
     switch (plan) {
-      case LicensePlan.DAYS_30: return new Date(now.setDate(now.getDate() + 30));
-      case LicensePlan.DAYS_90: return new Date(now.setDate(now.getDate() + 90));
+      case LicensePlan.DAYS_1:   return new Date(now.setDate(now.getDate() + 1));
+      case LicensePlan.DAYS_7:   return new Date(now.setDate(now.getDate() + 7));
+      case LicensePlan.DAYS_14:  return new Date(now.setDate(now.getDate() + 14));
+      case LicensePlan.DAYS_30:  return new Date(now.setDate(now.getDate() + 30));
+      case LicensePlan.DAYS_90:  return new Date(now.setDate(now.getDate() + 90));
       case LicensePlan.DAYS_365: return new Date(now.setDate(now.getDate() + 365));
       case LicensePlan.LIFETIME: return null;
     }

@@ -2,7 +2,7 @@
 //  FortniteOptimizer 2026 — main.cpp
 //  Entry point: Win32 + DX11 window + Dear ImGui render loop
 // ══════════════════════════════════════════════════════════════════════
-#define _WIN32_WINNT 0x0601
+#define _WIN32_WINNT 0x0A00   // Windows 10 minimum (DPI V2 + tweaks modernes)
 #define NOMINMAX
 #include <windows.h>
 #include <shellapi.h>
@@ -17,7 +17,10 @@
 #include "gui.h"
 
 // ── API URL ──
+
 static const std::string API_URL = "http://localhost:3000";
+
+//static const std::string API_URL = "http://57.128.255.1:3000";
 
 // ── DX11 globals ──
 static ID3D11Device*           g_pd3dDevice          = nullptr;
@@ -143,6 +146,10 @@ static bool relaunchAsAdmin() {
 //  main
 // ══════════════════════════════════════════════════════════════════════
 int main() {
+    // ── DPI Awareness — doit être la toute première chose appelée ──
+    // Per-Monitor V2 : rendu natif à la résolution physique, pas de bitmap scaling
+    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+
     // ── Admin check — must be first ──
     if (!isRunAsAdmin()) {
         if (relaunchAsAdmin()) return 0; // UAC accepted, elevated process takes over

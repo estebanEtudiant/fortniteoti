@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, UnauthorizedException, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
@@ -15,9 +15,12 @@ const PLANS_CONFIG_KEY = 'admin:plans_config';
 const SETTINGS_KEY = 'admin:settings';
 
 const DEFAULT_PLANS = {
-  DAYS_30:  { name: '30 Jours',  price: 999,  active: true, stripePrice: '' },
-  DAYS_90:  { name: '90 Jours',  price: 1999, active: true, stripePrice: '' },
-  DAYS_365: { name: '1 An',      price: 2499, active: true, stripePrice: '' },
+  DAYS_1:   { name: '1 Jour',   price: 199,  active: false, stripePrice: '' },
+  DAYS_7:   { name: '7 Jours',  price: 499,  active: false, stripePrice: '' },
+  DAYS_14:  { name: '14 Jours', price: 799,  active: false, stripePrice: '' },
+  DAYS_30:  { name: '30 Jours', price: 999,  active: true,  stripePrice: '' },
+  DAYS_90:  { name: '90 Jours', price: 1999, active: true,  stripePrice: '' },
+  DAYS_365: { name: '1 An',     price: 2499, active: true,  stripePrice: '' },
   LIFETIME: { name: 'Lifetime',  price: 2999, active: true, stripePrice: '' },
 };
 
@@ -414,13 +417,31 @@ export class AdminService {
     try { return { ...DEFAULT_PLANS, ...JSON.parse(raw) }; } catch { return DEFAULT_PLANS; }
   }
 
-  async updatePlan(plan: string, config: { name?: string; price?: number; active?: boolean; stripePrice?: string }): Promise<any> {
-    const current = await this.getPlans();
+  async createPlan(key: string, config: { name: string; price: number; originalPrice?: number; popular?: boolean; stripePrice?: string }): Promise<any> {
+    const current = await this.getPlans() as any;
+    if (key in current) throw new BadRequestException(`Plan "${key}" already exists`);
+    current[key] = { name: config.name, price: config.price, originalPrice: config.originalPrice || 0, active: true, popular: config.popular || false, stripePrice: config.stripePrice || '' };
+    await this.redis.set(PLANS_CONFIG_KEY, JSON.stringify(current));
+    this.logger.log(`Plan created: ${key}`);
+    return current[key];
+  }
+
+  async updatePlan(plan: string, config: { name?: string; price?: number; originalPrice?: number; active?: boolean; popular?: boolean; stripePrice?: string }): Promise<any> {
+    const current = await this.getPlans() as any;
     if (!(plan in current)) throw new NotFoundException(`Plan "${plan}" not found`);
-    (current as any)[plan] = { ...(current as any)[plan], ...config };
+    current[plan] = { ...current[plan], ...config };
     await this.redis.set(PLANS_CONFIG_KEY, JSON.stringify(current));
     this.logger.log(`Plan config updated: ${plan}`);
-    return (current as any)[plan];
+    return current[plan];
+  }
+
+  async deletePlan(key: string): Promise<{ deleted: string }> {
+    const current = await this.getPlans() as any;
+    if (!(key in current)) throw new NotFoundException(`Plan "${key}" not found`);
+    delete current[key];
+    await this.redis.set(PLANS_CONFIG_KEY, JSON.stringify(current));
+    this.logger.log(`Plan deleted: ${key}`);
+    return { deleted: key };
   }
 
   // ══════════════════════════════════════════════════

@@ -1056,10 +1056,17 @@ function PlansPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState('');
   const [saved, setSaved] = useState('');
+  const [deleting, setDeleting] = useState('');
+  const [showAdd, setShowAdd] = useState(false);
+  const [newPlan, setNewPlan] = useState({ key: '', name: '', price: 999, originalPrice: 0, stripePrice: '' });
+  const [addError, setAddError] = useState('');
 
-  useEffect(() => {
+  const load = () => {
+    setLoading(true);
     api.getPlans().then(setPlans).catch(console.error).finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(() => { load(); }, []);
 
   const handleSave = async (planKey) => {
     setSaving(planKey);
@@ -1071,6 +1078,36 @@ function PlansPage() {
     finally { setSaving(''); }
   };
 
+  const handleDelete = async (planKey) => {
+    if (!confirm(`Supprimer le plan "${planKey}" ? Cette action est irréversible.`)) return;
+    setDeleting(planKey);
+    try {
+      await api.deletePlan(planKey);
+      load();
+    } catch (err) { alert(err.message); }
+    finally { setDeleting(''); }
+  };
+
+  const handleAdd = async () => {
+    setAddError('');
+    if (!newPlan.key.trim() || !newPlan.name.trim()) { setAddError('Clé et nom requis.'); return; }
+    try {
+      await api.createPlan(newPlan);
+      setShowAdd(false);
+      setNewPlan({ key: '', name: '', price: 999, originalPrice: 0, stripePrice: '' });
+      load();
+    } catch (err) { setAddError(err.message); }
+  };
+
+  // Quand on active "Populaire" sur un plan, on le désactive sur tous les autres
+  const setPopular = (planKey) => {
+    setPlans(prev => {
+      const next = { ...prev };
+      Object.keys(next).forEach(k => { next[k] = { ...next[k], popular: k === planKey ? !next[k].popular : false }; });
+      return next;
+    });
+  };
+
   const update = (planKey, field, value) => {
     setPlans(prev => ({ ...prev, [planKey]: { ...prev[planKey], [field]: value } }));
   };
@@ -1078,66 +1115,159 @@ function PlansPage() {
   if (loading) return <Loading />;
   if (!plans) return <p className="text-gray-500">Erreur de chargement</p>;
 
-  const planOrder = ['DAYS_30', 'DAYS_90', 'DAYS_365', 'LIFETIME'];
+  const planKeys = Object.keys(plans);
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-2">Gestion des Plans</h1>
+      <div className="flex items-center justify-between mb-2">
+        <h1 className="text-2xl font-bold">Gestion des Plans</h1>
+        <button onClick={() => setShowAdd(!showAdd)}
+          className="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+          <Plus className="w-4 h-4" /> Ajouter un plan
+        </button>
+      </div>
       <p className="text-gray-500 text-sm mb-6">Configure les plans disponibles à la vente sur le storefront.</p>
 
+      {/* Add Plan Form */}
+      {showAdd && (
+        <div className="bg-gray-900 border border-cyan-700 rounded-xl p-5 mb-6">
+          <h2 className="text-base font-semibold mb-4">Nouveau plan</h2>
+          {addError && <p className="text-red-400 text-sm mb-3">{addError}</p>}
+          <div className="grid grid-cols-2 gap-3 mb-3">
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Clé interne (enum)</label>
+              <select value={newPlan.key} onChange={e => setNewPlan(p => ({ ...p, key: e.target.value }))}
+                className="w-full text-sm font-mono">
+                <option value="">-- Choisir --</option>
+                <option value="DAYS_1">DAYS_1</option>
+                <option value="DAYS_7">DAYS_7</option>
+                <option value="DAYS_14">DAYS_14</option>
+                <option value="DAYS_30">DAYS_30</option>
+                <option value="DAYS_90">DAYS_90</option>
+                <option value="DAYS_365">DAYS_365</option>
+                <option value="LIFETIME">LIFETIME</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Nom affiché</label>
+              <input type="text" value={newPlan.name} onChange={e => setNewPlan(p => ({ ...p, name: e.target.value }))}
+                className="w-full text-sm" placeholder="7 Jours" />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Prix réel (centimes)</label>
+              <div className="flex items-center gap-2">
+                <input type="number" value={newPlan.price} onChange={e => setNewPlan(p => ({ ...p, price: parseInt(e.target.value) || 0 }))}
+                  className="flex-1 text-sm" min="0" />
+                <span className="text-gray-400 text-sm font-mono">{(newPlan.price / 100).toFixed(2)}€</span>
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Prix barré (0 = aucun)</label>
+              <div className="flex items-center gap-2">
+                <input type="number" value={newPlan.originalPrice} onChange={e => setNewPlan(p => ({ ...p, originalPrice: parseInt(e.target.value) || 0 }))}
+                  className="flex-1 text-sm" min="0" />
+                <span className="text-gray-400 text-sm font-mono">{newPlan.originalPrice > 0 ? (newPlan.originalPrice / 100).toFixed(2) + '€' : '—'}</span>
+              </div>
+            </div>
+            <div className="col-span-2">
+              <label className="block text-xs text-gray-400 mb-1">Stripe Price ID (optionnel)</label>
+              <input type="text" value={newPlan.stripePrice} onChange={e => setNewPlan(p => ({ ...p, stripePrice: e.target.value }))}
+                className="w-full text-sm font-mono" placeholder="price_xxx..." />
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <button onClick={handleAdd} className="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg text-sm">Créer</button>
+            <button onClick={() => { setShowAdd(false); setAddError(''); }} className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm">Annuler</button>
+          </div>
+        </div>
+      )}
+
       <div className="grid md:grid-cols-2 gap-5">
-        {planOrder.map(key => {
+        {planKeys.map(key => {
           const p = plans[key];
           if (!p) return null;
           const planColor = PLAN_COLORS[key] || '#06b6d4';
           return (
             <div key={key} className={`bg-gray-900 border rounded-xl p-5 ${p.active ? 'border-gray-700' : 'border-gray-800 opacity-60'}`}>
+              {/* Header */}
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full" style={{ background: planColor }} />
                   <span className="font-mono text-sm text-gray-400">{key}</span>
+                  {p.popular && <span className="text-xs bg-cyan-600 text-white px-2 py-0.5 rounded-full">Populaire</span>}
                 </div>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <span className="text-sm text-gray-400">{p.active ? 'Actif' : 'Inactif'}</span>
-                  <div
-                    onClick={() => update(key, 'active', !p.active)}
-                    className={`w-10 h-5 rounded-full transition-colors ${p.active ? 'bg-cyan-600' : 'bg-gray-700'} relative cursor-pointer`}>
-                    <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${p.active ? 'translate-x-5' : 'translate-x-0.5'}`} />
-                  </div>
-                </label>
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <span className="text-xs text-gray-400">{p.active ? 'Actif' : 'Inactif'}</span>
+                    <div onClick={() => update(key, 'active', !p.active)}
+                      className={`w-10 h-5 rounded-full transition-colors ${p.active ? 'bg-cyan-600' : 'bg-gray-700'} relative cursor-pointer`}>
+                      <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${p.active ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                    </div>
+                  </label>
+                </div>
               </div>
 
               <div className="space-y-3">
                 <div>
                   <label className="block text-xs text-gray-400 mb-1">Nom affiché</label>
-                  <input type="text" value={p.name}
-                    onChange={e => update(key, 'name', e.target.value)}
-                    className="w-full text-sm" />
+                  <input type="text" value={p.name} onChange={e => update(key, 'name', e.target.value)} className="w-full text-sm" />
                 </div>
-                <div>
-                  <label className="block text-xs text-gray-400 mb-1">Prix (en centimes — ex: 2999 = 29.99€)</label>
-                  <div className="flex items-center gap-2">
-                    <input type="number" value={p.price}
-                      onChange={e => update(key, 'price', parseInt(e.target.value) || 0)}
-                      className="flex-1 text-sm" min="0" />
-                    <span className="text-gray-400 text-sm font-mono">{(p.price / 100).toFixed(2)}€</span>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">Prix réel (centimes)</label>
+                    <div className="flex items-center gap-2">
+                      <input type="number" value={p.price} onChange={e => update(key, 'price', parseInt(e.target.value) || 0)}
+                        className="flex-1 text-sm" min="0" />
+                      <span className="text-gray-400 text-xs font-mono">{(p.price / 100).toFixed(2)}€</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">Prix barré (0 = aucun)</label>
+                    <div className="flex items-center gap-2">
+                      <input type="number" value={p.originalPrice || 0} onChange={e => update(key, 'originalPrice', parseInt(e.target.value) || 0)}
+                        className="flex-1 text-sm" min="0" />
+                      <span className="text-gray-400 text-xs font-mono">{(p.originalPrice || 0) > 0 ? (p.originalPrice / 100).toFixed(2) + '€' : '—'}</span>
+                    </div>
                   </div>
                 </div>
+
+                {/* Preview réduction */}
+                {(p.originalPrice || 0) > 0 && (
+                  <div className="bg-gray-800 rounded-lg px-3 py-2 text-sm flex items-center gap-3">
+                    <span className="text-gray-500 line-through">{(p.originalPrice / 100).toFixed(2)}€</span>
+                    <span className="text-white font-bold">{(p.price / 100).toFixed(2)}€</span>
+                    <span className="text-green-400 text-xs">-{Math.round((1 - p.price / p.originalPrice) * 100)}%</span>
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-xs text-gray-400 mb-1">Stripe Price ID (optionnel)</label>
-                  <input type="text" value={p.stripePrice || ''}
-                    onChange={e => update(key, 'stripePrice', e.target.value)}
+                  <input type="text" value={p.stripePrice || ''} onChange={e => update(key, 'stripePrice', e.target.value)}
                     className="w-full text-sm font-mono" placeholder="price_xxx..." />
+                </div>
+
+                {/* Populaire toggle */}
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-xs text-gray-400">Badge "Populaire" sur le storefront</span>
+                  <div onClick={() => setPopular(key)}
+                    className={`w-10 h-5 rounded-full transition-colors ${p.popular ? 'bg-cyan-600' : 'bg-gray-700'} relative cursor-pointer`}>
+                    <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform ${p.popular ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                  </div>
                 </div>
               </div>
 
-              <button onClick={() => handleSave(key)} disabled={saving === key}
-                className={`mt-4 w-full py-2 rounded-lg text-sm font-medium transition-colors ${
-                  saved === key
-                    ? 'bg-green-600 text-white'
-                    : 'bg-cyan-600 hover:bg-cyan-500 text-white disabled:bg-gray-700'}`}>
-                {saving === key ? 'Sauvegarde...' : saved === key ? '✓ Sauvegardé' : 'Sauvegarder'}
-              </button>
+              <div className="flex gap-2 mt-4">
+                <button onClick={() => handleSave(key)} disabled={saving === key}
+                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    saved === key ? 'bg-green-600 text-white' : 'bg-cyan-600 hover:bg-cyan-500 text-white disabled:bg-gray-700'}`}>
+                  {saving === key ? 'Sauvegarde...' : saved === key ? '✓ Sauvegardé' : 'Sauvegarder'}
+                </button>
+                <button onClick={() => handleDelete(key)} disabled={deleting === key}
+                  className="px-3 py-2 rounded-lg text-sm bg-red-900 hover:bg-red-800 text-red-300 disabled:opacity-50">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           );
         })}
@@ -1402,6 +1532,71 @@ function LicenseDetailPage({ id, navigate }) {
 // ══════════════════════════════════════════════════════
 //  Generate Keys
 // ══════════════════════════════════════════════════════
+// ── Plan icons pour le dropdown de génération ──
+const PLAN_ICON_MAP = {
+  DAYS_1:   { emoji: '⚡', label: '1 jour' },
+  DAYS_7:   { emoji: '📅', label: '7 jours' },
+  DAYS_14:  { emoji: '📅', label: '14 jours' },
+  DAYS_30:  { emoji: '🗓️', label: '30 jours' },
+  DAYS_90:  { emoji: '🗓️', label: '90 jours' },
+  DAYS_365: { emoji: '⭐', label: '1 an' },
+  LIFETIME: { emoji: '♾️', label: 'Illimité' },
+};
+
+function planEmoji(key) { return PLAN_ICON_MAP[key]?.emoji || '🔑'; }
+function planLabel(key) { return PLAN_ICON_MAP[key]?.label || key; }
+
+// ── Custom plan dropdown avec icones ──
+function PlanDropdown({ options, value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const selected = options.find(o => o.key === value) || options[0];
+  if (!selected) return null;
+
+  return (
+    <div className="relative">
+      <button type="button" onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between gap-3 bg-gray-800 border border-gray-700 hover:border-cyan-600 rounded-lg px-3 py-2.5 text-left transition-colors">
+        <div className="flex items-center gap-3">
+          <span className="text-xl leading-none">{selected.emoji}</span>
+          <div>
+            <div className="text-sm font-medium text-white">{selected.name}</div>
+            <div className="text-xs text-gray-500">{selected.sub}</div>
+          </div>
+        </div>
+        <ChevronRight className={`w-4 h-4 text-gray-500 transition-transform ${open ? 'rotate-90' : ''}`} />
+      </button>
+
+      {open && (
+        <div className="absolute z-20 mt-1 w-full bg-gray-900 border border-gray-700 rounded-xl shadow-xl overflow-hidden">
+          {options.map(opt => (
+            <button key={opt.key} type="button"
+              onClick={() => { onChange(opt.key); setOpen(false); }}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 hover:bg-gray-800 transition-colors text-left ${value === opt.key ? 'bg-gray-800' : ''}`}>
+              <span className="text-xl leading-none">{opt.emoji}</span>
+              <div className="flex-1">
+                <div className="text-sm font-medium text-white">{opt.name}</div>
+                <div className="text-xs text-gray-500">{opt.sub}</div>
+              </div>
+              {value === opt.key && <div className="w-2 h-2 rounded-full bg-cyan-500" />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Plans fixes disponibles pour la génération (tous dans l'enum Prisma)
+const GENERATE_PLANS = [
+  { key: 'DAYS_1',   name: '1 Jour',    emoji: planEmoji('DAYS_1'),   sub: planLabel('DAYS_1') },
+  { key: 'DAYS_7',   name: '7 Jours',   emoji: planEmoji('DAYS_7'),   sub: planLabel('DAYS_7') },
+  { key: 'DAYS_14',  name: '14 Jours',  emoji: planEmoji('DAYS_14'),  sub: planLabel('DAYS_14') },
+  { key: 'DAYS_30',  name: '30 Jours',  emoji: planEmoji('DAYS_30'),  sub: planLabel('DAYS_30') },
+  { key: 'DAYS_90',  name: '90 Jours',  emoji: planEmoji('DAYS_90'),  sub: planLabel('DAYS_90') },
+  { key: 'DAYS_365', name: '1 An',      emoji: planEmoji('DAYS_365'), sub: planLabel('DAYS_365') },
+  { key: 'LIFETIME', name: 'Lifetime',  emoji: planEmoji('LIFETIME'), sub: planLabel('LIFETIME') },
+];
+
 function GeneratePage() {
   const [plan, setPlan] = useState('DAYS_30');
   const [count, setCount] = useState(1);
@@ -1415,7 +1610,7 @@ function GeneratePage() {
     setLoading(true); setKeys([]);
     try {
       if (mode === 'batch') {
-        const data = await api.generateBatch({ plan, count: parseInt(count) });
+        const data = await api.generateBatch({ plan, count: parseInt(count) || 1 });
         setKeys(data.keys);
       } else {
         const data = await api.createLicense({ plan, email: email || undefined });
@@ -1435,7 +1630,7 @@ function GeneratePage() {
     <div>
       <h1 className="text-2xl font-bold mb-6">Générer des Clés</h1>
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 max-w-lg mb-6">
-        <div className="flex gap-2 mb-4">
+        <div className="flex gap-2 mb-5">
           <button onClick={() => setMode('single')}
             className={`px-4 py-2 rounded-lg text-sm ${mode === 'single' ? 'bg-cyan-600 text-white' : 'bg-gray-800 text-gray-400'}`}>
             Clé unique
@@ -1445,16 +1640,13 @@ function GeneratePage() {
             Lot (batch)
           </button>
         </div>
+
         <div className="space-y-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Plan</label>
-            <select value={plan} onChange={e => setPlan(e.target.value)} className="w-full">
-              <option value="DAYS_30">30 jours</option>
-              <option value="DAYS_90">90 jours</option>
-              <option value="DAYS_365">365 jours</option>
-              <option value="LIFETIME">Lifetime</option>
-            </select>
+            <label className="block text-sm text-gray-400 mb-1.5">Plan</label>
+            <PlanDropdown options={GENERATE_PLANS} value={plan} onChange={setPlan} />
           </div>
+
           {mode === 'batch' ? (
             <div>
               <label className="block text-sm text-gray-400 mb-1">Nombre de clés</label>
@@ -1466,12 +1658,14 @@ function GeneratePage() {
               <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full" placeholder="client@email.com" />
             </div>
           )}
+
           <button onClick={handleGenerate} disabled={loading}
             className="w-full bg-cyan-600 hover:bg-cyan-500 disabled:bg-gray-700 text-white py-2.5 rounded-lg font-medium">
-            {loading ? 'Génération...' : `Générer ${mode === 'batch' ? count + ' clé(s)' : 'la clé'}`}
+            {loading ? 'Génération...' : `Générer ${mode === 'batch' ? (count + ' clé(s)') : 'la clé'}`}
           </button>
         </div>
       </div>
+
       {keys.length > 0 && (
         <div className="bg-gray-900 border border-green-800/50 rounded-xl p-5">
           <div className="flex items-center justify-between mb-3">

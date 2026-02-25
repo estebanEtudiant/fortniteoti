@@ -89,7 +89,9 @@ class ApiClient {
 
   // ── Plans ──
   getPlans() { return this.get('/admin/plans'); }
+  createPlan(data) { return this.post('/admin/plans', data); }
   updatePlan(plan, data) { return this.put(`/admin/plans/${plan}`, data); }
+  deletePlan(plan) { return this.del(`/admin/plans/${plan}`); }
 
   // ── Settings ──
   getSettings() { return this.get('/admin/settings'); }

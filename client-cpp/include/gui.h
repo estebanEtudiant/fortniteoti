@@ -3,7 +3,7 @@
 // ══════════════════════════════════════════════════════
 #pragma once
 
-#define _WIN32_WINNT 0x0601
+#define _WIN32_WINNT 0x0A00   // Windows 10 minimum (tweaks + DPI V2)
 #define NOMINMAX
 #include <windows.h>
 #include <d3d11.h>
