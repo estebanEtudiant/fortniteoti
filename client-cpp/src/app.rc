@@ -1,0 +1,6 @@
+// Windows resource file — embeds the UAC manifest
+#include <windows.h>
+
+// Embed app.manifest so the OS shows the UAC prompt before launching
+// the process (no re-launch trick needed)
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "app.manifest"

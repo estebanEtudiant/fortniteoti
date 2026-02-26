@@ -1,16 +1,14 @@
 // ══════════════════════════════════════════════════════
-//  gui.h — Application state + GUI API
+//  gui.h — Application state (shared with tweaks.cpp)
+//  Stripped of Win32/ImGui/DX11: pure C++ POD state.
 // ══════════════════════════════════════════════════════
 #pragma once
 
-#define _WIN32_WINNT 0x0A00   // Windows 10 minimum (tweaks + DPI V2)
-#define NOMINMAX
-#include <windows.h>
-#include <d3d11.h>
 #include <string>
 #include <vector>
 #include <mutex>
 #include <atomic>
+#include <functional>
 
 #include "licensing.h"
 
@@ -30,7 +28,7 @@ struct AppState {
     // License input
     char        keyBuf[32]  = {};
     std::string statusMsg;
-    int         statusType  = 0;   // maps to LOG_COLORS
+    int         statusType  = 0;
     bool        checking    = false;
 
     // License info (post-activation)
@@ -48,30 +46,23 @@ struct AppState {
     // BIOS panel toggle
     bool showBios = false;
 
-    // License client (owned by main)
+    // License client (owned by AppController)
     licensing::LicenseClient* client = nullptr;
 
-    // API base URL (set by main, used for update check in gui threads)
+    // API base URL
     std::string apiUrl;
 
-    // Update notification (set by background thread, read by render thread)
+    // Update notification (set by background thread)
     std::atomic<bool> updateAvailable{false};
     bool              updateDismissed = false;
     std::string       updateVersion;
     std::string       updateUrl;
     std::string       updateChangelog;
 
-    // Window management (borderless titlebar)
-    HWND hwnd         = nullptr;
-    bool wantClose    = false;
-    bool wantMinimize = false;
+    // Real-time log callback (set by AppController, called by GuiLog from any thread).
+    // Qt's queued signal/slot mechanism makes cross-thread emission safe.
+    std::function<void(const std::string&, int)> logCallback;
 };
 
-// ── GUI API ──
-bool GuiInit      (HWND hwnd, ID3D11Device* dev, ID3D11DeviceContext* ctx);
-void GuiBeginFrame();
-void GuiDraw      (AppState& state);   // builds draw lists + calls ImGui::Render()
-void GuiPresent   ();                  // calls ImGui_ImplDX11_RenderDrawData
-void GuiShutdown  ();
-void GuiWndProc   (HWND hwnd, UINT msg, WPARAM wp, LPARAM lp);
-void GuiLog       (AppState& state, const std::string& text, int type = 0);
+// Used by tweaks.cpp to append log entries
+void GuiLog(AppState& state, const std::string& text, int type = 0);

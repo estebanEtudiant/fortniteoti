@@ -92,7 +92,9 @@ function Header({ customer, onLogout }) {
   return (
     <header>
       <div className="header-content">
-        <div className="logo" onClick={() => navigate('/')}>404 Tweaks</div>
+        <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+          <img src="/logo.svg" alt="404 Tweaks" height="38" style={{ display: 'block' }} />
+        </div>
         <div className="header-nav">
           {customer ? (
             <>
@@ -788,7 +790,7 @@ function RegisterPage({ onRegister }) {
     <div className="auth-page">
       <div className="auth-card">
         <h2 className="auth-title">Creer un Compte</h2>
-        <p className="auth-subtitle">Rejoignez la communaute FortniteOptimizer</p>
+        <p className="auth-subtitle">Rejoignez la communaute 404 Tweaks</p>
         {error && <div className="form-error">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">

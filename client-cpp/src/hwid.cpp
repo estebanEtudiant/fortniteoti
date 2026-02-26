@@ -106,9 +106,18 @@ namespace hwid {
         osvi.dwOSVersionInfoSize = sizeof(osvi);
         pRtlGetVersion(&osvi);
 
+        // Windows 11 = version 10.0 build >= 22000
+        // Windows 10 = version 10.0 build < 22000
+        const char* name = "Windows";
+        if (osvi.dwMajorVersion == 10 && osvi.dwBuildNumber >= 22000)
+            name = "Windows 11";
+        else if (osvi.dwMajorVersion == 10)
+            name = "Windows 10";
+        else if (osvi.dwMajorVersion == 6 && osvi.dwMinorVersion == 3)
+            name = "Windows 8.1";
+
         std::stringstream ss;
-        ss << "Windows " << osvi.dwMajorVersion << "." << osvi.dwMinorVersion
-           << " Build " << osvi.dwBuildNumber;
+        ss << name << " (Build " << osvi.dwBuildNumber << ")";
         return ss.str();
     }
 
