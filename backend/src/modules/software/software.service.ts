@@ -119,7 +119,11 @@ export class SoftwareService {
 
     const totalDownloads = parseInt(totalRaw || '0', 10);
 
-    const dailyMap: Record<string, number> = dailyRaw ? JSON.parse(dailyRaw) : {};
+    let dailyMap: Record<string, number> = {};
+    try { if (dailyRaw) dailyMap = JSON.parse(dailyRaw); } catch {
+      this.logger.warn('software:downloads:daily contient du JSON invalide — clé réinitialisée');
+      await this.redis.del(DAILY_DL_KEY);
+    }
     const now = new Date();
     const dailyDownloads: { date: string; count: number }[] = [];
     for (let i = 29; i >= 0; i--) {
@@ -128,7 +132,10 @@ export class SoftwareService {
       dailyDownloads.push({ date: key, count: dailyMap[key] || 0 });
     }
 
-    const versions: VersionRecord[] = versionsRaw ? JSON.parse(versionsRaw) : [];
+    let versions: VersionRecord[] = [];
+    try { if (versionsRaw) versions = JSON.parse(versionsRaw); } catch {
+      this.logger.warn('software:versions contient du JSON invalide — ignoré');
+    }
     const activationsByVersion = versions.map((v) => ({
       version: v.version,
       count: 0,
