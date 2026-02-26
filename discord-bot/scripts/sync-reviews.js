@@ -12,7 +12,11 @@ const axios    = require('axios');
 const path     = require('path');
 const Database = require('better-sqlite3');
 
-const BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000/api/v1';
+let BASE_URL = process.env.API_BASE_URL || 'http://localhost:3000/api/v1';
+// Auto-fix: ajouter https:// si le protocole est absent
+if (BASE_URL && !BASE_URL.startsWith('http://') && !BASE_URL.startsWith('https://')) {
+  BASE_URL = 'https://' + BASE_URL;
+}
 const SECRET   = process.env.BOT_API_SECRET;
 const DB_PATH  = process.env.DB_PATH || path.resolve(__dirname, '../data/bot.sqlite');
 
