@@ -28,8 +28,8 @@ class UploadDto {
   @IsString() @IsNotEmpty() changelog: string;
 }
 
-// __dirname = dist/modules/software/ → 4 niveaux au-dessus = racine backend/
-const UPLOAD_DIR = resolve(__dirname, '..', '..', '..', '..', 'uploads', 'software');
+// __dirname = dist/modules/software/ → 3 niveaux au-dessus = racine backend/
+const UPLOAD_DIR = resolve(__dirname, '..', '..', '..', 'uploads', 'software');
 
 const softwareStorage = diskStorage({
   destination: UPLOAD_DIR,
