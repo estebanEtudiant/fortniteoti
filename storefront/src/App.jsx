@@ -146,9 +146,12 @@ function StarRating({ count }) {
   );
 }
 
+const REVIEWS_PREVIEW = 6;
+
 function HomePage({ customer }) {
   const [plans, setPlans] = useState([]);
   const [reviews, setReviews] = useState([]);
+  const [showAllReviews, setShowAllReviews] = useState(false);
 
   useEffect(() => {
     api.getPlans().then(setPlans).catch(() => {});
@@ -303,6 +306,8 @@ function HomePage({ customer }) {
       {reviews.length > 0 && (() => {
         const avg = (reviews.reduce((s, r) => s + (r.stars || 5), 0) / reviews.length).toFixed(1);
         const fiveStars = reviews.filter(r => r.stars === 5).length;
+        const displayed = showAllReviews ? reviews : reviews.slice(0, REVIEWS_PREVIEW);
+        const hasMore   = reviews.length > REVIEWS_PREVIEW;
         return (
           <section className="section">
             <h2 className="section-title">Ils ont <span className="highlight">Transforme</span> leur Setup</h2>
@@ -323,7 +328,7 @@ function HomePage({ customer }) {
               </div>
             </div>
             <div className="testimonials-grid">
-              {reviews.slice(0, 6).map((t, i) => (
+              {displayed.map((t, i) => (
                 <div className="testimonial" key={i}>
                   <StarRating count={t.stars} />
                   <p className="testimonial-text">"{t.text}"</p>
@@ -332,6 +337,18 @@ function HomePage({ customer }) {
                 </div>
               ))}
             </div>
+            {hasMore && (
+              <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+                <button
+                  onClick={() => setShowAllReviews(v => !v)}
+                  className="btn-secondary"
+                  style={{ padding: '0.75rem 2rem', fontSize: '0.95rem' }}>
+                  {showAllReviews
+                    ? `Voir moins`
+                    : `Voir tous les avis (${reviews.length})`}
+                </button>
+              </div>
+            )}
           </section>
         );
       })()}

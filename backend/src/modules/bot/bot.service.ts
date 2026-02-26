@@ -137,7 +137,7 @@ export class BotService {
     const filtered = list.filter((r) => r.discordId !== review.discordId);
     filtered.unshift({ ...review, createdAt: new Date().toISOString() });
 
-    await this.redis.set(this.REVIEWS_KEY, JSON.stringify(filtered.slice(0, 50)));
+    await this.redis.set(this.REVIEWS_KEY, JSON.stringify(filtered));
     return { success: true };
   }
 
