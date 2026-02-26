@@ -47,7 +47,7 @@ export class SoftwareService {
   ): Promise<VersionRecord> {
     // Sanitize version string to build a safe filename
     const sanitizedVersion = version.replace(/[^a-zA-Z0-9.\-_]/g, '_');
-    const filename = `FnOptimizer_${sanitizedVersion}.exe`;
+    const filename = `404Tweaks_V${sanitizedVersion}.exe`;
     const destPath = path.join(this.uploadDir, filename);
 
     // Reject duplicate version
