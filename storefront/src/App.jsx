@@ -300,22 +300,41 @@ function HomePage({ customer }) {
       </section>
 
       {/* Testimonials */}
-      {reviews.length > 0 && (
-        <section className="section">
-          <h2 className="section-title">Ils ont <span className="highlight">Transforme</span> leur Setup</h2>
-          <p className="section-subtitle">Des resultats concrets de joueurs competitifs</p>
-          <div className="testimonials-grid">
-            {reviews.slice(0, 6).map((t, i) => (
-              <div className="testimonial" key={i}>
-                <StarRating count={t.stars} />
-                <p className="testimonial-text">"{t.text}"</p>
-                <p className="testimonial-author">{t.username}</p>
-                <p className="testimonial-role">{t.description}</p>
+      {reviews.length > 0 && (() => {
+        const avg = (reviews.reduce((s, r) => s + (r.stars || 5), 0) / reviews.length).toFixed(1);
+        const fiveStars = reviews.filter(r => r.stars === 5).length;
+        return (
+          <section className="section">
+            <h2 className="section-title">Ils ont <span className="highlight">Transforme</span> leur Setup</h2>
+            <p className="section-subtitle">Des resultats concrets de joueurs competitifs</p>
+            {/* Stats bar */}
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '2.5rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--accent)' }}>{reviews.length}</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Avis verifies</div>
               </div>
-            ))}
-          </div>
-        </section>
-      )}
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '2rem', fontWeight: 700, color: '#FFD700' }}>{avg} <span style={{ fontSize: '1.2rem' }}>★</span></div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Note moyenne</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--success, #57F287)' }}>{fiveStars}</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Avis 5 etoiles</div>
+              </div>
+            </div>
+            <div className="testimonials-grid">
+              {reviews.slice(0, 6).map((t, i) => (
+                <div className="testimonial" key={i}>
+                  <StarRating count={t.stars} />
+                  <p className="testimonial-text">"{t.text}"</p>
+                  <p className="testimonial-author">{t.username}</p>
+                  <p className="testimonial-role">{t.description}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        );
+      })()}
 
       {/* Pricing */}
       <section className="section" id="pricing" style={{ background: 'var(--card-bg)' }}>

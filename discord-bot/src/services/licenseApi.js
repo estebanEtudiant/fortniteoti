@@ -126,4 +126,17 @@ async function submitReview({ discordId, username, description, text, stars }) {
   }
 }
 
-module.exports = { verifyLicense, getLicenseStatus, generateKeys, getDashboard, setMaintenance, submitReview };
+/**
+ * Récupère la config des embeds Discord depuis le backend.
+ * @returns {Promise<object>} config ou {} si indisponible
+ */
+async function getBotConfig() {
+  try {
+    const { data } = await client.get('/bot/config');
+    return data || {};
+  } catch {
+    return {};
+  }
+}
+
+module.exports = { verifyLicense, getLicenseStatus, generateKeys, getDashboard, setMaintenance, submitReview, getBotConfig };

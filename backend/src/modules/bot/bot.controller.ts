@@ -63,4 +63,13 @@ export class BotController {
   submitReview(@Body() dto: SubmitReviewDto) {
     return this.botService.submitReview(dto);
   }
+
+  /**
+   * GET /api/v1/bot/config
+   * Config des embeds Discord (lue par le bot au démarrage / à la demande).
+   */
+  @Get('config')
+  getBotConfig() {
+    return this.botService.getBotConfig();
+  }
 }

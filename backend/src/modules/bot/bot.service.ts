@@ -152,6 +152,13 @@ export class BotService {
     }
   }
 
+  /** Retourne la config des embeds Discord (lue par le bot). */
+  async getBotConfig() {
+    const raw = await this.redis.get('bot:config');
+    if (!raw) return {};
+    try { return JSON.parse(raw); } catch { return {}; }
+  }
+
   /** Active ou désactive le mode maintenance (clé Redis admin:settings). */
   async setMaintenance(enabled: boolean, raison: string | null) {
     const raw      = await this.redis.get(this.SETTINGS_KEY);

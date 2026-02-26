@@ -3,6 +3,18 @@
 const { SlashCommandBuilder, PermissionFlagsBits, ButtonBuilder, ButtonStyle, ActionRowBuilder } = require('discord.js');
 const Colors  = require('../../config/colors');
 const config  = require('../../config/config');
+const { getBotConfig } = require('../../services/licenseApi');
+
+const DEFAULTS = {
+  setup_avis_title: "💬 Partagez votre expérience 404 Tweaks",
+  setup_avis_desc: [
+    'Tu utilises **404 Tweaks** et tu es satisfait de tes résultats ?',
+    'Laisse un avis pour aider la communauté !',
+    '',
+    '> ⭐ **Clique sur le bouton ci-dessous** pour partager ton expérience en quelques secondes.',
+    '> 🔒 *Ton avis sera visible sur le site officiel.*',
+  ].join('\n'),
+};
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -27,6 +39,11 @@ module.exports = {
       });
     }
 
+    // Lire la config depuis le backend (fallback sur défauts)
+    const cfg   = await getBotConfig();
+    const title = cfg.setup_avis_title || DEFAULTS.setup_avis_title;
+    const desc  = cfg.setup_avis_desc  || DEFAULTS.setup_avis_desc;
+
     const button = new ButtonBuilder()
       .setCustomId('avis_open_modal')
       .setLabel('⭐ Donner mon avis')
@@ -36,17 +53,11 @@ module.exports = {
 
     await targetChannel.send({
       embeds: [{
-        color:       Colors.GOLD ?? 0xFFD700,
-        title:       '💬 Partagez votre expérience 404 Tweaks',
-        description: [
-          'Tu utilises **404 Tweaks** et tu es satisfait de tes résultats ?',
-          'Laisse un avis pour aider la communauté !',
-          '',
-          '> ⭐ **Clique sur le bouton ci-dessous** pour partager ton expérience en quelques secondes.',
-          '> 🔒 *Ton avis sera visible sur le site officiel.*',
-        ].join('\n'),
-        footer:    { text: '404 Tweaks • Optimisation Fortnite' },
-        timestamp: new Date().toISOString(),
+        color:       Colors.GOLD,
+        title,
+        description: desc,
+        footer:      { text: '404 Tweaks • Optimisation Fortnite' },
+        timestamp:   new Date().toISOString(),
       }],
       components: [row],
     });

@@ -63,6 +63,14 @@ class ChangePasswordBody {
   @IsString() @IsNotEmpty() currentPassword: string;
   @IsString() @MinLength(8) newPassword: string;
 }
+class UpdateBotConfigBody {
+  @IsOptional() @IsString() welcome_channel_title?: string;
+  @IsOptional() @IsString() welcome_channel_desc?: string;
+  @IsOptional() @IsString() welcome_dm_title?: string;
+  @IsOptional() @IsString() welcome_dm_desc?: string;
+  @IsOptional() @IsString() setup_avis_title?: string;
+  @IsOptional() @IsString() setup_avis_desc?: string;
+}
 
 @ApiTags('admin')
 @Controller('admin')
@@ -325,5 +333,37 @@ export class AdminController {
   @ApiBearerAuth()
   async getLogs(@Query('page') page?: number, @Query('limit') limit?: number) {
     return this.adminService.getActivationLogs(page, limit);
+  }
+
+  // ── Reviews ──
+  @Get('reviews')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  async getReviews() {
+    return this.adminService.getReviews();
+  }
+
+  @Delete('reviews/:discordId')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  async deleteReview(@Param('discordId') discordId: string) {
+    return this.adminService.deleteReview(discordId);
+  }
+
+  // ── Bot Config ──
+  @Get('bot-config')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  async getBotConfig() {
+    return this.adminService.getBotConfig();
+  }
+
+  @Put('bot-config')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  async updateBotConfig(@Body() dto: UpdateBotConfigBody) {
+    return this.adminService.updateBotConfig(dto);
   }
 }

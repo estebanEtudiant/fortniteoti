@@ -11,8 +11,19 @@ import { MailService } from '../customer/mail.service';
 export interface AdminLoginDto { username: string; password: string; }
 export interface CreateAdminDto { username: string; password: string; role?: 'SUPERADMIN' | 'ADMIN' | 'VIEWER'; }
 
-const PLANS_CONFIG_KEY = 'admin:plans_config';
-const SETTINGS_KEY = 'admin:settings';
+const PLANS_CONFIG_KEY  = 'admin:plans_config';
+const SETTINGS_KEY      = 'admin:settings';
+const REVIEWS_KEY       = 'reviews:list';
+const BOT_CONFIG_KEY    = 'bot:config';
+
+const DEFAULT_BOT_CONFIG = {
+  welcome_channel_title: "👋 Bienvenue sur 404 Tweaks, {username} !",
+  welcome_channel_desc:  "Heureux de t'accueillir sur le serveur officiel **404 Tweaks** !\nNous sommes le **{memberCount}ème membre** à nous rejoindre.\n\n**Premiers pas :**\n> 🛒 **Pas encore client ?** Achète ta licence sur [**404tweaks.tech**](https://404tweaks.tech/)\n> 🔑 **Déjà client ?** Utilise `/verify <clé>` pour activer tes rôles\n> 📖 **Comment acheter ?** Utilise `/tuto` pour voir le guide complet\n> 🎫 **Besoin d'aide ?** Ouvre un ticket avec `/ticket`",
+  welcome_dm_title:      "👋 Bienvenue sur 404 Tweaks !",
+  welcome_dm_desc:       "Merci de nous rejoindre sur le serveur **404 Tweaks** !\n\n🛒 **Acheter une licence :** [404tweaks.tech](https://404tweaks.tech/)\n\n🔑 **Déjà client ?** Reviens sur le serveur et utilise `/verify <ta-clé>` pour activer tes rôles.\n\n🎫 **Besoin d'aide ?** Ouvre un ticket avec `/ticket` sur le serveur.",
+  setup_avis_title:      "💬 Partagez votre expérience 404 Tweaks",
+  setup_avis_desc:       "Tu utilises **404 Tweaks** et tu es satisfait de tes résultats ?\nLaisse un avis pour aider la communauté !\n\n> ⭐ **Clique sur le bouton ci-dessous** pour partager ton expérience en quelques secondes.\n> 🔒 *Ton avis sera visible sur le site officiel.*",
+};
 
 const DEFAULT_PLANS = {
   DAYS_1:   { name: '1 Jour',   price: 199,  active: false, stripePrice: '' },
@@ -294,6 +305,40 @@ export class AdminService {
 
   async unblockIp(id: string) {
     return this.prisma.blockedIp.delete({ where: { id } });
+  }
+
+  // ══════════════════════════════════════════════════
+  //  REVIEWS
+  // ══════════════════════════════════════════════════
+  async getReviews() {
+    const raw = await this.redis.get(REVIEWS_KEY);
+    if (!raw) return [];
+    try { return JSON.parse(raw) as any[]; } catch { return []; }
+  }
+
+  async deleteReview(discordId: string) {
+    const raw  = await this.redis.get(REVIEWS_KEY);
+    const list = raw ? (JSON.parse(raw) as any[]) : [];
+    const updated = list.filter((r) => r.discordId !== discordId);
+    await this.redis.set(REVIEWS_KEY, JSON.stringify(updated));
+    return { success: true, remaining: updated.length };
+  }
+
+  // ══════════════════════════════════════════════════
+  //  BOT CONFIG
+  // ══════════════════════════════════════════════════
+  async getBotConfig() {
+    const raw = await this.redis.get(BOT_CONFIG_KEY);
+    if (!raw) return DEFAULT_BOT_CONFIG;
+    try { return { ...DEFAULT_BOT_CONFIG, ...JSON.parse(raw) }; } catch { return DEFAULT_BOT_CONFIG; }
+  }
+
+  async updateBotConfig(config: Partial<typeof DEFAULT_BOT_CONFIG>) {
+    const current = await this.getBotConfig();
+    const updated = { ...current, ...config };
+    await this.redis.set(BOT_CONFIG_KEY, JSON.stringify(updated));
+    this.logger.log('Bot config updated');
+    return updated;
   }
 
   // ══════════════════════════════════════════════════

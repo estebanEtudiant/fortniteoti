@@ -132,6 +132,14 @@ class ApiClient {
     }
     return data;
   }
+
+  // Reviews (admin)
+  getAdminReviews()       { return this.get('/admin/reviews'); }
+  deleteReview(discordId) { return this.del(`/admin/reviews/${encodeURIComponent(discordId)}`); }
+
+  // Bot config
+  getBotConfig()          { return this.get('/admin/bot-config'); }
+  updateBotConfig(data)   { return this.put('/admin/bot-config', data); }
 }
 
 export const api = new ApiClient();
