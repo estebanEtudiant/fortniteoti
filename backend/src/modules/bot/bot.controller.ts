@@ -3,6 +3,7 @@ import { BotService } from './bot.service';
 import { BotAuthGuard } from './bot-auth.guard';
 import { VerifyLicenseDto } from './dto/verify-license.dto';
 import { GenerateKeyDto } from './dto/generate-key.dto';
+import { SubmitReviewDto } from './dto/submit-review.dto';
 
 @Controller('bot')
 @UseGuards(BotAuthGuard)
@@ -59,13 +60,7 @@ export class BotController {
    * Reçoit un avis depuis le bot Discord et le synchronise dans Redis.
    */
   @Post('reviews')
-  submitReview(@Body() body: {
-    discordId: string;
-    username: string;
-    description: string;
-    text: string;
-    stars: number;
-  }) {
-    return this.botService.submitReview(body);
+  submitReview(@Body() dto: SubmitReviewDto) {
+    return this.botService.submitReview(dto);
   }
 }
