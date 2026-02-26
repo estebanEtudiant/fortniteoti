@@ -36,6 +36,7 @@ const config = {
     sales:          process.env.CHANNEL_SALES     || null,
     backup:         process.env.CHANNEL_BACKUP    || null,
     ticketCategory: process.env.CATEGORY_TICKETS  || null,
+    reviews:        process.env.CHANNEL_REVIEWS   || '1476353103878947101',
   },
 
   webhook: {

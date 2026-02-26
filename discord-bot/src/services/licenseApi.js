@@ -112,4 +112,18 @@ async function setMaintenance(enabled, raison = null) {
   }
 }
 
-module.exports = { verifyLicense, getLicenseStatus, generateKeys, getDashboard, setMaintenance };
+/**
+ * Soumet un avis client au backend (synchronisation Redis).
+ * @returns {{ success: boolean }}
+ */
+async function submitReview({ discordId, username, description, text, stars }) {
+  try {
+    const { data } = await client.post('/bot/reviews', { discordId, username, description, text, stars });
+    return data;
+  } catch (err) {
+    logger.error('licenseApi.submitReview error:', err.message);
+    return { success: false };
+  }
+}
+
+module.exports = { verifyLicense, getLicenseStatus, generateKeys, getDashboard, setMaintenance, submitReview };

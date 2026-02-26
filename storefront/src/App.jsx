@@ -135,11 +135,29 @@ function FaqItem({ question, answer }) {
 // ══════════════════════════════════════════════════════
 const planIcons  = { DAYS_30: 'fa-calendar', DAYS_90: 'fa-calendar-days', DAYS_365: 'fa-star', LIFETIME: 'fa-infinity' };
 
+const FALLBACK_REVIEWS = [
+  { text: "J'ai gagne 80 FPS constants en endgame et mon input delay a ete divise par 2. Le module GPU et le Low Latency Mode ont tout change. Mes edits n'ont jamais ete aussi rapides.", username: 'Thomas L.', description: 'Champion Division, 6000 pts Arena', stars: 5 },
+  { text: "Logiciel incroyable. J'ai enfin regle mon stutter en endgame. L'optimisation Windows et les parametres NVIDIA sont appliques en 30 secondes. Je joue maintenant en 240 FPS stable.", username: 'Kevin M.', description: 'Joueur competitif EU', stars: 5 },
+  { text: "Meilleur investissement pour ma carriere gaming. Mon setup tourne maintenant a 240 FPS stables avec 15ms de latency totale. J'ai gagne mes 3 derniers tournois Discord. Incroyable.", username: 'Alex D.', description: 'Streamer et competiteur', stars: 5 },
+];
+
+function StarRating({ count }) {
+  const n = Math.max(1, Math.min(5, count || 5));
+  return (
+    <div className="stars">
+      {Array.from({ length: n }).map((_, i) => <span key={i}>&#9733;</span>)}
+      {Array.from({ length: 5 - n }).map((_, i) => <span key={`e${i}`} style={{ opacity: 0.3 }}>&#9733;</span>)}
+    </div>
+  );
+}
+
 function HomePage({ customer }) {
   const [plans, setPlans] = useState([]);
+  const [reviews, setReviews] = useState([]);
 
   useEffect(() => {
     api.getPlans().then(setPlans).catch(() => {});
+    api.getReviews().then(data => { if (Array.isArray(data) && data.length > 0) setReviews(data); }).catch(() => {});
   }, []);
 
   const handlePurchase = (planKey) => {
@@ -291,16 +309,12 @@ function HomePage({ customer }) {
         <h2 className="section-title">Ils ont <span className="highlight">Transforme</span> leur Setup</h2>
         <p className="section-subtitle">Des resultats concrets de joueurs competitifs</p>
         <div className="testimonials-grid">
-          {[
-            { text: "J'ai gagne 80 FPS constants en endgame et mon input delay a ete divise par 2. Le module GPU et le Low Latency Mode ont tout change. Mes edits n'ont jamais ete aussi rapides.", author: 'Thomas L.', role: 'Champion Division, 6000 pts Arena' },
-            { text: "Logiciel incroyable. J'ai enfin regle mon stutter en endgame. L'optimisation Windows et les parametres NVIDIA sont appliques en 30 secondes. Je joue maintenant en 240 FPS stable.", author: 'Kevin M.', role: 'Joueur competitif EU' },
-            { text: "Meilleur investissement pour ma carriere gaming. Mon setup tourne maintenant a 240 FPS stables avec 15ms de latency totale. J'ai gagne mes 3 derniers tournois Discord. Incroyable.", author: 'Alex D.', role: 'Streamer et competiteur' },
-          ].map((t, i) => (
+          {(reviews.length > 0 ? reviews : FALLBACK_REVIEWS).slice(0, 6).map((t, i) => (
             <div className="testimonial" key={i}>
-              <div className="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+              <StarRating count={t.stars} />
               <p className="testimonial-text">"{t.text}"</p>
-              <p className="testimonial-author">{t.author}</p>
-              <p className="testimonial-role">{t.role}</p>
+              <p className="testimonial-author">{t.username}</p>
+              <p className="testimonial-role">{t.description}</p>
             </div>
           ))}
         </div>

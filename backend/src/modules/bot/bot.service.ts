@@ -120,6 +120,38 @@ export class BotService {
     };
   }
 
+  private readonly REVIEWS_KEY = 'reviews:list';
+
+  /** Enregistre ou met à jour un avis client (un seul par discordId). */
+  async submitReview(review: {
+    discordId: string;
+    username: string;
+    description: string;
+    text: string;
+    stars: number;
+  }) {
+    const raw  = await this.redis.get(this.REVIEWS_KEY);
+    const list: any[] = raw ? JSON.parse(raw) : [];
+
+    // Remplacer si déjà un avis de ce discordId
+    const filtered = list.filter((r) => r.discordId !== review.discordId);
+    filtered.unshift({ ...review, createdAt: new Date().toISOString() });
+
+    await this.redis.set(this.REVIEWS_KEY, JSON.stringify(filtered.slice(0, 50)));
+    return { success: true };
+  }
+
+  /** Retourne la liste des avis (triés du plus récent au plus ancien). */
+  async getReviews() {
+    const raw = await this.redis.get(this.REVIEWS_KEY);
+    if (!raw) return [];
+    try {
+      return JSON.parse(raw) as any[];
+    } catch {
+      return [];
+    }
+  }
+
   /** Active ou désactive le mode maintenance (clé Redis admin:settings). */
   async setMaintenance(enabled: boolean, raison: string | null) {
     const raw      = await this.redis.get(this.SETTINGS_KEY);

@@ -65,6 +65,19 @@ db.exec(`
   );
 `);
 
+// ─── Table avis clients ───────────────────────────────────────────────────────
+db.exec(`
+  CREATE TABLE IF NOT EXISTS reviews (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    discord_id  TEXT    UNIQUE NOT NULL,
+    username    TEXT    NOT NULL,
+    description TEXT    NOT NULL DEFAULT '',
+    text        TEXT    NOT NULL,
+    stars       INTEGER NOT NULL CHECK(stars BETWEEN 1 AND 5),
+    created_at  INTEGER NOT NULL DEFAULT (strftime('%s','now'))
+  );
+`);
+
 // Migration : ajout de la colonne reminder_sent si elle n'existe pas encore
 try {
   db.exec('ALTER TABLE verifications ADD COLUMN reminder_sent INTEGER DEFAULT 0');
@@ -106,6 +119,20 @@ const stmts = {
   getMute:    db.prepare('SELECT * FROM mutes WHERE discord_id = ? AND guild_id = ?'),
   removeMute: db.prepare('DELETE FROM mutes WHERE discord_id = ? AND guild_id = ?'),
   getExpiredMutes: db.prepare('SELECT * FROM mutes WHERE expires_at IS NOT NULL AND expires_at <= strftime(\'%s\',\'now\')'),
+
+  // Reviews
+  addReview: db.prepare(`
+    INSERT INTO reviews (discord_id, username, description, text, stars)
+    VALUES (@discord_id, @username, @description, @text, @stars)
+    ON CONFLICT(discord_id) DO UPDATE SET
+      username    = excluded.username,
+      description = excluded.description,
+      text        = excluded.text,
+      stars       = excluded.stars,
+      created_at  = strftime('%s','now')
+  `),
+  getReviewByDiscordId: db.prepare('SELECT * FROM reviews WHERE discord_id = ?'),
+  getAllReviews:        db.prepare('SELECT * FROM reviews ORDER BY created_at DESC LIMIT 50'),
 
   // Status embed
   getStatusMessage:    db.prepare('SELECT * FROM status_messages WHERE id = 1'),

@@ -29,6 +29,12 @@ const COMMANDS = [
     ],
   },
   {
+    category: '⚙️ Admin (staff)',
+    commands: [
+      { name: '/setup-avis [salon]', desc: 'Poste l\'embed avec bouton "Donner mon avis" dans le salon avis.' },
+    ],
+  },
+  {
     category: '🛡️ Modération (staff)',
     commands: [
       { name: '/ban <membre>',         desc: 'Bannit un membre.' },

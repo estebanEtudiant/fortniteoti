@@ -567,7 +567,7 @@ static void DrawLicenseScreen(AppState& state) {
     Centered("404 Tweaks", C_ACCENT);
     if (g_fontH1) ImGui::PopFont();
     if (g_fontH2) ImGui::PushFont(g_fontH2);
-    Centered("UTILITY v2026", C_DIM);
+    //Centered("UTILITY v2026", C_DIM);
     if (g_fontH2) ImGui::PopFont();
 
     ImGui::Dummy({ 0, 18.f });
@@ -1241,7 +1241,7 @@ static void DrawSettings(AppState& state) {
         if (g_fontH2) ImGui::PopFont();
         ImGui::Spacing();
         ImGui::TextColored(C_DIM, "404 Tweaks");
-        ImGui::TextColored(C_DIM, "Version  2026.1.0");
+        ImGui::TextColored(C_DIM, "Version  2026");
         ImGui::TextColored(C_DIM, "Tweaks   85 optimisations systeme");
         ImGui::TextColored(C_DIM, "Modules  10 categories");
         ImGui::Dummy({ 0, 12.f });

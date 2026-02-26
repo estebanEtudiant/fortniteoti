@@ -106,6 +106,11 @@ class ApiClient {
   async getLatestSoftware() {
     return this.request('GET', '/software/latest');
   }
+
+  // Reviews
+  async getReviews() {
+    return this.request('GET', '/reviews');
+  }
 }
 
 export const api = new ApiClient();

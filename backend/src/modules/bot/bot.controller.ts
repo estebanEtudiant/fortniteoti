@@ -53,4 +53,19 @@ export class BotController {
   setMaintenance(@Body() body: { enabled: boolean; raison?: string }) {
     return this.botService.setMaintenance(body.enabled, body.raison ?? null);
   }
+
+  /**
+   * POST /api/v1/bot/reviews
+   * Reçoit un avis depuis le bot Discord et le synchronise dans Redis.
+   */
+  @Post('reviews')
+  submitReview(@Body() body: {
+    discordId: string;
+    username: string;
+    description: string;
+    text: string;
+    stars: number;
+  }) {
+    return this.botService.submitReview(body);
+  }
 }
