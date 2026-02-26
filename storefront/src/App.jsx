@@ -135,11 +135,6 @@ function FaqItem({ question, answer }) {
 // ══════════════════════════════════════════════════════
 const planIcons  = { DAYS_30: 'fa-calendar', DAYS_90: 'fa-calendar-days', DAYS_365: 'fa-star', LIFETIME: 'fa-infinity' };
 
-const FALLBACK_REVIEWS = [
-  { text: "J'ai gagne 80 FPS constants en endgame et mon input delay a ete divise par 2. Le module GPU et le Low Latency Mode ont tout change. Mes edits n'ont jamais ete aussi rapides.", username: 'Thomas L.', description: 'Champion Division, 6000 pts Arena', stars: 5 },
-  { text: "Logiciel incroyable. J'ai enfin regle mon stutter en endgame. L'optimisation Windows et les parametres NVIDIA sont appliques en 30 secondes. Je joue maintenant en 240 FPS stable.", username: 'Kevin M.', description: 'Joueur competitif EU', stars: 5 },
-  { text: "Meilleur investissement pour ma carriere gaming. Mon setup tourne maintenant a 240 FPS stables avec 15ms de latency totale. J'ai gagne mes 3 derniers tournois Discord. Incroyable.", username: 'Alex D.', description: 'Streamer et competiteur', stars: 5 },
-];
 
 function StarRating({ count }) {
   const n = Math.max(1, Math.min(5, count || 5));
@@ -305,20 +300,22 @@ function HomePage({ customer }) {
       </section>
 
       {/* Testimonials */}
-      <section className="section">
-        <h2 className="section-title">Ils ont <span className="highlight">Transforme</span> leur Setup</h2>
-        <p className="section-subtitle">Des resultats concrets de joueurs competitifs</p>
-        <div className="testimonials-grid">
-          {(reviews.length > 0 ? reviews : FALLBACK_REVIEWS).slice(0, 6).map((t, i) => (
-            <div className="testimonial" key={i}>
-              <StarRating count={t.stars} />
-              <p className="testimonial-text">"{t.text}"</p>
-              <p className="testimonial-author">{t.username}</p>
-              <p className="testimonial-role">{t.description}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      {reviews.length > 0 && (
+        <section className="section">
+          <h2 className="section-title">Ils ont <span className="highlight">Transforme</span> leur Setup</h2>
+          <p className="section-subtitle">Des resultats concrets de joueurs competitifs</p>
+          <div className="testimonials-grid">
+            {reviews.slice(0, 6).map((t, i) => (
+              <div className="testimonial" key={i}>
+                <StarRating count={t.stars} />
+                <p className="testimonial-text">"{t.text}"</p>
+                <p className="testimonial-author">{t.username}</p>
+                <p className="testimonial-role">{t.description}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Pricing */}
       <section className="section" id="pricing" style={{ background: 'var(--card-bg)' }}>
