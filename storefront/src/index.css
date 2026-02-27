@@ -905,10 +905,10 @@ h1 {
 
 .plan-cta:hover .plan-cta-arrow { transform: translateX(3px); }
 
-/* ── Card stagger ── */
-.animate-on-scroll:nth-child(2) { animation-delay: 0.08s; }
-.animate-on-scroll:nth-child(3) { animation-delay: 0.16s; }
-.animate-on-scroll:nth-child(4) { animation-delay: 0.24s; }
+/* ── Plan card stagger (only on pricing cards) ── */
+.plan-card.animate-on-scroll:nth-child(2) { animation-delay: 0.09s; }
+.plan-card.animate-on-scroll:nth-child(3) { animation-delay: 0.18s; }
+.plan-card.animate-on-scroll:nth-child(4) { animation-delay: 0.27s; }
 
 /* content-description placeholder kept for compatibility */
 .content-description {

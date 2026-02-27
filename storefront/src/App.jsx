@@ -23,12 +23,24 @@ function useScrollAnimations(route) {
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
-      { threshold: 0.12 }
+      { threshold: 0, rootMargin: '0px 0px -40px 0px' }
     );
-    const t = setTimeout(() => {
-      document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
-    }, 60);
-    return () => { clearTimeout(t); observer.disconnect(); };
+
+    const attach = () => {
+      document.querySelectorAll('.animate-on-scroll:not(.visible)').forEach(el => observer.observe(el));
+    };
+
+    // Passe initiale (DOM statique)
+    const t1 = setTimeout(attach, 60);
+    // Passes différées pour le contenu chargé depuis l'API (reviews, plans)
+    const t2 = setTimeout(attach, 500);
+    const t3 = setTimeout(attach, 1400);
+    // Fallback final : force tous les éléments encore invisibles à apparaître
+    const t4 = setTimeout(() => {
+      document.querySelectorAll('.animate-on-scroll:not(.visible)').forEach(el => el.classList.add('visible'));
+    }, 2500);
+
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); observer.disconnect(); };
   }, [route]);
 }
 
