@@ -111,6 +111,11 @@ class ApiClient {
   async getReviews() {
     return this.request('GET', '/reviews');
   }
+
+  // Public settings (screenshot URL, Discord invite, announcement)
+  async getPublicSettings() {
+    return this.request('GET', '/admin/public-settings');
+  }
 }
 
 export const api = new ApiClient();

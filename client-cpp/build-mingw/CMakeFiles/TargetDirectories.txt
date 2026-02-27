@@ -1,0 +1,5 @@
+B:/FortniteOptiEbook/FTN-main/client-cpp/build-mingw/CMakeFiles/FortniteOptimizer2026.dir
+B:/FortniteOptiEbook/FTN-main/client-cpp/build-mingw/CMakeFiles/edit_cache.dir
+B:/FortniteOptiEbook/FTN-main/client-cpp/build-mingw/CMakeFiles/rebuild_cache.dir
+B:/FortniteOptiEbook/FTN-main/client-cpp/build-mingw/CMakeFiles/FortniteOptimizer2026_autogen_timestamp_deps.dir
+B:/FortniteOptiEbook/FTN-main/client-cpp/build-mingw/CMakeFiles/FortniteOptimizer2026_autogen.dir

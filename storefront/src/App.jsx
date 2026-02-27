@@ -11,6 +11,27 @@ function useDownloadUrl() {
   return url;
 }
 
+function usePublicSettings() {
+  const [settings, setSettings] = useState({});
+  useEffect(() => {
+    api.getPublicSettings().then(setSettings).catch(() => {});
+  }, []);
+  return settings;
+}
+
+function useScrollAnimations(route) {
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }),
+      { threshold: 0.12 }
+    );
+    const t = setTimeout(() => {
+      document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+    }, 60);
+    return () => { clearTimeout(t); observer.disconnect(); };
+  }, [route]);
+}
+
 // ══════════════════════════════════════════════════════
 //  Simple Hash Router
 // ══════════════════════════════════════════════════════
@@ -88,7 +109,7 @@ function useAuth() {
 // ══════════════════════════════════════════════════════
 //  HEADER
 // ══════════════════════════════════════════════════════
-function Header({ customer, onLogout }) {
+function Header({ customer, onLogout, discordUrl }) {
   return (
     <header>
       <div className="header-content">
@@ -96,6 +117,11 @@ function Header({ customer, onLogout }) {
           <img src="/logo.svg" alt="404 Tweaks" height="38" style={{ display: 'block' }} />
         </div>
         <div className="header-nav">
+          {discordUrl && (
+            <a href={discordUrl} target="_blank" rel="noopener noreferrer" className="discord-btn">
+              <i className="fa-brands fa-discord"></i>Discord
+            </a>
+          )}
           {customer ? (
             <>
               <button className="header-link" onClick={() => navigate('/profile')}>
@@ -150,10 +176,18 @@ function StarRating({ count }) {
 
 const REVIEWS_PREVIEW = 6;
 
-function HomePage({ customer }) {
+function HomePage({ customer, screenshotUrl }) {
   const [plans, setPlans] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [showAllReviews, setShowAllReviews] = useState(false);
+  const [lightbox, setLightbox] = useState(false);
+
+  useEffect(() => {
+    if (!lightbox) return;
+    const handler = (e) => { if (e.key === 'Escape') setLightbox(false); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [lightbox]);
 
   useEffect(() => {
     api.getPlans().then(setPlans).catch(() => {});
@@ -244,9 +278,29 @@ function HomePage({ customer }) {
               <li><i className="fa-solid fa-check"></i> Mises a jour automatiques incluses</li>
             </ul>
           </div>
-          <div className="book-preview">
-            <i className="fa-solid fa-laptop-code"></i>
+          <div
+            className={`book-preview${screenshotUrl ? ' book-preview--img' : ''}`}
+            onClick={() => screenshotUrl && setLightbox(true)}
+          >
+            {screenshotUrl
+              ? <img src={screenshotUrl} alt="404 Tweaks" />
+              : <i className="fa-solid fa-laptop-code"></i>
+            }
           </div>
+
+          {/* Lightbox */}
+          {lightbox && screenshotUrl && (
+            <div
+              className="lightbox-overlay"
+              onClick={() => setLightbox(false)}
+              onKeyDown={e => e.key === 'Escape' && setLightbox(false)}
+              role="dialog"
+              aria-modal="true"
+            >
+              <button className="lightbox-close" onClick={() => setLightbox(false)} aria-label="Fermer">✕</button>
+              <img src={screenshotUrl} alt="404 Tweaks — plein écran" onClick={e => e.stopPropagation()} />
+            </div>
+          )}
         </div>
       </section>
 
@@ -1330,7 +1384,7 @@ function PaymentPage({ customer }) {
 
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', textAlign: 'center', marginTop: '1rem' }}>
           <i className="fa-solid fa-lock" style={{ marginRight: 6 }}></i>
-          Paiement 100% securise via Stripe &mdash; Garantie satisfait ou rembourse 30 jours
+          Paiement 100% securise via Stripe
         </p>
 
         <div style={{ textAlign: 'center', marginTop: '1rem' }}>
@@ -1590,13 +1644,18 @@ function VerifyEmailPage({ onRefresh }) {
 // ══════════════════════════════════════════════════════
 //  FOOTER
 // ══════════════════════════════════════════════════════
-function Footer() {
+function Footer({ discordUrl }) {
   return (
     <footer>
       <div style={{ maxWidth: 1400, margin: '0 auto' }}>
-        <p className="footer-text">&copy; 2026 Logiciel d'Optimisation Fortnite. Tous droits reserves.</p>
-        <p className="footer-text">Cree pour la communaute Fortnite competitive</p>
+        <p className="footer-text">&copy; 2026 404 Tweaks. Tous droits reserves.</p>
+        <p className="footer-text">Logiciel d'optimisation Fortnite pour joueurs competitifs</p>
         <div className="footer-links">
+          {discordUrl && (
+            <a href={discordUrl} target="_blank" rel="noopener noreferrer" className="footer-link" style={{ color: '#b9beff' }}>
+              <i className="fa-brands fa-discord" style={{ marginRight: 5 }}></i>Discord
+            </a>
+          )}
           <button className="footer-link">Conditions d'utilisation</button>
           <button className="footer-link">Politique de confidentialite</button>
           <button className="footer-link">Contact</button>
@@ -1612,6 +1671,8 @@ function Footer() {
 export default function App() {
   const route = useRoute();
   const { customer, loading, login, register, logout, refresh } = useAuth();
+  const publicSettings = usePublicSettings();
+  useScrollAnimations(route);
 
   if (loading) {
     return (
@@ -1654,14 +1715,14 @@ export default function App() {
       page = <VerifyEmailPage onRefresh={refresh} />;
       break;
     default:
-      page = <HomePage customer={customer} />;
+      page = <HomePage customer={customer} screenshotUrl={publicSettings.screenshotUrl} />;
   }
 
   return (
     <>
-      <Header customer={customer} onLogout={logout} />
+      <Header customer={customer} onLogout={logout} discordUrl={publicSettings.discordInviteUrl} />
       {page}
-      <Footer />
+      <Footer discordUrl={publicSettings.discordInviteUrl} />
     </>
   );
 }

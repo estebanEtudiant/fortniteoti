@@ -1,0 +1,3 @@
+C:\mingw64\winlibs-x86_64-posix-seh-gcc-14.2.0-llvm-19.1.1-mingw-w64ucrt-12.0.0-r2\mingw64\bin\cmake.exe -E rm -f CMakeFiles\FortniteOptimizer2026.dir/objects.a
+B:\Qt\Tools\mingw1310_64\bin\ar.exe qc CMakeFiles\FortniteOptimizer2026.dir/objects.a @CMakeFiles\FortniteOptimizer2026.dir\objects1.rsp
+B:\Qt\Tools\mingw1310_64\bin\g++.exe -mwindows -mwindows -Wl,--whole-archive CMakeFiles\FortniteOptimizer2026.dir/objects.a -Wl,--no-whole-archive -o FortniteOptimizer2026.exe -Wl,--out-implib,libFortniteOptimizer2026.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\FortniteOptimizer2026.dir\linkLibs.rsp

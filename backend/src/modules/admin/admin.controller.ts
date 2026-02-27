@@ -1,8 +1,12 @@
 import {
   Controller, Get, Post, Put, Delete, Body, Param, Query, Req,
-  UseGuards, HttpCode, HttpStatus,
+  UseGuards, HttpCode, HttpStatus, UseInterceptors, UploadedFile, BadRequestException,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname, resolve } from 'path';
+import { mkdirSync, existsSync } from 'fs';
 import { Request } from 'express';
 import { LicensePlan, LicenseStatus } from '@prisma/client';
 import { AdminService } from './admin.service';
@@ -58,6 +62,8 @@ class UpdateSettingsBody {
   @IsOptional() @IsString() downloadUrl?: string;
   @IsOptional() @IsBoolean() maintenanceMode?: boolean;
   @IsOptional() @IsString() announcement?: string;
+  @IsOptional() @IsString() screenshotUrl?: string;
+  @IsOptional() @IsString() discordInviteUrl?: string;
 }
 class ChangePasswordBody {
   @IsString() @IsNotEmpty() currentPassword: string;
@@ -70,6 +76,8 @@ class UpdateBotConfigBody {
   @IsOptional() @IsString() welcome_dm_desc?: string;
   @IsOptional() @IsString() setup_avis_title?: string;
   @IsOptional() @IsString() setup_avis_desc?: string;
+  @IsOptional() @IsString() tuto_title?: string;
+  @IsOptional() @IsString() tuto_intro?: string;
 }
 
 @ApiTags('admin')
@@ -289,6 +297,19 @@ export class AdminController {
     return this.adminService.deletePlan(plan);
   }
 
+  // ── Public settings (no auth — used by storefront) ──
+  @Get('public-settings')
+  @ApiOperation({ summary: 'Public site settings (screenshotUrl, discordInviteUrl, announcement)' })
+  async getPublicSettings() {
+    const s = await this.adminService.getSettings();
+    return {
+      screenshotUrl:    s.screenshotUrl    || '',
+      discordInviteUrl: s.discordInviteUrl || '',
+      announcement:     s.announcement     || '',
+      maintenanceMode:  s.maintenanceMode  || false,
+    };
+  }
+
   // ── Settings ──
   @Get('settings')
   @UseGuards(AdminAuthGuard)
@@ -305,6 +326,39 @@ export class AdminController {
   @ApiOperation({ summary: 'Update site settings' })
   async updateSettings(@Body() dto: UpdateSettingsBody) {
     return this.adminService.updateSettings(dto);
+  }
+
+  // ── Image upload ──
+  @Post('upload-image')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Upload an image to /uploads/images/' })
+  @UseInterceptors(FileInterceptor('file', {
+    storage: diskStorage({
+      destination: (_req, _file, cb) => {
+        const dir = resolve(__dirname, '..', '..', '..', 'uploads', 'images');
+        if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+        cb(null, dir);
+      },
+      filename: (_req, file, cb) => {
+        const unique = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        cb(null, `img-${unique}${extname(file.originalname)}`);
+      },
+    }),
+    fileFilter: (_req, file, cb) => {
+      const allowed = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+      if (!allowed.includes(extname(file.originalname).toLowerCase())) {
+        return cb(new BadRequestException('Format non supporté (jpg, png, webp, gif)'), false);
+      }
+      cb(null, true);
+    },
+    limits: { fileSize: 5 * 1024 * 1024 },
+  }))
+  async uploadImage(@UploadedFile() file: Express.Multer.File, @Req() req: Request) {
+    if (!file) throw new BadRequestException('Aucun fichier fourni');
+    const proto = (req.headers['x-forwarded-proto'] as string) || req.protocol;
+    const host  = (req.headers['x-forwarded-host'] as string)  || req.get('host');
+    return { url: `${proto}://${host}/uploads/images/${file.filename}` };
   }
 
   // ── Blocked IPs ──

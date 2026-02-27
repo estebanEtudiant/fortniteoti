@@ -3,6 +3,9 @@ import { ValidationPipe, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
+import { join } from 'path';
+import * as express from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
@@ -56,6 +59,15 @@ async function bootstrap() {
     const document = SwaggerModule.createDocument(app, swaggerConfig);
     SwaggerModule.setup('docs', app, document);
   }
+
+  // ── Static uploads (images, etc.) ──
+  // Cross-Origin-Resource-Policy must be 'cross-origin' so the dashboard and
+  // storefront (different origins) can load images served by the backend.
+  const httpApp = app.getHttpAdapter().getInstance();
+  httpApp.use('/uploads', (_req: Request, res: Response, next: NextFunction) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    next();
+  }, express.static(join(__dirname, '..', 'uploads')));
 
   await app.listen(port);
   Logger.log(`API running on port ${port} [${isProduction ? 'PRODUCTION' : 'DEVELOPMENT'}]`, 'Bootstrap');

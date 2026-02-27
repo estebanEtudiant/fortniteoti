@@ -96,6 +96,18 @@ class ApiClient {
   // ── Settings ──
   getSettings() { return this.get('/admin/settings'); }
   updateSettings(data) { return this.put('/admin/settings', data); }
+  uploadImage(file) {
+    const form = new FormData();
+    form.append('file', file);
+    return fetch(`${this.baseUrl}/admin/upload-image`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${localStorage.getItem('admin_token')}` },
+      body: form,
+    }).then(async r => {
+      if (!r.ok) throw new Error((await r.json()).message || 'Upload échoué');
+      return r.json();
+    });
+  }
 
   // ── Blocked IPs ──
   getBlockedIps(params = {}) {

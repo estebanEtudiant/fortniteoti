@@ -1,0 +1,3 @@
+# Hashes of file build rules.
+c966fe3cdf12f2aaee868a6311bc974e CMakeFiles/FortniteOptimizer2026_autogen
+76a15938ffa1e935896a91cf76f5e7e5 FortniteOptimizer2026_autogen/timestamp

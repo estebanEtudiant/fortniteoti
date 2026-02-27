@@ -2,6 +2,7 @@
 
 const { SlashCommandBuilder } = require('discord.js');
 const Colors = require('../../config/colors');
+const { getBotConfig } = require('../../services/licenseApi');
 
 const SITE_URL = 'https://404tweaks.tech/';
 
@@ -11,11 +12,15 @@ module.exports = {
     .setDescription('Affiche le guide complet pour acheter et activer une licence 404 Tweaks'),
 
   async execute(interaction) {
+    const cfg = await getBotConfig();
+    const embedTitle = cfg.tuto_title || '🛒 Comment acheter une licence 404 Tweaks ?';
+    const embedDesc  = cfg.tuto_intro  || 'Suis ces étapes simples pour obtenir et activer ta licence en moins de 5 minutes.';
+
     return interaction.reply({
       embeds: [{
         color: Colors.GOLD,
-        title: '🛒 Comment acheter une licence 404 Tweaks ?',
-        description: 'Suis ces étapes simples pour obtenir et activer ta licence en moins de 5 minutes.',
+        title: embedTitle,
+        description: embedDesc,
         fields: [
           {
             name: '**Étape 1 — Accéder au site**',

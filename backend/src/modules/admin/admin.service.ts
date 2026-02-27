@@ -23,6 +23,8 @@ const DEFAULT_BOT_CONFIG = {
   welcome_dm_desc:       "Merci de nous rejoindre sur le serveur **404 Tweaks** !\n\n🛒 **Acheter une licence :** [404tweaks.tech](https://404tweaks.tech/)\n\n🔑 **Déjà client ?** Reviens sur le serveur et utilise `/verify <ta-clé>` pour activer tes rôles.\n\n🎫 **Besoin d'aide ?** Ouvre un ticket avec `/ticket` sur le serveur.",
   setup_avis_title:      "💬 Partagez votre expérience 404 Tweaks",
   setup_avis_desc:       "Tu utilises **404 Tweaks** et tu es satisfait de tes résultats ?\nLaisse un avis pour aider la communauté !\n\n> ⭐ **Clique sur le bouton ci-dessous** pour partager ton expérience en quelques secondes.\n> 🔒 *Ton avis sera visible sur le site officiel.*",
+  tuto_title:            "🛒 Comment acheter une licence 404 Tweaks ?",
+  tuto_intro:            "Suis ces étapes simples pour obtenir et activer ta licence en moins de 5 minutes.",
 };
 
 const DEFAULT_PLANS = {
@@ -39,6 +41,8 @@ const DEFAULT_SETTINGS = {
   downloadUrl: '',
   maintenanceMode: false,
   announcement: '',
+  screenshotUrl: '',
+  discordInviteUrl: '',
 };
 
 @Injectable()
