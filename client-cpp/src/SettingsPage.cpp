@@ -186,8 +186,8 @@ void SettingsPage::buildUi() {
         };
         addInfo("404 Tweaks");
         addInfo("Version   2026");
-        addInfo("Tweaks    85 optimisations systeme");
-        addInfo("Modules   10 categories");
+        addInfo("Tweaks    100+ optimisations systeme");
+        addInfo("Modules   14 categories");
         cv->addSpacing(12);
 
         // Warning band

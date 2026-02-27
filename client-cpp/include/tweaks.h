@@ -37,7 +37,19 @@ namespace tweaks {
     void applyInput   (AppState& s);
 
     // ⚡  Power — Ultimate Performance, CPU 100%, boost, ASPM, veille
-    void applyPower   (AppState& s);
+    void applyPower          (AppState& s);
+
+    // 🛡️  Defender — Exclusions Fortnite/Epic (réduit stutters IO)
+    void applyDefender       (AppState& s);
+
+    // 🔒  WU Driver Block — empêche WU d'écraser le driver GPU stable
+    void applyWUDriverBlock  (AppState& s);
+
+    // 🖼️  MPO — désactive Multi-Plane Overlay (fix flicker/stutter NVIDIA)
+    void applyMPO            (AppState& s);
+
+    // 🌐  NIC Low Latency — RSS/RSC + Interrupt Moderation + EEE
+    void applyNicLatency     (AppState& s);
 
     // ── Combinés ────────────────────────────────────────────────────
     void applyAll     (AppState& s);  // Backup → tous les modules en séquence
@@ -45,7 +57,7 @@ namespace tweaks {
 
     // ── Vérification état système (read-only, Win32 registre) ────────
     // applied = nb tweaks confirmés OK ; total = nb vérifiés
-    // applied == -1 → module non vérifiable (Backup, Cleanup)
+    // applied == -1 → module non vérifiable (Backup, Cleanup, NicLatency)
     struct CheckResult { int applied = -1; int total = 0; };
 
     CheckResult checkWindows();
@@ -56,5 +68,8 @@ namespace tweaks {
     CheckResult checkStorage();
     CheckResult checkInput();
     CheckResult checkPower();
+    CheckResult checkDefender();
+    CheckResult checkWUDriverBlock();
+    CheckResult checkMPO();
 
 } // namespace tweaks

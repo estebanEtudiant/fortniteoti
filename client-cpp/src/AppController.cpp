@@ -43,7 +43,19 @@ static QVector<ModuleSpec> buildModules() {
           12, true, QColor(0x33,0xC7,0x6B), tweaks::applyInput,   tweaks::checkInput },
         { "POWER",   "Alimentation",
           "Ultimate Performance Plan, CPU 100%, Boost agressif, ASPM off, veille off.",
-          8,  true, QColor(0xF7,0xB3,0x42), tweaks::applyPower,   tweaks::checkPower },
+          8,  true, QColor(0xF7,0xB3,0x42), tweaks::applyPower,        tweaks::checkPower },
+        { "DEFENDER","Defender Exclusions",
+          "Exclusions Fortnite/Epic/EAC : reduit les stutters IO dus aux scans temps reel.",
+          7,  true, QColor(0x00,0xD1,0xFF), tweaks::applyDefender,     tweaks::checkDefender },
+        { "WUBLOCK", "WU Driver Block",
+          "Empeche Windows Update d'ecraser ton driver GPU stable (ExcludeWUDriversInQualityUpdate).",
+          1,  true, QColor(0xF7,0xB3,0x42), tweaks::applyWUDriverBlock, tweaks::checkWUDriverBlock },
+        { "MPO",     "MPO Disable (NVIDIA)",
+          "Desactive Multi-Plane Overlay via DWM : fix officiel NVIDIA pour flicker/stutter.",
+          1,  true, QColor(0x8F,0x66,0xFF), tweaks::applyMPO,          tweaks::checkMPO },
+        { "NIC",     "NIC Low Latency",
+          "RSS adapter-level, RSC off, Interrupt Moderation off, EEE off sur toutes interfaces.",
+          4,  true, QColor(0x33,0xC7,0x6B), tweaks::applyNicLatency,   nullptr },
     };
 }
 

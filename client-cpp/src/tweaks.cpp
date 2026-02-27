@@ -678,6 +678,130 @@ void applyPower(AppState& s) {
 }
 
 // ─────────────────────────────────────────────────────────────────────
+//  🛡️  DEFENDER EXCLUSIONS — Fortnite / Epic Games
+// ─────────────────────────────────────────────────────────────────────
+void applyDefender(AppState& s) {
+    GuiLog(s, "== DEFENDER EXCLUSIONS ==", 5);
+    Stat st(s);
+
+    // — Chemins jeu (réduire scans IO temps réel) —
+    st.ps("Add-MpPreference -ExclusionPath 'C:\\Program Files\\Epic Games'"
+          " -ErrorAction SilentlyContinue",
+          "Exclusion Defender : C:\\Program Files\\Epic Games");
+    st.ps("Add-MpPreference -ExclusionPath \"$env:LOCALAPPDATA\\FortniteGame\""
+          " -ErrorAction SilentlyContinue",
+          "Exclusion Defender : %LOCALAPPDATA%\\FortniteGame");
+    st.ps("Add-MpPreference -ExclusionPath \"$env:ProgramData\\Epic\\EpicGamesLauncher\""
+          " -ErrorAction SilentlyContinue",
+          "Exclusion Defender : EpicGamesLauncher data");
+
+    // — Process (anti-scan temps réel sur exécutables) —
+    st.ps("Add-MpPreference -ExclusionProcess 'FortniteClient-Win64-Shipping.exe'"
+          " -ErrorAction SilentlyContinue",
+          "Exclusion process : FortniteClient-Win64-Shipping.exe");
+    st.ps("Add-MpPreference -ExclusionProcess 'EpicGamesLauncher.exe'"
+          " -ErrorAction SilentlyContinue",
+          "Exclusion process : EpicGamesLauncher.exe");
+    st.ps("Add-MpPreference -ExclusionProcess 'EasyAntiCheat_EOS.exe'"
+          " -ErrorAction SilentlyContinue",
+          "Exclusion process : EasyAntiCheat_EOS.exe");
+    st.ps("Add-MpPreference -ExclusionProcess 'FortniteLauncher.exe'"
+          " -ErrorAction SilentlyContinue",
+          "Exclusion process : FortniteLauncher.exe");
+
+    st.summary("DEFENDER");
+    GuiLog(s, "  Rollback : Remove-MpPreference -ExclusionPath/-ExclusionProcess", 4);
+}
+
+// ─────────────────────────────────────────────────────────────────────
+//  🔒  WINDOWS UPDATE — BLOQUER INSTALLATION DRIVERS
+// ─────────────────────────────────────────────────────────────────────
+void applyWUDriverBlock(AppState& s) {
+    GuiLog(s, "== WU DRIVER BLOCK ==", 5);
+    Stat st(s);
+
+    // Empêche WU d'écraser le driver GPU stable
+    // Policy officielle Microsoft (GPO/MDM/registry)
+    st.reg("HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate",
+           "ExcludeWUDriversInQualityUpdate", "REG_DWORD", "1",
+           "Bloquer drivers via Windows Update (stabilite GPU)");
+
+    st.summary("WU DRIVERS");
+    GuiLog(s, "  Les drivers ne seront plus mis a jour via Windows Update.", 4);
+    GuiLog(s, "  Rollback : ExcludeWUDriversInQualityUpdate = 0", 4);
+}
+
+// ─────────────────────────────────────────────────────────────────────
+//  🖼️  MPO — MULTI-PLANE OVERLAY (fix flicker/stutter NVIDIA)
+// ─────────────────────────────────────────────────────────────────────
+void applyMPO(AppState& s) {
+    GuiLog(s, "== MPO (MULTI-PLANE OVERLAY) ==", 5);
+    Stat st(s);
+
+    // Fix officiel NVIDIA (support article 5157) :
+    // OverlayTestMode = 5 désactive MPO → corrige flicker/stutter desktop/jeux
+    st.reg("HKLM\\SOFTWARE\\Microsoft\\Windows\\Dwm",
+           "OverlayTestMode", "REG_DWORD", "5",
+           "Desactiver MPO via DWM (fix flicker/stutter NVIDIA)");
+
+    st.summary("MPO");
+    GuiLog(s, "  Reboot requis pour appliquer.", 3);
+    GuiLog(s, "  Rollback : supprimer OverlayTestMode ou = 0 + reboot", 4);
+}
+
+// ─────────────────────────────────────────────────────────────────────
+//  🌐  NIC LOW LATENCY — RSS/RSC + Interrupt Moderation + EEE
+// ─────────────────────────────────────────────────────────────────────
+void applyNicLatency(AppState& s) {
+    GuiLog(s, "== NIC LOW LATENCY ==", 5);
+    Stat st(s);
+
+    // — RSS adapter-level (distribue le trafic sur plusieurs cœurs) —
+    // Microsoft documente Set-NetAdapterRss comme méthode recommandée
+    st.ps("Get-NetAdapter -Physical | Where-Object Status -eq 'Up' | "
+          "ForEach-Object { "
+          "  Set-NetAdapterRss -Name $_.Name -Enabled $true "
+          "    -ErrorAction SilentlyContinue }",
+          "RSS adapter-level : activer sur toutes interfaces physiques actives");
+
+    // — RSC off (Receive Segment Coalescing) —
+    // Réduit la latence (moins de coalescing), CPU légèrement plus haut
+    st.ps("Get-NetAdapter -Physical | Where-Object Status -eq 'Up' | "
+          "ForEach-Object { "
+          "  Set-NetAdapterRsc -Name $_.Name -IPv4Enabled $false "
+          "    -IPv6Enabled $false -ErrorAction SilentlyContinue }",
+          "RSC off : latence minimum (CPU peut augmenter legerement)");
+
+    // — Interrupt Moderation off (si disponible sur le NIC) —
+    // Réduit la latence, augmente le CPU selon Intel
+    st.ps("Get-NetAdapter -Physical | Where-Object Status -eq 'Up' | "
+          "ForEach-Object { "
+          "  $n=$_.Name;"
+          "  $dp=(Get-NetAdapterAdvancedProperty -Name $n "
+          "    -ErrorAction SilentlyContinue).DisplayName;"
+          "  if ($dp -contains 'Interrupt Moderation') { "
+          "    Set-NetAdapterAdvancedProperty -Name $n "
+          "      -DisplayName 'Interrupt Moderation' -DisplayValue 'Disabled' "
+          "      -ErrorAction SilentlyContinue } }",
+          "Interrupt Moderation off (si disponible sur le NIC)");
+
+    // — Energy-Efficient Ethernet off (EEE ajoute de la latence) —
+    st.ps("Get-NetAdapter -Physical | Where-Object Status -eq 'Up' | "
+          "ForEach-Object { "
+          "  $n=$_.Name;"
+          "  $dp=(Get-NetAdapterAdvancedProperty -Name $n "
+          "    -ErrorAction SilentlyContinue).DisplayName;"
+          "  if ($dp -contains 'Energy-Efficient Ethernet') { "
+          "    Set-NetAdapterAdvancedProperty -Name $n "
+          "      -DisplayName 'Energy-Efficient Ethernet' -DisplayValue 'Off' "
+          "      -ErrorAction SilentlyContinue } }",
+          "Energy-Efficient Ethernet off (si disponible)");
+
+    st.summary("NIC LATENCY");
+    GuiLog(s, "  Rollback : Reset-NetAdapterAdvancedProperty + RSC $true", 4);
+}
+
+// ─────────────────────────────────────────────────────────────────────
 //  🚀  TOUT APPLIQUER — Séquence complète
 // ─────────────────────────────────────────────────────────────────────
 void applyAll(AppState& s) {
@@ -686,16 +810,20 @@ void applyAll(AppState& s) {
     GuiLog(s, "╚══════════════════════════════════════╝", 5);
     GuiLog(s, "", 0);
 
-    applyBackup(s);   GuiLog(s, "", 0);
-    applyWindows(s);  GuiLog(s, "", 0);
-    applyGpu(s);      GuiLog(s, "", 0);
-    applyCpu(s);      GuiLog(s, "", 0);
-    applyRam(s);      GuiLog(s, "", 0);
-    applyCleanup(s);  GuiLog(s, "", 0);
-    applyNetwork(s);  GuiLog(s, "", 0);
-    applyStorage(s);  GuiLog(s, "", 0);
-    applyInput(s);    GuiLog(s, "", 0);
-    applyPower(s);
+    applyBackup(s);        GuiLog(s, "", 0);
+    applyWindows(s);       GuiLog(s, "", 0);
+    applyGpu(s);           GuiLog(s, "", 0);
+    applyCpu(s);           GuiLog(s, "", 0);
+    applyRam(s);           GuiLog(s, "", 0);
+    applyCleanup(s);       GuiLog(s, "", 0);
+    applyNetwork(s);       GuiLog(s, "", 0);
+    applyStorage(s);       GuiLog(s, "", 0);
+    applyInput(s);         GuiLog(s, "", 0);
+    applyPower(s);         GuiLog(s, "", 0);
+    applyDefender(s);      GuiLog(s, "", 0);
+    applyWUDriverBlock(s); GuiLog(s, "", 0);
+    applyMPO(s);           GuiLog(s, "", 0);
+    applyNicLatency(s);
 
     GuiLog(s, "", 0);
     GuiLog(s, "╔══════════════════════════════════════╗", 1);
@@ -825,6 +953,57 @@ void revertAll(AppState& s) {
     st.cmd("netsh int tcp set global autotuninglevel=normal",
            "Restaurer TCP Auto-Tuning");
 
+    // Defender exclusions (retrait)
+    st.ps("Remove-MpPreference -ExclusionPath 'C:\\Program Files\\Epic Games'"
+          " -ErrorAction SilentlyContinue",
+          "Restaurer : retirer exclusion Defender Epic Games");
+    st.ps("Remove-MpPreference -ExclusionProcess 'FortniteClient-Win64-Shipping.exe'"
+          " -ErrorAction SilentlyContinue",
+          "Restaurer : retirer exclusion process FortniteClient");
+    st.ps("Remove-MpPreference -ExclusionProcess 'EpicGamesLauncher.exe'"
+          " -ErrorAction SilentlyContinue",
+          "Restaurer : retirer exclusion process EpicGamesLauncher");
+    st.ps("Remove-MpPreference -ExclusionProcess 'EasyAntiCheat_EOS.exe'"
+          " -ErrorAction SilentlyContinue",
+          "Restaurer : retirer exclusion process EasyAntiCheat");
+
+    // WU Driver Block (réactiver)
+    st.reg("HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate",
+           "ExcludeWUDriversInQualityUpdate", "REG_DWORD", "0",
+           "Restaurer : drivers autorisés via Windows Update");
+
+    // MPO (réactiver)
+    st.del("HKLM\\SOFTWARE\\Microsoft\\Windows\\Dwm",
+           "OverlayTestMode",
+           "Restaurer MPO (supprimer OverlayTestMode)");
+
+    // NIC Latency (restaurer RSC + Interrupt Moderation)
+    st.ps("Get-NetAdapter -Physical | Where-Object Status -eq 'Up' | "
+          "ForEach-Object { "
+          "  Set-NetAdapterRsc -Name $_.Name -IPv4Enabled $true "
+          "    -IPv6Enabled $true -ErrorAction SilentlyContinue }",
+          "Restaurer RSC (defaut)");
+    st.ps("Get-NetAdapter -Physical | Where-Object Status -eq 'Up' | "
+          "ForEach-Object { "
+          "  $n=$_.Name;"
+          "  $dp=(Get-NetAdapterAdvancedProperty -Name $n "
+          "    -ErrorAction SilentlyContinue).DisplayName;"
+          "  if ($dp -contains 'Interrupt Moderation') { "
+          "    Reset-NetAdapterAdvancedProperty -Name $n "
+          "      -DisplayName 'Interrupt Moderation' "
+          "      -ErrorAction SilentlyContinue } }",
+          "Restaurer Interrupt Moderation (defaut NIC)");
+    st.ps("Get-NetAdapter -Physical | Where-Object Status -eq 'Up' | "
+          "ForEach-Object { "
+          "  $n=$_.Name;"
+          "  $dp=(Get-NetAdapterAdvancedProperty -Name $n "
+          "    -ErrorAction SilentlyContinue).DisplayName;"
+          "  if ($dp -contains 'Energy-Efficient Ethernet') { "
+          "    Reset-NetAdapterAdvancedProperty -Name $n "
+          "      -DisplayName 'Energy-Efficient Ethernet' "
+          "      -ErrorAction SilentlyContinue } }",
+          "Restaurer Energy-Efficient Ethernet (defaut NIC)");
+
     st.summary("RESTAURATION");
     GuiLog(s, "  Redemarrage necessaire.", 3);
 }
@@ -927,6 +1106,39 @@ CheckResult checkPower() {
     if (chkDWORD(HKEY_LOCAL_MACHINE,
         "SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers",
         "HwSchMode", 2)) ++r.applied;
+    return r;
+}
+
+CheckResult checkDefender() {
+    // Vérifie si au moins une exclusion de chemin Defender est présente
+    CheckResult r{ 0, 1 };
+    HKEY hk;
+    const char* path =
+        "SOFTWARE\\Microsoft\\Windows Defender\\Exclusions\\Paths";
+    if (RegOpenKeyExA(HKEY_LOCAL_MACHINE, path, 0, KEY_READ, &hk) == ERROR_SUCCESS) {
+        char name[MAX_PATH]; DWORD namesz = MAX_PATH;
+        DWORD type, datasz = 0;
+        if (RegEnumValueA(hk, 0, name, &namesz, nullptr, &type,
+                          nullptr, &datasz) == ERROR_SUCCESS)
+            ++r.applied;
+        RegCloseKey(hk);
+    }
+    return r;
+}
+
+CheckResult checkWUDriverBlock() {
+    CheckResult r{ 0, 1 };
+    if (chkDWORD(HKEY_LOCAL_MACHINE,
+        "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate",
+        "ExcludeWUDriversInQualityUpdate", 1)) ++r.applied;
+    return r;
+}
+
+CheckResult checkMPO() {
+    CheckResult r{ 0, 1 };
+    if (chkDWORD(HKEY_LOCAL_MACHINE,
+        "SOFTWARE\\Microsoft\\Windows\\Dwm",
+        "OverlayTestMode", 5)) ++r.applied;
     return r;
 }
 

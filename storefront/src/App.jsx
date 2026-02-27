@@ -223,10 +223,10 @@ function HomePage({ customer, screenshotUrl }) {
       <section className="hero">
         <div className="hero-grid" aria-hidden="true" />
         <div className="hero-content">
-          <div className="hero-badge">⚡ 85 TWEAKS DISPONIBLES</div>
+          <div className="hero-badge">⚡ 100+ TWEAKS DISPONIBLES</div>
           <h1>STOP JOUER<br/>AVEC UN <span className="highlight">HANDICAP</span></h1>
           <p className="hero-subtitle">
-            Un logiciel. 85 optimisations. Des résultats en 5 minutes.
+            Un logiciel. 100+ optimisations. Des résultats en 5 minutes.
           </p>
           <div className="stats-row">
             <div className="stat">
@@ -238,7 +238,7 @@ function HomePage({ customer, screenshotUrl }) {
               <span className="stat-label">Input Delay</span>
             </div>
             <div className="stat">
-              <span className="stat-number">85</span>
+              <span className="stat-number">100+</span>
               <span className="stat-label">Tweaks</span>
             </div>
           </div>
@@ -283,7 +283,7 @@ function HomePage({ customer, screenshotUrl }) {
         <div className="secret-container">
           <div className="secret-content animate-on-scroll">
             <div className="product-tweaks-badge">
-              <span className="tweaks-count">85</span>
+              <span className="tweaks-count">100+</span>
               <div className="tweaks-label-wrap">
                 <span className="tweaks-label">tweaks</span>
                 <span className="tweaks-sublabel">disponibles</span>
@@ -445,7 +445,7 @@ function HomePage({ customer, screenshotUrl }) {
 
               {/* Features */}
               <ul className="plan-features">
-                <li><i className="fa-solid fa-check"></i> 85 tweaks d'optimisation</li>
+                <li><i className="fa-solid fa-check"></i> 100+ tweaks d'optimisation</li>
                 <li><i className="fa-solid fa-check"></i> Discord VIP privé</li>
                 <li><i className="fa-solid fa-check"></i> Mises à jour automatiques</li>
                 <li><i className="fa-solid fa-check"></i> Support technique direct</li>
@@ -469,8 +469,8 @@ function HomePage({ customer, screenshotUrl }) {
         <h2 className="section-title animate-on-scroll">Questions <span className="highlight">Fréquentes</span></h2>
         <div className="faq-container">
           <FaqItem question="Le logiciel fonctionne-t-il pour tous les PC ?" answer="Oui ! Toutes les configurations sont supportées, des entrées de gamme aux setups haut de gamme. Chaque module détecte automatiquement votre matériel (Intel/AMD, NVIDIA/AMD) et adapte les optimisations." />
-          <FaqItem question="Est-ce que je risque d'endommager mon PC ?" answer="Non. Les 85 optimisations sont sûres et réversibles. Un point de restauration Windows est créé automatiquement avant chaque modification. Un clic pour revenir en arrière." />
-          <FaqItem question="Combien de temps faut-il pour tout appliquer ?" answer="Moins de 5 minutes. Le logiciel applique automatiquement les 85 tweaks. Vous pouvez aussi activer les modules un par un selon vos besoins." />
+          <FaqItem question="Est-ce que je risque d'endommager mon PC ?" answer="Non. Les 100+ optimisations sont sûres et réversibles. Un point de restauration Windows est créé automatiquement avant chaque modification. Un clic pour revenir en arrière." />
+          <FaqItem question="Combien de temps faut-il pour tout appliquer ?" answer="Moins de 5 minutes. Le logiciel applique automatiquement les 100+ tweaks. Vous pouvez aussi activer les modules un par un selon vos besoins." />
           <FaqItem question="Compatible AMD et NVIDIA ?" answer="Absolument. Le module GPU détecte votre carte et applique les paramètres optimaux : Low Latency Mode, NVIDIA Reflex, Anti-Lag (RTX 2000/3000/4000, RX 6000/7000)." />
           <FaqItem question="Y a-t-il des mises à jour ?" answer="Oui, le logiciel se met à jour automatiquement avec les nouvelles optimisations Fortnite, updates de drivers et changements de méta. Toujours incluses." />
         </div>
