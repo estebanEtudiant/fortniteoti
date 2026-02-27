@@ -202,19 +202,19 @@ function HomePage({ customer, screenshotUrl }) {
     navigate(`/payment?plan=${planKey}`);
   };
 
-  const scrollToPrice = () => {
-    document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const scrollToPrice   = () => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToProduct = () => document.getElementById('product')?.scrollIntoView({ behavior: 'smooth' });
 
   return (
     <>
-      {/* Hero */}
+      {/* ── HERO ── */}
       <section className="hero">
+        <div className="hero-grid" aria-hidden="true" />
         <div className="hero-content">
-          {/*<div className="badge">&#9889; Guide Pro 2025</div>*/}
-          <h1>ARRETEZ DE JOUER<br/>AVEC UN <span className="highlight">HANDICAP</span></h1>
+          <div className="hero-badge">⚡ 85 TWEAKS DISPONIBLES</div>
+          <h1>STOP JOUER<br/>AVEC UN <span className="highlight">HANDICAP</span></h1>
           <p className="hero-subtitle">
-            Pourquoi les pros ont toujours un temps d'avance sur vous ? Ce n'est pas seulement du talent, c'est de l'ingenierie. Liberez les vraies performances de votre PC.
+            Un logiciel. 85 optimisations. Des résultats en 5 minutes.
           </p>
           <div className="stats-row">
             <div className="stat">
@@ -226,60 +226,74 @@ function HomePage({ customer, screenshotUrl }) {
               <span className="stat-label">Input Delay</span>
             </div>
             <div className="stat">
-              <span className="stat-number">0ms</span>
-              <span className="stat-label">Stutter</span>
+              <span className="stat-number">85</span>
+              <span className="stat-label">Tweaks</span>
             </div>
           </div>
-          <button className="cta-primary" onClick={scrollToPrice}>Decouvrir le Secret</button>
+          <div className="hero-ctas">
+            <button className="cta-primary" onClick={scrollToPrice}>Acheter maintenant</button>
+            <button className="cta-secondary" onClick={scrollToProduct}>Voir le logiciel ↓</button>
+          </div>
         </div>
       </section>
 
-      {/* Problem Section */}
-      <section className="section">
-        <h2 className="section-title">Le Mur <span className="highlight">Invisible</span></h2>
-        <p className="section-subtitle">Ces micro-problemes qui ruinent vos performances sans que vous le sachiez</p>
-        <div className="problem-grid">
-          <div className="problem-card">
-            <i className="fa-solid fa-bolt-lightning problem-icon"></i>
-            <h3 className="problem-title">L'Input Delay Cache</h3>
-            <p className="problem-description">Ce micro-delai entre votre clic et l'action a l'ecran qui vous fait rater vos pompes et perdre vos build fights.</p>
+      {/* ── PAIN STRIP ── */}
+      <div className="pain-strip">
+        <div className="pain-strip-inner">
+          <div className="pain-item">
+            <i className="fa-solid fa-bolt-lightning"></i>
+            <div>
+              <p className="pain-title">Input Delay caché</p>
+              <p className="pain-desc">Le micro-délai qui fait rater chaque pompe</p>
+            </div>
           </div>
-          <div className="problem-card">
-            <i className="fa-solid fa-wave-square problem-icon"></i>
-            <h3 className="problem-title">Les FPS Instables</h3>
-            <p className="problem-description">Des chutes brutales en fin de zone (Endgame) qui transforment vos rotations de victoire en echecs garantis.</p>
+          <div className="pain-divider" />
+          <div className="pain-item">
+            <i className="fa-solid fa-wave-square"></i>
+            <div>
+              <p className="pain-title">FPS instables</p>
+              <p className="pain-desc">Chutes en endgame qui coûtent vos victoires</p>
+            </div>
           </div>
-          <div className="problem-card">
-            <i className="fa-solid fa-network-wired problem-icon"></i>
-            <h3 className="problem-title">La Latence Reseau</h3>
-            <p className="problem-description">Votre ennemi vous voit 50ms avant que vous ne le voyiez. Il a deja tire pendant que vous cherchez encore.</p>
+          <div className="pain-divider" />
+          <div className="pain-item">
+            <i className="fa-solid fa-network-wired"></i>
+            <div>
+              <p className="pain-title">Ping élevé</p>
+              <p className="pain-desc">Votre ennemi vous voit 50ms avant vous</p>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/*<div className="highlight-box">
-          <p><i className="fa-solid fa-triangle-exclamation"></i> Meme avec un PC a 3000EUR, vous n'utilisez probablement que 60% de sa puissance reelle.</p>
-        </div>*/}
-
-      </section>
-
-      {/* Secret Section */}
-      <section className="section" style={{ background: 'var(--card-bg)' }}>
+      {/* ── PRODUCT ── */}
+      <section className="section" id="product" style={{ background: 'var(--card-bg)' }}>
         <div className="secret-container">
-          <div className="secret-content">
-            <h2>Le Logiciel <span className="highlight">404 Tweaks</span></h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: 1.8 }}>
-              Nous avons automatise les optimisations des meilleurs joueurs mondiaux dans un logiciel simple et puissant. Un clic, des resultats.
+          <div className="secret-content animate-on-scroll">
+            <div className="product-tweaks-badge">
+              <span className="tweaks-count">85</span>
+              <div className="tweaks-label-wrap">
+                <span className="tweaks-label">tweaks</span>
+                <span className="tweaks-sublabel">disponibles</span>
+              </div>
+            </div>
+            <h2 style={{ marginTop: '1.25rem' }}>Le Logiciel <span className="highlight">404 Tweaks</span></h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', lineHeight: 1.8, margin: '1rem 0 1.5rem' }}>
+              Toutes les optimisations des meilleurs joueurs mondiaux, automatisées en un clic.
             </p>
             <ul className="secret-list">
-              <li><i className="fa-solid fa-check"></i> Tweaks Windows appliques automatiquement</li>
-              <li><i className="fa-solid fa-check"></i> Optimisation GPU, CPU et reseau integree</li>
-              <li><i className="fa-solid fa-check"></i> Interface claire, aucune competence requise</li>
-              <li><i className="fa-solid fa-check"></i> Restauration en un clic si besoin</li>
-              <li><i className="fa-solid fa-check"></i> Mises a jour automatiques incluses</li>
+              <li><i className="fa-solid fa-check"></i> Tweaks Windows appliqués automatiquement</li>
+              <li><i className="fa-solid fa-check"></i> GPU, CPU, RAM et réseau optimisés</li>
+              <li><i className="fa-solid fa-check"></i> Interface simple, aucune compétence requise</li>
+              <li><i className="fa-solid fa-check"></i> Restauration en 1 clic si besoin</li>
+              <li><i className="fa-solid fa-check"></i> Mises à jour automatiques incluses</li>
             </ul>
+            <button className="cta-primary product-price-cta" onClick={scrollToPrice}>
+              Voir les prix →
+            </button>
           </div>
           <div
-            className={`book-preview${screenshotUrl ? ' book-preview--img' : ''}`}
+            className={`book-preview${screenshotUrl ? ' book-preview--img' : ''} animate-on-scroll`}
             onClick={() => screenshotUrl && setLightbox(true)}
           >
             {screenshotUrl
@@ -287,105 +301,73 @@ function HomePage({ customer, screenshotUrl }) {
               : <i className="fa-solid fa-laptop-code"></i>
             }
           </div>
-
-          {/* Lightbox */}
-          {lightbox && screenshotUrl && (
-            <div
-              className="lightbox-overlay"
-              onClick={() => setLightbox(false)}
-              onKeyDown={e => e.key === 'Escape' && setLightbox(false)}
-              role="dialog"
-              aria-modal="true"
-            >
-              <button className="lightbox-close" onClick={() => setLightbox(false)} aria-label="Fermer">✕</button>
-              <img src={screenshotUrl} alt="404 Tweaks — plein écran" onClick={e => e.stopPropagation()} />
-            </div>
-          )}
         </div>
       </section>
 
-      {/* Results Chart */}
+      {/* Lightbox */}
+      {lightbox && screenshotUrl && (
+        <div className="lightbox-overlay" onClick={() => setLightbox(false)} role="dialog" aria-modal="true">
+          <button className="lightbox-close" onClick={() => setLightbox(false)} aria-label="Fermer">✕</button>
+          <img src={screenshotUrl} alt="404 Tweaks — plein écran" onClick={e => e.stopPropagation()} />
+        </div>
+      )}
+
+      {/* ── PERFORMANCE ── */}
       <section className="section">
-        <h2 className="section-title">Resultats <span className="highlight">Mesurables</span></h2>
-        <p className="section-subtitle">Performances avant/apres utilisation du logiciel</p>
-        <div className="chart-container">
-          <div className="comparison-bars">
-            <div className="bar-group">
-              <div className="bar" style={{ height: '40%' }}><span className="bar-value">144</span></div>
-              <p className="bar-label">FPS Moyen<br/>(Standard)</p>
-            </div>
-            <div className="bar-group">
-              <div className="bar bar-highlight" style={{ height: '90%' }}><span className="bar-value">240+</span></div>
-              <p className="bar-label">FPS Moyen<br/>(Avec 404 Tweaks)</p>
-            </div>
-            <div className="bar-group">
-              <div className="bar bar-negative" style={{ height: '70%' }}><span className="bar-value">35ms</span></div>
-              <p className="bar-label">Input Delay<br/>(Standard)</p>
-            </div>
-            <div className="bar-group">
-              <div className="bar bar-highlight" style={{ height: '25%' }}><span className="bar-value">12ms</span></div>
-              <p className="bar-label">Input Delay<br/>(Avec 404 Tweaks)</p>
-            </div>
-          </div>
-          <p className="chart-note">*Donnees moyennes observees sur une configuration milieu de gamme (RTX 4060 / i5-13400)</p>
-        </div>
-      </section>
-
-      {/* Features */}
-      <section className="section" style={{ background: 'var(--card-bg)' }}>
-        <h2 className="section-title">Fonctionnalites <span className="highlight">Incluses</span></h2>
-        <p className="section-subtitle">Tout ce dont vous avez besoin pour dominer techniquement</p>
-        <div className="contents-grid">
+        <h2 className="section-title animate-on-scroll">Résultats <span className="highlight">Mesurables</span></h2>
+        <p className="section-subtitle animate-on-scroll">Config milieu de gamme — RTX 4060 / i5-13400</p>
+        <div className="perf-grid">
           {[
-            { num: '01', title: 'Sauvegarde & Restauration', desc: 'Point de restauration Windows et backup registre crees automatiquement avant toute modification.' },
-            { num: '02', title: 'Tweaks Windows', desc: 'Desactivation des services inutiles, optimisation multimedia et UI pour maximiser les ressources jeu.' },
-            { num: '03', title: 'GPU Optimizer', desc: 'HAGS, PCIe power management, TDR et DWM optimises pour des FPS stables et un input delay reduit.' },
-            { num: '04', title: 'CPU Optimizer', desc: 'Power throttling, scheduler, boost et core parking configures pour des performances processeur maximales.' },
-            { num: '05', title: 'RAM Optimizer', desc: 'Flush de la memoire standby, paging et compression RAM pour liberer de la memoire vive en continu.' },
-            { num: '06', title: 'Nettoyage Systeme', desc: 'Suppression des fichiers TEMP, shader cache, flush DNS et corbeille. PC toujours propre.' },
-            { num: '07', title: 'Reseau Chirurgical', desc: 'Desactivation de Nagle, optimisation TCP/IP, DNS et reset du stack reseau pour reduire le ping.' },
-            { num: '08', title: 'Stockage Optimise', desc: 'TRIM SSD, NTFS, prefetch et write cache configures pour des temps de chargement minimaux.' },
-            { num: '09', title: 'Input & Peripheriques', desc: 'Souris 1:1 sans acceleration, clavier et USB power optimises. Latence input au minimum absolu.' },
-            { num: '10', title: 'Power Plan Ultimate', desc: 'Plan Ultimate Performance actif, CPU a 100%, boost et ASPM configures pour 0 compromis.' },
-            { num: '11', title: 'Verification Etat', desc: 'Scan read-only de votre systeme pour verifier quels tweaks sont actifs et quels modules appliquer.' },
-          ].map(ch => (
-            <div className="content-card" key={ch.num}>
-              <span className="content-number">MODULE {ch.num}</span>
-              <h3 className="content-title">{ch.title}</h3>
-              <p className="content-description">{ch.desc}</p>
+            { label: 'FPS Moyen',   before: '144 FPS',  after: '240+ FPS', pctBad: 44, pctGood: 95 },
+            { label: 'Input Delay', before: '35 ms',    after: '12 ms',    pctBad: 70, pctGood: 24 },
+            { label: 'Stutter',     before: 'Fréquent', after: 'Zéro',     pctBad: 60, pctGood: 3  },
+          ].map((row, i) => (
+            <div className="perf-row animate-on-scroll" key={i}>
+              <div className="perf-header">
+                <span className="perf-label">{row.label}</span>
+                <div className="perf-vals">
+                  <span className="perf-val-bad">{row.before}</span>
+                  <span className="perf-arrow">→</span>
+                  <span className="perf-val-good">{row.after}</span>
+                </div>
+              </div>
+              <div className="perf-tracks">
+                <div className="perf-track">
+                  <span className="perf-track-label">Avant</span>
+                  <div className="perf-track-bar">
+                    <div className="perf-bar perf-bar--bad" style={{ '--w': `${row.pctBad}%` }} />
+                  </div>
+                </div>
+                <div className="perf-track">
+                  <span className="perf-track-label">Après</span>
+                  <div className="perf-track-bar">
+                    <div className="perf-bar perf-bar--good" style={{ '--w': `${row.pctGood}%` }} />
+                  </div>
+                </div>
+              </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* ── REVIEWS ── */}
       {reviews.length > 0 && (() => {
         const avg = (reviews.reduce((s, r) => s + (r.stars || 5), 0) / reviews.length).toFixed(1);
-        const fiveStars = reviews.filter(r => r.stars === 5).length;
         const displayed = showAllReviews ? reviews : reviews.slice(0, REVIEWS_PREVIEW);
-        const hasMore   = reviews.length > REVIEWS_PREVIEW;
+        const hasMore = reviews.length > REVIEWS_PREVIEW;
         return (
-          <section className="section">
-            <h2 className="section-title">Ils ont <span className="highlight">Transforme</span> leur Setup</h2>
-            <p className="section-subtitle">Des resultats concrets de joueurs competitifs</p>
-            {/* Stats bar */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '2.5rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--accent)' }}>{reviews.length}</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Avis verifies</div>
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '2rem', fontWeight: 700, color: '#FFD700' }}>{avg} <span style={{ fontSize: '1.2rem' }}>★</span></div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Note moyenne</div>
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--success, #57F287)' }}>{fiveStars}</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Avis 5 etoiles</div>
-              </div>
+          <section className="section" style={{ background: 'var(--card-bg)' }}>
+            <h2 className="section-title animate-on-scroll">Ils ont <span className="highlight">Transformé</span> leur Setup</h2>
+            <div className="reviews-stats animate-on-scroll">
+              <span><strong style={{ color: 'var(--neon-green)' }}>{reviews.length}</strong> avis vérifiés</span>
+              <span className="reviews-sep">·</span>
+              <span><strong style={{ color: '#FFD700' }}>{avg} ★</strong> note moyenne</span>
+              <span className="reviews-sep">·</span>
+              <span><strong style={{ color: 'var(--neon-green)' }}>{reviews.filter(r => r.stars === 5).length}</strong> avis 5★</span>
             </div>
             <div className="testimonials-grid">
               {displayed.map((t, i) => (
-                <div className="testimonial" key={i}>
+                <div className="testimonial animate-on-scroll" key={i}>
                   <StarRating count={t.stars} />
                   <p className="testimonial-text">"{t.text}"</p>
                   <p className="testimonial-author">{t.username}</p>
@@ -395,13 +377,8 @@ function HomePage({ customer, screenshotUrl }) {
             </div>
             {hasMore && (
               <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-                <button
-                  onClick={() => setShowAllReviews(v => !v)}
-                  className="btn-secondary"
-                  style={{ padding: '0.75rem 2rem', fontSize: '0.95rem' }}>
-                  {showAllReviews
-                    ? `Voir moins`
-                    : `Voir tous les avis (${reviews.length})`}
+                <button onClick={() => setShowAllReviews(v => !v)} className="btn-secondary" style={{ padding: '0.75rem 2rem' }}>
+                  {showAllReviews ? 'Voir moins' : `Voir tous les avis (${reviews.length})`}
                 </button>
               </div>
             )}
@@ -409,139 +386,81 @@ function HomePage({ customer, screenshotUrl }) {
         );
       })()}
 
-      {/* Pricing */}
-      <section className="section" id="pricing" style={{ background: 'var(--card-bg)' }}>
-        <h2 className="section-title">Pret a <span className="highlight">Dominer</span> ?</h2>
-        <p className="section-subtitle">Ne laissez plus votre materiel decider de vos defaites</p>
-        <div className="pricing-container" style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', justifyContent: 'center', maxWidth: 900, margin: '0 auto' }}>
+      {/* ── PRICING ── */}
+      <section className="section pricing-section" id="pricing">
+        <h2 className="section-title animate-on-scroll">Prêt à <span className="highlight">Dominer</span> ?</h2>
+        <p className="section-subtitle animate-on-scroll">Accès immédiat après paiement — sans engagement</p>
+        <div className="pricing-grid">
           {plans.length === 0 ? (
-            <div className="price-box">
-              <p style={{ color: 'var(--text-secondary)' }}>Chargement des plans...</p>
-            </div>
-          ) : plans.map(plan => (
+            <p style={{ color: 'var(--text-secondary)', textAlign: 'center' }}>Chargement...</p>
+          ) : plans.map((plan, idx) => (
+            <div
+              className={`plan-card animate-on-scroll${plan.popular ? ' plan-card--popular' : ''}`}
+              key={plan.key}
+              style={{ animationDelay: `${idx * 0.08}s` }}
+            >
+              {/* Glow orb */}
+              <div className="plan-card-glow" aria-hidden="true" />
 
-              <div
-                  className="price-box"
-                  key={plan.key}
-                  style={{
-                    flex: '1 1 320px',
-                    maxWidth: 360,
-                    position: 'relative',
-                    overflow: 'hidden'
-                  }}
-              >
-              <div style={{ fontSize: '2rem', color: 'var(--accent)', marginBottom: '0.5rem' }}>
+              {/* Popular badge */}
+              {plan.popular && (
+                <div className="plan-popular-badge">
+                  <i className="fa-solid fa-bolt-lightning"></i> Populaire
+                </div>
+              )}
+
+              {/* Icon */}
+              <div className="plan-icon">
                 <i className={`fa-solid ${planIcons[plan.key] || 'fa-key'}`}></i>
               </div>
 
-                {plan.popular && (
-                    <div
-                        style={{
-                          position: 'absolute',
-                          top: 14,
-                          left: -42,
-                          background: 'linear-gradient(135deg, #ffffff, #f2f2f2)',
-                          color: '#000',
-                          padding: '6px 52px',
-                          fontSize: '0.7rem',
-                          fontWeight: 900,
-                          letterSpacing: '0.1em',
-                          textTransform: 'uppercase',
-                          transform: 'rotate(-45deg)',
-                          boxShadow: '0 10px 28px rgba(0,0,0,.45)',
-                          border: '1px solid rgba(0,0,0,.25)',
-                          zIndex: 3
-                        }}
-                    >
-                      Populaire
-                    </div>
+              {/* Duration */}
+              <p className="plan-name">{plan.name}</p>
+
+              {/* Price block */}
+              <div className="plan-price-block">
+                {plan.originalPrice > 0 && (
+                  <span className="plan-price-old">{(plan.originalPrice / 100).toFixed(2)} €</span>
                 )}
-              {plan.originalPrice > 0 && (
-                <p style={{ color: 'var(--text-secondary)', textDecoration: 'line-through', fontSize: '1rem', marginBottom: '0.1rem' }}>
-                  {(plan.originalPrice / 100).toFixed(2)} EUR
-                </p>
-              )}
-              <p className="price-new" style={{ fontSize: '1.8rem' }}>{(plan.price / 100).toFixed(2)} EUR</p>
-              {plan.originalPrice > 0 && (
-                <span style={{ display: 'inline-block', fontSize: '0.75rem', background: '#22c55e', color: '#000', borderRadius: 4, padding: '2px 8px', fontWeight: 700, marginBottom: '0.5rem' }}>
-                  -{Math.round((1 - plan.price / plan.originalPrice) * 100)}% DE REDUCTION
-                </span>
-              )}
-              <p className="price-note" style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '1rem' }}>{plan.name}</p>
-              <div className="included-list" style={{ marginBottom: '1.25rem' }}>
-                <ul>
-                  <li><i className="fa-solid fa-check"></i> Logiciel d'optimisation complet</li>
-                  <li><i className="fa-solid fa-check"></i> Discord VIP prive</li>
-                  <li><i className="fa-solid fa-check"></i> Mises a jour incluses</li>
-                  <li><i className="fa-solid fa-check"></i> Support technique</li>
-                </ul>
+                <span className="plan-price-main">{(plan.price / 100).toFixed(2)}<span className="plan-price-currency"> €</span></span>
+                {plan.originalPrice > 0 && (
+                  <span className="plan-discount-badge">-{Math.round((1 - plan.price / plan.originalPrice) * 100)}%</span>
+                )}
               </div>
-              <button className="cta-primary" style={{ width: '100%' }} onClick={() => handlePurchase(plan.key)}>
-                {customer ? 'Acheter' : 'Creer un Compte'}
+
+              {/* Divider */}
+              <div className="plan-divider" />
+
+              {/* Features */}
+              <ul className="plan-features">
+                <li><i className="fa-solid fa-check"></i> 85 tweaks d'optimisation</li>
+                <li><i className="fa-solid fa-check"></i> Discord VIP privé</li>
+                <li><i className="fa-solid fa-check"></i> Mises à jour automatiques</li>
+                <li><i className="fa-solid fa-check"></i> Support technique direct</li>
+              </ul>
+
+              {/* CTA */}
+              <button
+                className={`plan-cta${plan.popular ? ' plan-cta--popular' : ''}`}
+                onClick={() => handlePurchase(plan.key)}
+              >
+                {customer ? 'Acheter maintenant' : 'Créer un Compte'}
+                <i className="fa-solid fa-arrow-right plan-cta-arrow"></i>
               </button>
             </div>
           ))}
         </div>
-
       </section>
 
-      {/* Protection */}
-      <section className="section">
-        <h2 className="section-title">Protection et <span className="highlight">Authenticite</span></h2>
-        <p className="section-subtitle">Votre achat est securise et personnalise</p>
-        <div className="protection-grid">
-          {[
-            { icon: 'fa-shield-halved', title: 'Licence HWID', desc: 'Votre licence est liee a votre machine. Protection anti-partage integree.' },
-            { icon: 'fa-link', title: 'Lien Securise', desc: 'Votre lien de telechargement est personnel et protege par votre cle de licence.' },
-            { icon: 'fa-brands fa-discord', title: 'Discord VIP', desc: 'Communaute privee avec support direct, discussions et bonus exclusifs.' },
-            { icon: 'fa-rotate', title: 'Mises a Jour', desc: 'Versions pirates = obsoletes. Vous recevez toutes les nouvelles versions gratuitement.' },
-            { icon: 'fa-headset', title: 'Support Illimite', desc: 'Un probleme avec le logiciel ? Support technique direct du createur.' },
-            { icon: 'fa-star', title: 'Modules Mensuels', desc: 'Nouveaux modules d\'optimisation et tweaks exclusifs ajoutes chaque mois.' },
-          ].map((p, i) => (
-            <div className="protection-card" key={i}>
-              <i className={`fa-solid ${p.icon} protection-icon`}></i>
-              <h3 className="protection-title">{p.title}</h3>
-              <p className="protection-description">{p.desc}</p>
-            </div>
-          ))}
-        </div>
-        <div className="warning-box">
-          <h3><i className="fa-solid fa-triangle-exclamation"></i> Message Important</h3>
-          <p>
-            Ce logiciel represente des centaines d'heures de developpement, de tests et de recherche. En l'achetant legalement, vous soutenez le developpement et vous obtenez bien plus qu'un simple outil.<br/><br/>
-            <strong>Les versions pirates ne donnent pas acces au Discord VIP, aux mises a jour, au support ni aux nouveaux modules.</strong> Le prix est volontairement accessible pour que tout le monde puisse optimiser son setup.
-          </p>
-        </div>
-      </section>
-
-      {/* FAQ */}
+      {/* ── FAQ ── */}
       <section className="section" style={{ background: 'var(--card-bg)' }}>
-        <h2 className="section-title">Questions <span className="highlight">Frequentes</span></h2>
+        <h2 className="section-title animate-on-scroll">Questions <span className="highlight">Fréquentes</span></h2>
         <div className="faq-container">
-          <FaqItem
-            question="Le logiciel fonctionne-t-il pour tous les PC ?"
-            answer="Oui ! Le logiciel supporte toutes les configurations, des PC d'entree de gamme aux setups haut de gamme. Chaque module detecte automatiquement votre materiel (Intel/AMD, NVIDIA/AMD) et adapte les optimisations."
-          />
-          <FaqItem
-            question="Est-ce que je risque d'endommager mon PC ?"
-            answer="Non. Toutes les optimisations sont sures et reversibles. Le logiciel cree automatiquement un point de restauration Windows avant chaque modification majeure. Un clic suffit pour revenir en arriere."
-          />
-          <FaqItem
-            question="Combien de temps faut-il pour tout appliquer ?"
-            answer="Moins de 5 minutes pour une optimisation complete. Le logiciel applique tous les tweaks en automatique. Vous pouvez aussi activer les modules un par un selon vos besoins."
-          />
-          <FaqItem
-            question="Le logiciel est-il compatible avec AMD et NVIDIA ?"
-            answer="Absolument. Le module GPU detecte automatiquement votre carte et applique les parametres optimaux : Low Latency Mode, NVIDIA Reflex, Anti-Lag, selon votre marque (RTX 2000/3000/4000, RX 6000/7000)."
-          />
-          <FaqItem
-            question="Y a-t-il des mises a jour ?"
-            answer="Oui, le logiciel se met a jour automatiquement avec les nouvelles optimisations Fortnite, les updates de drivers et les changements de meta. Tous les acheteurs recoivent les mises a jour gratuitement."
-          />
-          <FaqItem
-            question="Puis-je obtenir un remboursement ?"
-            answer="Garantie satisfait ou rembourse 30 jours. Si vous n'observez pas d'amelioration mesurable de vos performances apres avoir utilise le logiciel, contactez-nous pour un remboursement integral sans justification."
-          />
+          <FaqItem question="Le logiciel fonctionne-t-il pour tous les PC ?" answer="Oui ! Toutes les configurations sont supportées, des entrées de gamme aux setups haut de gamme. Chaque module détecte automatiquement votre matériel (Intel/AMD, NVIDIA/AMD) et adapte les optimisations." />
+          <FaqItem question="Est-ce que je risque d'endommager mon PC ?" answer="Non. Les 85 optimisations sont sûres et réversibles. Un point de restauration Windows est créé automatiquement avant chaque modification. Un clic pour revenir en arrière." />
+          <FaqItem question="Combien de temps faut-il pour tout appliquer ?" answer="Moins de 5 minutes. Le logiciel applique automatiquement les 85 tweaks. Vous pouvez aussi activer les modules un par un selon vos besoins." />
+          <FaqItem question="Compatible AMD et NVIDIA ?" answer="Absolument. Le module GPU détecte votre carte et applique les paramètres optimaux : Low Latency Mode, NVIDIA Reflex, Anti-Lag (RTX 2000/3000/4000, RX 6000/7000)." />
+          <FaqItem question="Y a-t-il des mises à jour ?" answer="Oui, le logiciel se met à jour automatiquement avec les nouvelles optimisations Fortnite, updates de drivers et changements de méta. Toujours incluses." />
         </div>
       </section>
     </>
