@@ -1,0 +1,83 @@
+{
+  "nav.howItWorks": "Cómo funciona",
+  "nav.login": "Iniciar sesión",
+  "nav.register": "Crear una cuenta",
+  "nav.logout": "Cerrar sesión",
+
+  "hero.badge": "⚡ 98 TWEAKS DISPONIBLES",
+  "hero.title1": "DEJA DE JUGAR",
+  "hero.title2": "CON UN",
+  "hero.highlight": "HANDICAP",
+  "hero.subtitle": "Un software. 98 optimizaciones. Resultados en 5 minutos.",
+  "hero.activeClients": "clientes activos este mes",
+  "hero.stat.fps": "FPS Boost",
+  "hero.stat.delay": "Input Delay",
+  "hero.stat.tweaks": "Tweaks",
+  "hero.priceFrom": "Desde",
+  "hero.instantAccess": "Acceso instantáneo",
+  "hero.noCommitment": "Sin compromiso",
+  "hero.cta.buy": "Comprar ahora",
+  "hero.cta.see": "Ver el software ↓",
+
+  "pain.delay.title": "Input Delay oculto",
+  "pain.delay.desc": "El micro-retraso que te hace fallar cada bomba",
+  "pain.fps.title": "FPS inestables",
+  "pain.fps.desc": "Caídas en endgame que te cuestan las victorias",
+  "pain.ping.title": "Ping alto",
+  "pain.ping.desc": "Tu enemigo te ve 50ms antes que tú a él",
+
+  "product.tweaksBadge": "tweaks",
+  "product.available": "disponibles",
+  "product.title": "El Software",
+  "product.subtitle": "Todas las optimizaciones de los mejores jugadores del mundo, automatizadas en un clic.",
+  "product.feat1": "Tweaks de Windows aplicados automáticamente",
+  "product.feat2": "GPU, CPU, RAM y red optimizados",
+  "product.feat3": "Interfaz simple, sin conocimientos requeridos",
+  "product.feat4": "Restauración en 1 clic si es necesario",
+  "product.feat5": "Actualizaciones automáticas incluidas",
+  "product.seePrices": "Ver precios →",
+
+  "pricing.title": "Elige tu plan",
+  "pricing.subtitle": "Acceso inmediato tras el pago. Sin suscripciones ocultas.",
+  "pricing.buy": "Comprar ahora",
+  "pricing.login": "Iniciar sesión para comprar",
+
+  "perf.title": "Rendimiento",
+  "perf.highlight": "Comprobado",
+  "perf.drag": "Desliza para comparar ←→",
+
+  "reviews.title": "Lo que dicen",
+  "reviews.highlight": "nuestros jugadores",
+
+  "faq.title": "Preguntas frecuentes",
+
+  "footer.rights": "Todos los derechos reservados.",
+  "footer.support": "Soporte",
+  "footer.legal": "Aviso legal",
+  "footer.privacy": "Privacidad",
+
+  "howItWorks.title": "Cómo funciona",
+  "howItWorks.subtitle": "Simple, rápido, efectivo.",
+
+  "login.title": "Iniciar sesión",
+  "login.submit": "Entrar",
+  "login.noAccount": "¿No tienes cuenta?",
+  "login.register": "Crear una cuenta",
+  "login.forgot": "¿Olvidaste tu contraseña?",
+
+  "register.title": "Crear una cuenta",
+  "register.submit": "Registrarse",
+  "register.hasAccount": "¿Ya tienes una cuenta?",
+  "register.login": "Iniciar sesión",
+
+  "profile.title": "Mi perfil",
+  "profile.logout": "Cerrar sesión",
+  "profile.download": "Descargar el software",
+  "profile.noLicense": "Sin licencia activa",
+
+  "success.title": "¡Compra exitosa!",
+  "success.subtitle": "Tu clave de licencia está lista.",
+  "success.copy": "Copiar clave",
+  "success.download": "Descargar software",
+  "success.profile": "Ver mi perfil"
+}

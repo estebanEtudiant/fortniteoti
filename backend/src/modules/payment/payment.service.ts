@@ -9,7 +9,8 @@ import { RedisService } from '../../database/redis.service';
 import { MailService } from '../customer/mail.service';
 import { BotNotifyService } from '../bot/bot-notify.service';
 
-const PLANS_CONFIG_KEY = 'admin:plans_config';
+const PLANS_CONFIG_KEY  = 'admin:plans_config';
+const PROMO_CODES_KEY   = 'admin:promo_codes';
 const DEFAULT_PLANS: Record<string, { name: string; price: number; active: boolean; stripePrice: string }> = {
   DAYS_1:   { name: '1 Jour',   price: 199,  active: false, stripePrice: '' },
   DAYS_7:   { name: '7 Jours',  price: 499,  active: false, stripePrice: '' },
@@ -45,6 +46,29 @@ export class PaymentService {
     }
   }
 
+  // ── Public: active clients this month ──
+  async getPublicStats(): Promise<{ activeThisMonth: number }> {
+    const start = new Date();
+    start.setDate(1);
+    start.setHours(0, 0, 0, 0);
+    const count = await this.prisma.order.count({
+      where: { status: 'COMPLETED', completedAt: { gte: start } },
+    });
+    return { activeThisMonth: count };
+  }
+
+  // ── Public: validate a promo code ──
+  async validatePromoCode(code: string): Promise<{ type: 'percent' | 'fixed'; amount: number; label: string }> {
+    if (!code) throw new BadRequestException('Code requis');
+    const raw = await this.redis.get(PROMO_CODES_KEY);
+    const codes: Record<string, any> = raw ? JSON.parse(raw) : {};
+    const promo = codes[code.toUpperCase()];
+    if (!promo || !promo.active) throw new BadRequestException('Code promo invalide ou expiré');
+    if (promo.maxUses > 0 && promo.uses >= promo.maxUses) throw new BadRequestException('Code promo épuisé');
+    const label = promo.type === 'percent' ? `-${promo.amount}%` : `-${(promo.amount / 100).toFixed(2)} €`;
+    return { type: promo.type, amount: promo.amount, label };
+  }
+
   // ── Public: returns active plans with prices ──
   async getActivePlans() {
     let plans = { ...DEFAULT_PLANS };
@@ -63,7 +87,12 @@ export class PaymentService {
     }
 
     // Retrieve and verify the Stripe session
-    const session = await this.stripe.checkout.sessions.retrieve(sessionId);
+    let session: Stripe.Checkout.Session;
+    try {
+      session = await this.stripe.checkout.sessions.retrieve(sessionId);
+    } catch {
+      throw new BadRequestException('Session de paiement invalide');
+    }
 
     if (session.payment_status !== 'paid') {
       throw new BadRequestException('Le paiement n\'est pas encore complete');
@@ -126,7 +155,7 @@ export class PaymentService {
     // Send license key by email
     if (customer?.email) {
       const planName = allPlans[planKey]?.name || planKey;
-      const profileUrl = `${this.storefrontUrl}/#/profile`;
+      const profileUrl = `${this.storefrontUrl}/profile`;
       try {
         await this.mail.sendLicenseKey(customer.email, license.licenseKey, planName, profileUrl);
       } catch (err) {
@@ -142,7 +171,7 @@ export class PaymentService {
     return { licenseKey: license.licenseKey };
   }
 
-  async createCheckoutSession(customerId: string, planKey = 'LIFETIME'): Promise<{ url: string }> {
+  async createCheckoutSession(customerId: string, planKey = 'LIFETIME', promoCode?: string): Promise<{ url: string }> {
     if (!this.stripe) {
       throw new BadRequestException('Stripe not configured');
     }
@@ -177,7 +206,24 @@ export class PaymentService {
       },
     });
 
-    const session = await this.stripe.checkout.sessions.create({
+    // Resolve promo code → Stripe coupon ID if provided
+    let stripeCouponId: string | undefined;
+    if (promoCode) {
+      try {
+        const raw = await this.redis.get(PROMO_CODES_KEY);
+        const codes: Record<string, any> = raw ? JSON.parse(raw) : {};
+        const promo = codes[promoCode.toUpperCase()];
+        if (promo?.active && promo.stripeId) {
+          stripeCouponId = promo.stripeId;
+          // Increment usage counter
+          promo.uses = (promo.uses || 0) + 1;
+          codes[promoCode.toUpperCase()] = promo;
+          await this.redis.set(PROMO_CODES_KEY, JSON.stringify(codes));
+        }
+      } catch { /* ignore promo errors */ }
+    }
+
+    const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode: 'payment',
       payment_method_types: ['card'],
       customer_email: customer.email,
@@ -186,8 +232,8 @@ export class PaymentService {
           price_data: {
             currency: 'eur',
             product_data: {
-              name: `Guide FortniteOpti — ${planCfg.name}`,
-              description: '100+ pages d\'optimisation Fortnite, Discord VIP, mises à jour incluses',
+              name: `404 Tweaks — ${planCfg.name}`,
+              description: '98 optimisations Fortnite, Discord VIP, mises à jour incluses',
             },
             unit_amount: planCfg.price,
           },
@@ -195,9 +241,15 @@ export class PaymentService {
         },
       ],
       metadata: { plan: planKey, customerId, orderId: order.id },
-      success_url: `${this.storefrontUrl}/#/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${this.storefrontUrl}/#/payment`,
-    });
+      success_url: `${this.storefrontUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${this.storefrontUrl}/payment`,
+    };
+
+    if (stripeCouponId) {
+      sessionParams.discounts = [{ coupon: stripeCouponId }];
+    }
+
+    const session = await this.stripe.checkout.sessions.create(sessionParams);
 
     await this.prisma.order.update({
       where: { id: order.id },
@@ -286,7 +338,7 @@ export class PaymentService {
     // Send license key by email
     if (email) {
       const planName = allPlans[planId]?.name || planId;
-      const profileUrl = `${this.storefrontUrl}/#/profile`;
+      const profileUrl = `${this.storefrontUrl}/profile`;
       try {
         await this.mail.sendLicenseKey(email, license.licenseKey, planName, profileUrl);
       } catch (err) {

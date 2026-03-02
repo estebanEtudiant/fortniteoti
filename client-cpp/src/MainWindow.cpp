@@ -11,6 +11,11 @@
 #include "LogsPage.h"
 #include "SettingsPage.h"
 #include "UpdateDialog.h"
+#include "GuidePage.h"
+#include "NetworkOptimizerPage.h"
+#include "DriverOptPage.h"
+#include "FortniteSettingsPage.h"
+#include "MacroPage.h"
 #include "AnimatedStackedWidget.h"
 #include "Palette.h"
 #include "gui.h"
@@ -19,10 +24,7 @@
 #include <QScreen>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include <QPainter>
-#include <QRadialGradient>
 
-// Windows DWM drop shadow on frameless window
 #ifdef _WIN32
 #include <windows.h>
 #include <dwmapi.h>
@@ -32,38 +34,46 @@
 MainWindow::MainWindow(AppController* ctrl, QWidget* parent)
     : QMainWindow(parent), m_ctrl(ctrl)
 {
-    setWindowTitle("FortniteOptimizer 2026");
+    setWindowTitle("404 Tweaks");
     setWindowFlags(Qt::FramelessWindowHint | Qt::Window);
     setMinimumSize(900, 580);
-    resize(1100, 680);
+    resize(1060, 660);
 
     // Center on primary screen
     QRect sg = QApplication::primaryScreen()->geometry();
-    move((sg.width() - 1100) / 2, (sg.height() - 680) / 2);
+    move((sg.width() - 1060) / 2, (sg.height() - 660) / 2);
 
     buildUi();
     connectSignals();
     applyDropShadow();
 
-    // Global stylesheet
+    // Global stylesheet — clean & minimal
     setStyleSheet(QString(
-        // Base: just background + font family, NO font-size (avoids inflated label heights)
         "QWidget { background: %1; color: %2; font-family: 'Segoe UI'; }"
-        // Explicit font sizes per type
-        "QLabel      { font-size: 13px; margin: 0; padding: 0; }"
-        "QCheckBox   { font-size: 12px; }"
+        "QLabel      { font-size: 13px; margin: 0; padding: 0; background: transparent; }"
+        "QCheckBox   { font-size: 12px; background: transparent; }"
         "QLineEdit   { font-size: 13px; }"
-        // Scrollbars
-        "QScrollBar:vertical { background: %1; width: 8px; margin: 0; }"
-        "QScrollBar::handle:vertical { background: %3; border-radius: 4px; min-height: 20px; }"
-        "QScrollBar::handle:vertical:hover { background: #4C5260; }"
+        // Scrollbars — thin & minimal
+        "QScrollBar:vertical {"
+        "  background: transparent; width: 6px; margin: 0; }"
+        "QScrollBar::handle:vertical {"
+        "  background: %3; border-radius: 3px; min-height: 24px; }"
+        "QScrollBar::handle:vertical:hover { background: %4; }"
         "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }"
-        "QScrollBar:horizontal { height: 8px; background: %1; }"
-        "QScrollBar::handle:horizontal { background: %3; border-radius: 4px; min-width: 20px; }"
+        "QScrollBar:horizontal {"
+        "  background: transparent; height: 6px; }"
+        "QScrollBar::handle:horizontal {"
+        "  background: %3; border-radius: 3px; min-width: 24px; }"
         "QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal { width: 0; }"
-        "QToolTip { background: %4; color: %2; border: 1px solid %5; border-radius: 4px; padding: 4px 8px; }")
-        .arg(Pal::BG.name(), Pal::TEXT.name(), "#383C44",
-             Pal::CARD2.name(), Pal::BORDER.name()));
+        // Tooltip
+        "QToolTip { background: %5; color: %2; border: 1px solid %6;"
+        "  border-radius: 5px; padding: 4px 8px; font-size: 12px; }")
+        .arg(Pal::BG.name(),       // %1 bg
+             Pal::TEXT.name(),      // %2 text
+             "#2E2E36",             // %3 scrollbar handle
+             "#44444E",             // %4 scrollbar hover
+             Pal::CARD2.name(),     // %5 tooltip bg
+             Pal::BORDER.name()));  // %6 tooltip border
 }
 
 void MainWindow::buildUi() {
@@ -80,12 +90,12 @@ void MainWindow::buildUi() {
     m_rootStack = new AnimatedStackedWidget;
     mainV->addWidget(m_rootStack, 1);
 
+    // License screen
     m_licScreen = new LicenseScreen(m_ctrl);
-    m_licScreen->setStyleSheet(QString("background: %1;").arg(Pal::BG.name()));
     m_rootStack->addWidget(m_licScreen);
 
+    // Main app layout
     m_mainWidget = new QWidget;
-    m_mainWidget->setStyleSheet(QString("background: %1;").arg(Pal::BG.name()));
     auto* mainH = new QHBoxLayout(m_mainWidget);
     mainH->setContentsMargins(0, 0, 0, 0);
     mainH->setSpacing(0);
@@ -96,7 +106,7 @@ void MainWindow::buildUi() {
     auto* contentArea = new QWidget;
     contentArea->setStyleSheet(QString("background: %1;").arg(Pal::BG.name()));
     auto* contentV = new QVBoxLayout(contentArea);
-    contentV->setContentsMargins(22, 14, 22, 14);
+    contentV->setContentsMargins(24, 16, 24, 16);
     contentV->setSpacing(0);
 
     m_contentStack = new AnimatedStackedWidget;
@@ -104,12 +114,23 @@ void MainWindow::buildUi() {
     m_modules   = new ModulesPage(m_ctrl);
     m_logs      = new LogsPage(m_ctrl);
     m_settings  = new SettingsPage(m_ctrl);
-    m_contentStack->addWidget(m_dashboard);
-    m_contentStack->addWidget(m_modules);
-    m_contentStack->addWidget(m_logs);
-    m_contentStack->addWidget(m_settings);
-    contentV->addWidget(m_contentStack, 1);
+    m_guide     = new GuidePage;
+    m_network   = new NetworkOptimizerPage;
+    m_drivers   = new DriverOptPage;
+    m_fortnite  = new FortniteSettingsPage;
+    m_macros    = new MacroPage;
 
+    m_contentStack->addWidget(m_dashboard);   // 0 — Dashboard
+    m_contentStack->addWidget(m_modules);     // 1 — Modules
+    m_contentStack->addWidget(m_logs);        // 2 — Logs
+    m_contentStack->addWidget(m_settings);    // 3 — Parametres
+    m_contentStack->addWidget(m_guide);       // 4 — Guide
+    m_contentStack->addWidget(m_network);     // 5 — Reseau
+    m_contentStack->addWidget(m_drivers);     // 6 — Drivers
+    m_contentStack->addWidget(m_fortnite);    // 7 — Fortnite
+    m_contentStack->addWidget(m_macros);      // 8 — Macros
+
+    contentV->addWidget(m_contentStack, 1);
     mainH->addWidget(contentArea, 1);
     m_rootStack->addWidget(m_mainWidget);
 
@@ -117,11 +138,9 @@ void MainWindow::buildUi() {
 }
 
 void MainWindow::connectSignals() {
-    // Titlebar buttons
     connect(m_titleBar, &TitleBarWidget::closeRequested,    this, &QWidget::close);
     connect(m_titleBar, &TitleBarWidget::minimizeRequested, this, &QWidget::showMinimized);
 
-    // License screen
     connect(m_licScreen, &LicenseScreen::activateRequested,
             m_ctrl,      &AppController::activateLicense);
     connect(m_ctrl, &AppController::licenseChecking,
@@ -129,13 +148,9 @@ void MainWindow::connectSignals() {
     connect(m_ctrl, &AppController::licenseStatus,
             m_licScreen, &LicenseScreen::onStatus);
 
-    // Screen navigation
     connect(m_ctrl, &AppController::screenChanged, this, &MainWindow::onScreenChanged);
+    connect(m_sidebar, &SidebarWidget::tabChanged,  this, &MainWindow::onSidebarTab);
 
-    // Sidebar navigation
-    connect(m_sidebar, &SidebarWidget::tabChanged, this, &MainWindow::onSidebarTab);
-
-    // Running state → sidebar + dashboard
     connect(m_ctrl, &AppController::runningChanged,
             m_sidebar, &SidebarWidget::onRunningChanged);
     connect(m_ctrl, &AppController::runningChanged,
@@ -143,7 +158,6 @@ void MainWindow::connectSignals() {
     connect(m_ctrl, &AppController::runningChanged,
             m_logs, &LogsPage::onRunningChanged);
 
-    // When running starts, switch to Logs tab
     connect(m_ctrl, &AppController::runningChanged, this, [this](bool r, const QString&) {
         if (r) {
             m_sidebar->setCurrentTab(SidebarWidget::Logs);
@@ -151,7 +165,6 @@ void MainWindow::connectSignals() {
         }
     });
 
-    // License info → sidebar + settings
     connect(m_ctrl, &AppController::licenseActivated,
             m_sidebar, &SidebarWidget::onLicenseActivated);
     connect(m_ctrl, &AppController::licenseActivated,
@@ -159,29 +172,23 @@ void MainWindow::connectSignals() {
     connect(m_ctrl, &AppController::licenseActivated,
             m_settings, &SettingsPage::onLicenseActivated);
 
-    // Logs
     connect(m_ctrl, &AppController::logAppended,
             m_logs, &LogsPage::appendLog);
     connect(m_ctrl, &AppController::logsCleared,
             m_logs, &LogsPage::clearLogs);
 
-    // Checks refreshed → modules page
     connect(m_ctrl, &AppController::checksRefreshed,
             m_modules, &ModulesPage::onChecksRefreshed);
     connect(m_ctrl, &AppController::checksRefreshed,
             m_dashboard, &DashboardPage::onChecksRefreshed);
 
-    // Settings page navigation signals
     connect(m_settings, &SettingsPage::navigateTo, this, [this](int tab) {
         m_sidebar->setCurrentTab(static_cast<SidebarWidget::Tab>(tab));
         m_contentStack->switchTo(tab, AnimatedStackedWidget::Effect::SlideRight);
     });
 
-    // Update notification
     connect(m_ctrl, &AppController::updateDetected,
             this, &MainWindow::onUpdateDetected);
-
-    // Update dialog
     connect(m_updateDlg, &UpdateDialog::downloadRequested, m_ctrl, [this]() {
         m_ctrl->dismissUpdate();
     });
@@ -211,17 +218,7 @@ void MainWindow::onUpdateDetected(const QString& version,
 
 void MainWindow::paintEvent(QPaintEvent* e) {
     QMainWindow::paintEvent(e);
-    // Subtle corner glows
-    QPainter p(this);
-    QRadialGradient g1(width(), 0, 340);
-    g1.setColorAt(0, QColor(0, 155, 220, 7));
-    g1.setColorAt(1, Qt::transparent);
-    p.fillRect(rect(), g1);
-
-    QRadialGradient g2(0, height(), 270);
-    g2.setColorAt(0, QColor(100, 55, 210, 6));
-    g2.setColorAt(1, Qt::transparent);
-    p.fillRect(rect(), g2);
+    // No decorative effects — clean flat window
 }
 
 void MainWindow::applyDropShadow() {

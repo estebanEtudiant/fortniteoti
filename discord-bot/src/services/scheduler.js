@@ -115,6 +115,19 @@ async function sendExpiryReminders(client) {
   }
 }
 
+async function checkEndedGiveaways(client) {
+  const { stmts } = require('./database');
+  const { endGiveaway } = require('../commands/admin/giveaway');
+  const ended = stmts.getActiveGiveaways.all();
+  for (const row of ended) {
+    try {
+      await endGiveaway(client, row);
+    } catch (e) {
+      logger.error('scheduler.checkEndedGiveaways:', e);
+    }
+  }
+}
+
 function scheduleDaily(fn, client) {
   // Calcule le délai jusqu'à minuit
   const now    = new Date();
@@ -139,10 +152,14 @@ function start(client) {
   setInterval(() => sendExpiryReminders(client), 60 * 60_000);
   sendExpiryReminders(client).catch(() => {});
 
+  // Giveaways expirés : vérification toutes les 30 secondes
+  setInterval(() => checkEndedGiveaways(client), 30_000);
+  checkEndedGiveaways(client).catch(() => {});
+
   // Backup SQLite : tous les jours à minuit
   scheduleDaily(backup.runBackup, client);
 
-  logger.info('Scheduler démarré (mutes: 60s, licences: 10min, rappels: 1h, backup: minuit).');
+  logger.info('Scheduler démarré (mutes: 60s, licences: 10min, rappels: 1h, giveaways: 30s, backup: minuit).');
 }
 
 module.exports = { start };

@@ -49,6 +49,7 @@ class UpdatePlanBody {
   @IsOptional() @IsBoolean() active?: boolean;
   @IsOptional() @IsBoolean() popular?: boolean;
   @IsOptional() @IsString() stripePrice?: string;
+  @IsOptional() @IsString() description?: string;
 }
 class CreatePlanBody {
   @IsString() key: string;
@@ -57,6 +58,11 @@ class CreatePlanBody {
   @IsOptional() @IsNumber() originalPrice?: number;
   @IsOptional() @IsBoolean() popular?: boolean;
   @IsOptional() @IsString() stripePrice?: string;
+  @IsOptional() @IsString() description?: string;
+}
+class TrackPageviewDto {
+  @IsString() @IsNotEmpty() path: string;
+  @IsOptional() @IsString() sessionId?: string;
 }
 class UpdateSettingsBody {
   @IsOptional() @IsString() downloadUrl?: string;
@@ -78,6 +84,13 @@ class UpdateBotConfigBody {
   @IsOptional() @IsString() setup_avis_desc?: string;
   @IsOptional() @IsString() tuto_title?: string;
   @IsOptional() @IsString() tuto_intro?: string;
+}
+class CreatePromoCodeBody {
+  @IsString() @IsNotEmpty() code: string;
+  @IsEnum(['percent', 'fixed']) type: 'percent' | 'fixed';
+  @IsNumber() @Min(1) amount: number;
+  @IsOptional() @Type(() => Number) @IsInt() @Min(0) maxUses?: number;
+  @IsOptional() @IsString() stripeId?: string;
 }
 
 @ApiTags('admin')
@@ -123,6 +136,24 @@ export class AdminController {
   @ApiOperation({ summary: 'Detailed analytics charts' })
   async getAnalytics() {
     return this.adminService.getAnalytics();
+  }
+
+  // ── Activity tracking (public — called by storefront) ──
+  @Post('track/pageview')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Track a pageview (public, no auth)' })
+  async trackPageview(@Body() dto: TrackPageviewDto) {
+    await this.adminService.trackPageview(dto.path, dto.sessionId);
+    return { ok: true };
+  }
+
+  // ── Activity stats (admin) ──
+  @Get('activity')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Site activity: pageviews, unique visitors, top pages, active now' })
+  async getActivity() {
+    return this.adminService.getActivityStats();
   }
 
   // ── Licenses ──
@@ -403,6 +434,38 @@ export class AdminController {
   @HttpCode(HttpStatus.OK)
   async deleteReview(@Param('discordId') discordId: string) {
     return this.adminService.deleteReview(discordId);
+  }
+
+  // ── Promo Codes ──
+  @Get('promo-codes')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  async getPromoCodes() {
+    return this.adminService.getPromoCodes();
+  }
+
+  @Post('promo-codes')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.CREATED)
+  async createPromoCode(@Body() dto: CreatePromoCodeBody) {
+    return this.adminService.createPromoCode(dto);
+  }
+
+  @Delete('promo-codes/:code')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  async deletePromoCode(@Param('code') code: string) {
+    return this.adminService.deletePromoCode(code);
+  }
+
+  @Put('promo-codes/:code/toggle')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  async togglePromoCode(@Param('code') code: string, @Body() body: { active: boolean }) {
+    return this.adminService.togglePromoCode(code, body.active);
   }
 
   // ── Bot Config ──

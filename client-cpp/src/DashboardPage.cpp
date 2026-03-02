@@ -54,19 +54,15 @@ void StatCard::setAccent(const QColor& c) {
 void StatCard::paintEvent(QPaintEvent*) {
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
-    // Card background + border
+    // Flat card: background + border
     p.setBrush(Pal::CARD);
     p.setPen(QPen(Pal::BORDER, 1));
-    p.drawRoundedRect(rect().adjusted(0,0,-1,-1), 8, 8);
+    p.drawRoundedRect(rect().adjusted(0, 0, -1, -1), 8, 8);
 
-    // Top gradient accent line
-    QLinearGradient g(rect().width()*0.1, 1, rect().width()*0.9, 1);
-    g.setColorAt(0,   Qt::transparent);
-    g.setColorAt(0.5, QColor(m_accent.red(), m_accent.green(), m_accent.blue(), 180));
-    g.setColorAt(1,   Qt::transparent);
+    // Left accent bar (2px)
     p.setPen(Qt::NoPen);
-    p.setBrush(g);
-    p.drawRect(QRect(12, 1, width()-24, 2));
+    p.setBrush(QColor(m_accent.red(), m_accent.green(), m_accent.blue(), 180));
+    p.drawRoundedRect(QRect(0, 8, 3, height() - 16), 2, 2);
 }
 
 // ════════════════════════════════════════════════════════

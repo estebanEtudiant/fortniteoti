@@ -15,6 +15,12 @@ namespace tweaks {
     // 🪟  Windows / Système — services, SMB, multimedia, UI
     void applyWindows (AppState& s);
 
+    // 🎮  Game Mode / Game Bar / GameDVR — SAFE (Danger 1-2/5)
+    void applyGameMode   (AppState& s);
+
+    // 🔧  Services & Télémétrie — Delivery Opt, Xbox, WU, DiagTrack — SAFE (Danger 1-2/5)
+    void applyServices   (AppState& s);
+
     // 🎮  GPU — HAGS, PCIe power, TDR, DWM, Aero
     void applyGpu     (AppState& s);
 
@@ -61,6 +67,8 @@ namespace tweaks {
     struct CheckResult { int applied = -1; int total = 0; };
 
     CheckResult checkWindows();
+    CheckResult checkGameMode();
+    CheckResult checkServices();
     CheckResult checkGpu();
     CheckResult checkCpu();
     CheckResult checkRam();

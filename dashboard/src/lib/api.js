@@ -54,6 +54,7 @@ class ApiClient {
   // ── Stats & Analytics ──
   getStats() { return this.get('/admin/stats'); }
   getAnalytics() { return this.get('/admin/analytics'); }
+  getActivity() { return this.get('/admin/activity'); }
 
   // ── Licenses ──
   getLicenses(params = {}) {
@@ -152,6 +153,15 @@ class ApiClient {
   // Bot config
   getBotConfig()          { return this.get('/admin/bot-config'); }
   updateBotConfig(data)   { return this.put('/admin/bot-config', data); }
+
+  // Promo codes
+  getPromoCodes()         { return this.get('/admin/promo-codes'); }
+  createPromoCode(data)   { return this.post('/admin/promo-codes', data); }
+  deletePromoCode(code)   { return this.del(`/admin/promo-codes/${encodeURIComponent(code)}`); }
+  togglePromoCode(code, active) { return this.put(`/admin/promo-codes/${encodeURIComponent(code)}/toggle`, { active }); }
+
+  // Activity
+  getActivity() { return this.get('/admin/activity'); }
 }
 
 export const api = new ApiClient();

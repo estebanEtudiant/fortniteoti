@@ -18,6 +18,9 @@ import {
 const RESET_TOKEN_TTL = 3600; // 1 hour
 const RESET_KEY = (token: string) => `pwd_reset:${token}`;
 
+// Dummy hash used to equalize timing when the user doesn't exist (prevent username enumeration)
+const DUMMY_HASH = '$2b$12$invalidhashXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX';
+
 const VERIFY_TOKEN_TTL = 86400; // 24 hours
 const VERIFY_KEY = (token: string) => `email_verify:${token}`;
 
@@ -78,7 +81,7 @@ export class CustomerService {
     const verifyToken = crypto.randomBytes(32).toString('hex');
     await this.redis.set(VERIFY_KEY(verifyToken), customer.id, VERIFY_TOKEN_TTL);
     const storefrontUrl = this.config.get<string>('storefrontUrl', 'http://localhost:3002');
-    const verifyUrl = `${storefrontUrl}/#/verify-email?token=${verifyToken}`;
+    const verifyUrl = `${storefrontUrl}/verify-email?token=${verifyToken}`;
     try {
       await this.mail.sendEmailVerification(customer.email, verifyUrl);
     } catch (err) {
@@ -114,7 +117,11 @@ export class CustomerService {
       },
     });
 
-    if (!customer || !(await bcrypt.compare(dto.password, customer.passwordHash))) {
+    // Always run bcrypt to prevent timing-based username enumeration
+    const hashToCompare = customer ? customer.passwordHash : DUMMY_HASH;
+    const passwordValid = await bcrypt.compare(dto.password, hashToCompare);
+
+    if (!customer || !passwordValid) {
       throw new UnauthorizedException('Identifiants incorrects');
     }
 
@@ -141,6 +148,7 @@ export class CustomerService {
         username: customer.username,
         displayName: customer.displayName,
         avatarUrl: customer.avatarUrl,
+        emailVerified: customer.emailVerified,
       },
     };
   }
@@ -268,7 +276,7 @@ export class CustomerService {
     await this.redis.set(RESET_KEY(token), customer.id, RESET_TOKEN_TTL);
 
     const storefrontUrl = this.config.get<string>('storefrontUrl', 'http://localhost:3002');
-    const resetUrl = `${storefrontUrl}/#/reset-password?token=${token}`;
+    const resetUrl = `${storefrontUrl}/reset-password?token=${token}`;
 
     try {
       await this.mail.sendPasswordReset(email, resetUrl);
@@ -330,7 +338,7 @@ export class CustomerService {
     const verifyToken = crypto.randomBytes(32).toString('hex');
     await this.redis.set(VERIFY_KEY(verifyToken), customer.id, VERIFY_TOKEN_TTL);
     const storefrontUrl = this.config.get<string>('storefrontUrl', 'http://localhost:3002');
-    const verifyUrl = `${storefrontUrl}/#/verify-email?token=${verifyToken}`;
+    const verifyUrl = `${storefrontUrl}/verify-email?token=${verifyToken}`;
     await this.mail.sendEmailVerification(customer.email, verifyUrl);
     this.logger.log(`Verification email resent to ${customer.email}`);
     return { success: true };

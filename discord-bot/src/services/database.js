@@ -83,6 +83,21 @@ try {
   db.exec('ALTER TABLE verifications ADD COLUMN reminder_sent INTEGER DEFAULT 0');
 } catch (_) { /* colonne déjà présente */ }
 
+// ─── Table giveaways ──────────────────────────────────────────────────────────
+db.exec(`
+  CREATE TABLE IF NOT EXISTS giveaways (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    guild_id    TEXT    NOT NULL,
+    channel_id  TEXT    NOT NULL,
+    message_id  TEXT    NOT NULL,
+    host_id     TEXT    NOT NULL,
+    prize       TEXT    NOT NULL,
+    winners_count INTEGER NOT NULL DEFAULT 1,
+    ends_at     INTEGER NOT NULL,
+    ended       INTEGER NOT NULL DEFAULT 0
+  );
+`);
+
 logger.info('Base de données SQLite initialisée.');
 
 // ─── Requêtes préparées ───────────────────────────────────────────────────────
@@ -158,6 +173,16 @@ const stmts = {
   closeTicket: db.prepare(`
     UPDATE tickets SET status = 'closed', closed_at = strftime('%s','now') WHERE channel_id = ?
   `),
+
+  // Giveaways
+  createGiveaway: db.prepare(`
+    INSERT INTO giveaways (guild_id, channel_id, message_id, host_id, prize, winners_count, ends_at)
+    VALUES (@guild_id, @channel_id, @message_id, @host_id, @prize, @winners_count, @ends_at)
+  `),
+  getGiveaway:    db.prepare('SELECT * FROM giveaways WHERE id = ?'),
+  getActiveGiveaways: db.prepare('SELECT * FROM giveaways WHERE ended = 0 AND ends_at <= strftime(\'%s\',\'now\')'),
+  markGiveawayEnded:  db.prepare('UPDATE giveaways SET ended = 1 WHERE id = ?'),
+  getGiveawayByMessage: db.prepare('SELECT * FROM giveaways WHERE message_id = ?'),
 };
 
 module.exports = { db, stmts };

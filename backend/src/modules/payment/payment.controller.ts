@@ -1,5 +1,5 @@
 // ── payment.controller.ts ──
-import { Controller, Get, Post, Req, Body, Headers, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Req, Body, Headers, HttpCode, HttpStatus, UseGuards, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { Request } from 'express';
 import { PaymentService } from './payment.service';
@@ -16,6 +16,22 @@ export class PaymentController {
   @ApiOperation({ summary: 'Get active plans with prices (public)' })
   async getPlans() {
     return this.paymentService.getActivePlans();
+  }
+
+  // ── GET /api/v1/payment/stats (public) ──
+  @Get('stats')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Public stats: active clients this month' })
+  async getPublicStats() {
+    return this.paymentService.getPublicStats();
+  }
+
+  // ── GET /api/v1/payment/validate-promo (public) ──
+  @Get('validate-promo')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Validate a promo code' })
+  async validatePromo(@Query('code') code: string) {
+    return this.paymentService.validatePromoCode(code);
   }
 
   // ── POST /api/v1/payment/confirm ──
@@ -35,9 +51,9 @@ export class PaymentController {
   @UseGuards(CustomerAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a Stripe Checkout session' })
-  async createCheckout(@Req() req: Request, @Body() body: { plan?: string }) {
+  async createCheckout(@Req() req: Request, @Body() body: { plan?: string; promoCode?: string }) {
     const { customerId } = (req as any).customer;
-    return this.paymentService.createCheckoutSession(customerId, body.plan);
+    return this.paymentService.createCheckoutSession(customerId, body.plan, body.promoCode);
   }
 
   // ── POST /api/v1/payment/webhook/stripe ──
@@ -48,9 +64,8 @@ export class PaymentController {
     @Req() req: Request,
     @Headers('stripe-signature') signature: string,
   ) {
-    // Note: raw body is needed for signature verification.
-    // Configure NestJS to preserve raw body for this route.
-    const rawBody = (req as any).rawBody || Buffer.from(JSON.stringify(req.body));
+    // rawBody is available when NestFactory.create is called with { rawBody: true }
+    const rawBody = (req as any).rawBody as Buffer;
     await this.paymentService.handleWebhook(rawBody, signature);
     return { received: true };
   }

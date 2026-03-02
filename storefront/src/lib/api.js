@@ -76,10 +76,6 @@ class ApiClient {
     return this.request('GET', '/payment/plans');
   }
 
-  async createCheckoutSession(plan) {
-    return this.request('POST', '/payment/checkout', { plan });
-  }
-
   async confirmPayment(sessionId) {
     return this.request('POST', '/payment/confirm', { sessionId });
   }
@@ -115,6 +111,52 @@ class ApiClient {
   // Public settings (screenshot URL, Discord invite, announcement)
   async getPublicSettings() {
     return this.request('GET', '/admin/public-settings');
+  }
+
+  // Public stats (active clients this month)
+  async getPublicStats() {
+    return this.request('GET', '/payment/stats');
+  }
+
+  // Promo code validation
+  async validatePromo(code) {
+    return this.request('GET', `/payment/validate-promo?code=${encodeURIComponent(code)}`);
+  }
+
+  // Checkout with optional promo code
+  async createCheckoutSession(plan, promoCode) {
+    const body = { plan };
+    if (promoCode) body.promoCode = promoCode;
+    return this.request('POST', '/payment/checkout', body);
+  }
+
+  // Admin: promo codes
+  async getPromoCodes() {
+    return this.request('GET', '/admin/promo-codes');
+  }
+
+  async createPromoCode(dto) {
+    return this.request('POST', '/admin/promo-codes', dto);
+  }
+
+  async deletePromoCode(code) {
+    return this.request('DELETE', `/admin/promo-codes/${encodeURIComponent(code)}`);
+  }
+
+  // Activity tracking (fire-and-forget, no auth required)
+  trackPageview(path) {
+    let sessionId = localStorage.getItem('ftn_sid');
+    if (!sessionId) {
+      sessionId = Math.random().toString(36).slice(2) + Date.now().toString(36);
+      localStorage.setItem('ftn_sid', sessionId);
+    }
+    // Fire and forget — ignore errors silently
+    fetch(`${this.baseUrl}/admin/track/pageview`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path, sessionId }),
+      keepalive: true,
+    }).catch(() => {});
   }
 }
 

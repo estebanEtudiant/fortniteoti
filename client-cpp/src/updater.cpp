@@ -22,14 +22,16 @@ UpdateInfo UpdateChecker::check() {
 
         if (!res.success || res.statusCode == 404) return info;
 
-        std::string latest = jsonExtract(res.body, "version");
-        std::string url    = jsonExtract(res.body, "url");
-        std::string chlog  = jsonExtract(res.body, "changelog");
+        std::string latest    = jsonExtract(res.body, "version");
+        std::string url       = jsonExtract(res.body, "url");
+        std::string chlog     = jsonExtract(res.body, "changelog");
+        std::string mandatory = jsonExtract(res.body, "mandatory");
 
         if (latest.empty()) return info;
 
         if (compareVersions(latest, CURRENT_VERSION) > 0) {
             info.available     = true;
+            info.mandatory     = (mandatory == "true" || mandatory == "1");
             info.latestVersion = latest;
             info.downloadUrl   = url;
             info.changelog     = chlog;

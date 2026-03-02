@@ -399,9 +399,6 @@ CMakeFiles/FortniteOptimizer2026.dir/src/GlowButton.cpp.obj: \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qpen.h \
  B:/Qt/6.10.2/mingw_64/include/QtGui/QPainterPath \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qpainterpath.h \
- B:/Qt/6.10.2/mingw_64/include/QtGui/QRadialGradient \
- B:/Qt/6.10.2/mingw_64/include/QtGui/qbrush.h \
- B:/Qt/6.10.2/mingw_64/include/QtGui/QLinearGradient \
  B:/Qt/6.10.2/mingw_64/include/QtGui/QMouseEvent \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qevent.h \
  B:/Qt/6.10.2/mingw_64/include/QtCore/qcoreevent.h \
@@ -435,6 +432,4 @@ CMakeFiles/FortniteOptimizer2026.dir/src/GlowButton.cpp.obj: \
  B:/Qt/6.10.2/mingw_64/include/QtCore/qcoreapplication_platform.h \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qinputmethod.h \
  B:/Qt/6.10.2/mingw_64/include/QtCore/qlocale.h \
- B:/Qt/6.10.2/mingw_64/include/QtGui/qguiapplication_platform.h \
- B:/Qt/6.10.2/mingw_64/include/QtGui/QFontMetrics \
- B:/Qt/6.10.2/mingw_64/include/QtGui/qfontmetrics.h
+ B:/Qt/6.10.2/mingw_64/include/QtGui/qguiapplication_platform.h

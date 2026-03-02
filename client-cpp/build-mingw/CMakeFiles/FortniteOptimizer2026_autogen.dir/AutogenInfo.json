@@ -283,15 +283,39 @@
 			null
 		],
 		[
+			"B:/FortniteOptiEbook/FTN-main/client-cpp/include/BenchmarkManager.h",
+			"Mu",
+			"6YEA5652QU/moc_BenchmarkManager.cpp",
+			null
+		],
+		[
+			"B:/FortniteOptiEbook/FTN-main/client-cpp/include/BenchmarkPage.h",
+			"Mu",
+			"6YEA5652QU/moc_BenchmarkPage.cpp",
+			null
+		],
+		[
 			"B:/FortniteOptiEbook/FTN-main/client-cpp/include/DashboardPage.h",
 			"Mu",
 			"6YEA5652QU/moc_DashboardPage.cpp",
 			null
 		],
 		[
+			"B:/FortniteOptiEbook/FTN-main/client-cpp/include/DriverOptPage.h",
+			"Mu",
+			"6YEA5652QU/moc_DriverOptPage.cpp",
+			null
+		],
+		[
 			"B:/FortniteOptiEbook/FTN-main/client-cpp/include/FadeLabel.h",
 			"Mu",
 			"6YEA5652QU/moc_FadeLabel.cpp",
+			null
+		],
+		[
+			"B:/FortniteOptiEbook/FTN-main/client-cpp/include/FortniteSettingsPage.h",
+			"Mu",
+			"6YEA5652QU/moc_FortniteSettingsPage.cpp",
 			null
 		],
 		[
@@ -307,9 +331,27 @@
 			null
 		],
 		[
+			"B:/FortniteOptiEbook/FTN-main/client-cpp/include/GuidePage.h",
+			"Mu",
+			"6YEA5652QU/moc_GuidePage.cpp",
+			null
+		],
+		[
 			"B:/FortniteOptiEbook/FTN-main/client-cpp/include/HoverCard.h",
 			"Mu",
 			"6YEA5652QU/moc_HoverCard.cpp",
+			null
+		],
+		[
+			"B:/FortniteOptiEbook/FTN-main/client-cpp/include/InputSender.h",
+			"Mu",
+			"6YEA5652QU/moc_InputSender.cpp",
+			null
+		],
+		[
+			"B:/FortniteOptiEbook/FTN-main/client-cpp/include/KeyBindButton.h",
+			"Mu",
+			"6YEA5652QU/moc_KeyBindButton.cpp",
 			null
 		],
 		[
@@ -322,6 +364,18 @@
 			"B:/FortniteOptiEbook/FTN-main/client-cpp/include/LogsPage.h",
 			"Mu",
 			"6YEA5652QU/moc_LogsPage.cpp",
+			null
+		],
+		[
+			"B:/FortniteOptiEbook/FTN-main/client-cpp/include/MacroEngine.h",
+			"Mu",
+			"6YEA5652QU/moc_MacroEngine.cpp",
+			null
+		],
+		[
+			"B:/FortniteOptiEbook/FTN-main/client-cpp/include/MacroPage.h",
+			"Mu",
+			"6YEA5652QU/moc_MacroPage.cpp",
 			null
 		],
 		[
@@ -340,6 +394,12 @@
 			"B:/FortniteOptiEbook/FTN-main/client-cpp/include/ModulesPage.h",
 			"Mu",
 			"6YEA5652QU/moc_ModulesPage.cpp",
+			null
+		],
+		[
+			"B:/FortniteOptiEbook/FTN-main/client-cpp/include/NetworkOptimizerPage.h",
+			"Mu",
+			"6YEA5652QU/moc_NetworkOptimizerPage.cpp",
 			null
 		],
 		[
@@ -412,6 +472,12 @@
 			"B:/FortniteOptiEbook/FTN-main/client-cpp/include/hwid.h",
 			"Mu",
 			"6YEA5652QU/moc_hwid.cpp",
+			null
+		],
+		[
+			"B:/FortniteOptiEbook/FTN-main/client-cpp/include/interception.h",
+			"Mu",
+			"6YEA5652QU/moc_interception.cpp",
 			null
 		],
 		[
@@ -525,12 +591,32 @@
 			null
 		],
 		[
+			"B:/FortniteOptiEbook/FTN-main/client-cpp/src/BenchmarkManager.cpp",
+			"Mu",
+			null
+		],
+		[
+			"B:/FortniteOptiEbook/FTN-main/client-cpp/src/BenchmarkPage.cpp",
+			"Mu",
+			null
+		],
+		[
 			"B:/FortniteOptiEbook/FTN-main/client-cpp/src/DashboardPage.cpp",
 			"Mu",
 			null
 		],
 		[
+			"B:/FortniteOptiEbook/FTN-main/client-cpp/src/DriverOptPage.cpp",
+			"Mu",
+			null
+		],
+		[
 			"B:/FortniteOptiEbook/FTN-main/client-cpp/src/FadeLabel.cpp",
+			"Mu",
+			null
+		],
+		[
+			"B:/FortniteOptiEbook/FTN-main/client-cpp/src/FortniteSettingsPage.cpp",
 			"Mu",
 			null
 		],
@@ -545,7 +631,22 @@
 			null
 		],
 		[
+			"B:/FortniteOptiEbook/FTN-main/client-cpp/src/GuidePage.cpp",
+			"Mu",
+			null
+		],
+		[
 			"B:/FortniteOptiEbook/FTN-main/client-cpp/src/HoverCard.cpp",
+			"Mu",
+			null
+		],
+		[
+			"B:/FortniteOptiEbook/FTN-main/client-cpp/src/InputSender.cpp",
+			"Mu",
+			null
+		],
+		[
+			"B:/FortniteOptiEbook/FTN-main/client-cpp/src/KeyBindButton.cpp",
 			"Mu",
 			null
 		],
@@ -556,6 +657,16 @@
 		],
 		[
 			"B:/FortniteOptiEbook/FTN-main/client-cpp/src/LogsPage.cpp",
+			"Mu",
+			null
+		],
+		[
+			"B:/FortniteOptiEbook/FTN-main/client-cpp/src/MacroEngine.cpp",
+			"Mu",
+			null
+		],
+		[
+			"B:/FortniteOptiEbook/FTN-main/client-cpp/src/MacroPage.cpp",
 			"Mu",
 			null
 		],
@@ -571,6 +682,11 @@
 		],
 		[
 			"B:/FortniteOptiEbook/FTN-main/client-cpp/src/ModulesPage.cpp",
+			"Mu",
+			null
+		],
+		[
+			"B:/FortniteOptiEbook/FTN-main/client-cpp/src/NetworkOptimizerPage.cpp",
 			"Mu",
 			null
 		],

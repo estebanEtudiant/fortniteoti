@@ -495,11 +495,21 @@ CMakeFiles/FortniteOptimizer2026.dir/src/MainWindow.cpp.obj: \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/UpdateDialog.h \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/QDialog \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qdialog.h \
- B:/FortniteOptiEbook/FTN-main/client-cpp/include/Palette.h \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/QApplication \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/qapplication.h \
- B:/Qt/6.10.2/mingw_64/include/QtGui/QScreen \
- B:/Qt/6.10.2/mingw_64/include/QtGui/qscreen.h \
+ B:/FortniteOptiEbook/FTN-main/client-cpp/include/GuidePage.h \
+ B:/FortniteOptiEbook/FTN-main/client-cpp/include/NetworkOptimizerPage.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/QComboBox \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qcombobox.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qabstractitemdelegate.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qstyleoption.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qabstractspinbox.h \
+ B:/Qt/6.10.2/mingw_64/include/QtGui/qvalidator.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qregularexpression.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qslider.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qabstractslider.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qstyle.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qtabbar.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qrubberband.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qabstractitemmodel.h \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/QVBoxLayout \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qboxlayout.h \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qlayout.h \
@@ -507,10 +517,29 @@ CMakeFiles/FortniteOptimizer2026.dir/src/MainWindow.cpp.obj: \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qboxlayout.h \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qgridlayout.h \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/QHBoxLayout \
- B:/Qt/6.10.2/mingw_64/include/QtGui/QPainter \
- B:/Qt/6.10.2/mingw_64/include/QtGui/qpainter.h \
- B:/Qt/6.10.2/mingw_64/include/QtGui/QRadialGradient \
- B:/Qt/6.10.2/mingw_64/include/QtGui/qbrush.h \
+ B:/FortniteOptiEbook/FTN-main/client-cpp/include/DriverOptPage.h \
+ B:/FortniteOptiEbook/FTN-main/client-cpp/include/FortniteSettingsPage.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/QStringList \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qstringlist.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/QMap \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qmap.h \
+ B:/FortniteOptiEbook/FTN-main/client-cpp/include/MacroPage.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/QSlider \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qslider.h \
+ B:/FortniteOptiEbook/FTN-main/client-cpp/include/MacroEngine.h \
+ B:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/thread \
+ B:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/std_thread.h \
+ B:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/this_thread_sleep.h \
+ B:/FortniteOptiEbook/FTN-main/client-cpp/include/KeyBindButton.h \
+ B:/Qt/6.10.2/mingw_64/include/QtGui/QKeyEvent \
+ B:/Qt/6.10.2/mingw_64/include/QtGui/qevent.h \
+ B:/Qt/6.10.2/mingw_64/include/QtGui/QMouseEvent \
+ B:/Qt/6.10.2/mingw_64/include/QtGui/QFocusEvent \
+ B:/FortniteOptiEbook/FTN-main/client-cpp/include/Palette.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/QApplication \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qapplication.h \
+ B:/Qt/6.10.2/mingw_64/include/QtGui/QScreen \
+ B:/Qt/6.10.2/mingw_64/include/QtGui/qscreen.h \
  B:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/windows.h \
  B:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/sdkddkver.h \
  B:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/excpt.h \

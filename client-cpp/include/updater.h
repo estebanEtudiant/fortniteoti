@@ -13,7 +13,8 @@ namespace updater {
 static const char* CURRENT_VERSION = "1.0.0";
 
 struct UpdateInfo {
-    bool        available = false;
+    bool        available  = false;
+    bool        mandatory  = false;   // true → user cannot skip this update
     std::string latestVersion;
     std::string downloadUrl;
     std::string changelog;

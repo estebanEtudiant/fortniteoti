@@ -41,6 +41,8 @@ export class CustomerController {
   // ── POST /api/v1/customer/forgot-password ──
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(RateLimitGuard)
+  @RateLimit({ max: 3, window: 300, keyPrefix: 'forgot-password' })
   @ApiOperation({ summary: 'Request password reset email' })
   async forgotPassword(@Body() dto: ForgotPasswordDto) {
     return this.customerService.forgotPassword(dto);
@@ -49,6 +51,8 @@ export class CustomerController {
   // ── POST /api/v1/customer/reset-password ──
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(RateLimitGuard)
+  @RateLimit({ max: 5, window: 300, keyPrefix: 'reset-password' })
   @ApiOperation({ summary: 'Reset password with token' })
   async resetPassword(@Body() dto: ResetPasswordDto) {
     return this.customerService.resetPassword(dto);

@@ -23,6 +23,7 @@ export interface VersionRecord {
   url: string;
   size: number;
   uploadedAt: string;
+  mandatory: boolean;
 }
 
 @Injectable()
@@ -44,6 +45,7 @@ export class SoftwareService {
     file: Express.Multer.File,
     version: string,
     changelog: string,
+    mandatory = false,
   ): Promise<VersionRecord> {
     // Sanitize version string to build a safe filename
     const sanitizedVersion = version.replace(/[^a-zA-Z0-9.\-_]/g, '_');
@@ -71,6 +73,7 @@ export class SoftwareService {
       url,
       size: file.size,
       uploadedAt: new Date().toISOString(),
+      mandatory,
     };
 
     // Write current version

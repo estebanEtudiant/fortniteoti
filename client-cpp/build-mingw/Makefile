@@ -226,6 +226,54 @@ src/AppController.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/AppController.cpp.s
 .PHONY : src/AppController.cpp.s
 
+src/BenchmarkManager.obj: src/BenchmarkManager.cpp.obj
+.PHONY : src/BenchmarkManager.obj
+
+# target to build an object file
+src/BenchmarkManager.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkManager.cpp.obj
+.PHONY : src/BenchmarkManager.cpp.obj
+
+src/BenchmarkManager.i: src/BenchmarkManager.cpp.i
+.PHONY : src/BenchmarkManager.i
+
+# target to preprocess a source file
+src/BenchmarkManager.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkManager.cpp.i
+.PHONY : src/BenchmarkManager.cpp.i
+
+src/BenchmarkManager.s: src/BenchmarkManager.cpp.s
+.PHONY : src/BenchmarkManager.s
+
+# target to generate assembly for a file
+src/BenchmarkManager.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkManager.cpp.s
+.PHONY : src/BenchmarkManager.cpp.s
+
+src/BenchmarkPage.obj: src/BenchmarkPage.cpp.obj
+.PHONY : src/BenchmarkPage.obj
+
+# target to build an object file
+src/BenchmarkPage.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkPage.cpp.obj
+.PHONY : src/BenchmarkPage.cpp.obj
+
+src/BenchmarkPage.i: src/BenchmarkPage.cpp.i
+.PHONY : src/BenchmarkPage.i
+
+# target to preprocess a source file
+src/BenchmarkPage.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkPage.cpp.i
+.PHONY : src/BenchmarkPage.cpp.i
+
+src/BenchmarkPage.s: src/BenchmarkPage.cpp.s
+.PHONY : src/BenchmarkPage.s
+
+# target to generate assembly for a file
+src/BenchmarkPage.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkPage.cpp.s
+.PHONY : src/BenchmarkPage.cpp.s
+
 src/DashboardPage.obj: src/DashboardPage.cpp.obj
 .PHONY : src/DashboardPage.obj
 
@@ -250,6 +298,30 @@ src/DashboardPage.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/DashboardPage.cpp.s
 .PHONY : src/DashboardPage.cpp.s
 
+src/DriverOptPage.obj: src/DriverOptPage.cpp.obj
+.PHONY : src/DriverOptPage.obj
+
+# target to build an object file
+src/DriverOptPage.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/DriverOptPage.cpp.obj
+.PHONY : src/DriverOptPage.cpp.obj
+
+src/DriverOptPage.i: src/DriverOptPage.cpp.i
+.PHONY : src/DriverOptPage.i
+
+# target to preprocess a source file
+src/DriverOptPage.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/DriverOptPage.cpp.i
+.PHONY : src/DriverOptPage.cpp.i
+
+src/DriverOptPage.s: src/DriverOptPage.cpp.s
+.PHONY : src/DriverOptPage.s
+
+# target to generate assembly for a file
+src/DriverOptPage.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/DriverOptPage.cpp.s
+.PHONY : src/DriverOptPage.cpp.s
+
 src/FadeLabel.obj: src/FadeLabel.cpp.obj
 .PHONY : src/FadeLabel.obj
 
@@ -273,6 +345,30 @@ src/FadeLabel.s: src/FadeLabel.cpp.s
 src/FadeLabel.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/FadeLabel.cpp.s
 .PHONY : src/FadeLabel.cpp.s
+
+src/FortniteSettingsPage.obj: src/FortniteSettingsPage.cpp.obj
+.PHONY : src/FortniteSettingsPage.obj
+
+# target to build an object file
+src/FortniteSettingsPage.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/FortniteSettingsPage.cpp.obj
+.PHONY : src/FortniteSettingsPage.cpp.obj
+
+src/FortniteSettingsPage.i: src/FortniteSettingsPage.cpp.i
+.PHONY : src/FortniteSettingsPage.i
+
+# target to preprocess a source file
+src/FortniteSettingsPage.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/FortniteSettingsPage.cpp.i
+.PHONY : src/FortniteSettingsPage.cpp.i
+
+src/FortniteSettingsPage.s: src/FortniteSettingsPage.cpp.s
+.PHONY : src/FortniteSettingsPage.s
+
+# target to generate assembly for a file
+src/FortniteSettingsPage.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/FortniteSettingsPage.cpp.s
+.PHONY : src/FortniteSettingsPage.cpp.s
 
 src/GlassCard.obj: src/GlassCard.cpp.obj
 .PHONY : src/GlassCard.obj
@@ -322,6 +418,30 @@ src/GlowButton.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/GlowButton.cpp.s
 .PHONY : src/GlowButton.cpp.s
 
+src/GuidePage.obj: src/GuidePage.cpp.obj
+.PHONY : src/GuidePage.obj
+
+# target to build an object file
+src/GuidePage.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/GuidePage.cpp.obj
+.PHONY : src/GuidePage.cpp.obj
+
+src/GuidePage.i: src/GuidePage.cpp.i
+.PHONY : src/GuidePage.i
+
+# target to preprocess a source file
+src/GuidePage.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/GuidePage.cpp.i
+.PHONY : src/GuidePage.cpp.i
+
+src/GuidePage.s: src/GuidePage.cpp.s
+.PHONY : src/GuidePage.s
+
+# target to generate assembly for a file
+src/GuidePage.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/GuidePage.cpp.s
+.PHONY : src/GuidePage.cpp.s
+
 src/HoverCard.obj: src/HoverCard.cpp.obj
 .PHONY : src/HoverCard.obj
 
@@ -345,6 +465,54 @@ src/HoverCard.s: src/HoverCard.cpp.s
 src/HoverCard.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/HoverCard.cpp.s
 .PHONY : src/HoverCard.cpp.s
+
+src/InputSender.obj: src/InputSender.cpp.obj
+.PHONY : src/InputSender.obj
+
+# target to build an object file
+src/InputSender.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/InputSender.cpp.obj
+.PHONY : src/InputSender.cpp.obj
+
+src/InputSender.i: src/InputSender.cpp.i
+.PHONY : src/InputSender.i
+
+# target to preprocess a source file
+src/InputSender.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/InputSender.cpp.i
+.PHONY : src/InputSender.cpp.i
+
+src/InputSender.s: src/InputSender.cpp.s
+.PHONY : src/InputSender.s
+
+# target to generate assembly for a file
+src/InputSender.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/InputSender.cpp.s
+.PHONY : src/InputSender.cpp.s
+
+src/KeyBindButton.obj: src/KeyBindButton.cpp.obj
+.PHONY : src/KeyBindButton.obj
+
+# target to build an object file
+src/KeyBindButton.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/KeyBindButton.cpp.obj
+.PHONY : src/KeyBindButton.cpp.obj
+
+src/KeyBindButton.i: src/KeyBindButton.cpp.i
+.PHONY : src/KeyBindButton.i
+
+# target to preprocess a source file
+src/KeyBindButton.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/KeyBindButton.cpp.i
+.PHONY : src/KeyBindButton.cpp.i
+
+src/KeyBindButton.s: src/KeyBindButton.cpp.s
+.PHONY : src/KeyBindButton.s
+
+# target to generate assembly for a file
+src/KeyBindButton.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/KeyBindButton.cpp.s
+.PHONY : src/KeyBindButton.cpp.s
 
 src/LicenseScreen.obj: src/LicenseScreen.cpp.obj
 .PHONY : src/LicenseScreen.obj
@@ -393,6 +561,54 @@ src/LogsPage.s: src/LogsPage.cpp.s
 src/LogsPage.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/LogsPage.cpp.s
 .PHONY : src/LogsPage.cpp.s
+
+src/MacroEngine.obj: src/MacroEngine.cpp.obj
+.PHONY : src/MacroEngine.obj
+
+# target to build an object file
+src/MacroEngine.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/MacroEngine.cpp.obj
+.PHONY : src/MacroEngine.cpp.obj
+
+src/MacroEngine.i: src/MacroEngine.cpp.i
+.PHONY : src/MacroEngine.i
+
+# target to preprocess a source file
+src/MacroEngine.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/MacroEngine.cpp.i
+.PHONY : src/MacroEngine.cpp.i
+
+src/MacroEngine.s: src/MacroEngine.cpp.s
+.PHONY : src/MacroEngine.s
+
+# target to generate assembly for a file
+src/MacroEngine.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/MacroEngine.cpp.s
+.PHONY : src/MacroEngine.cpp.s
+
+src/MacroPage.obj: src/MacroPage.cpp.obj
+.PHONY : src/MacroPage.obj
+
+# target to build an object file
+src/MacroPage.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/MacroPage.cpp.obj
+.PHONY : src/MacroPage.cpp.obj
+
+src/MacroPage.i: src/MacroPage.cpp.i
+.PHONY : src/MacroPage.i
+
+# target to preprocess a source file
+src/MacroPage.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/MacroPage.cpp.i
+.PHONY : src/MacroPage.cpp.i
+
+src/MacroPage.s: src/MacroPage.cpp.s
+.PHONY : src/MacroPage.s
+
+# target to generate assembly for a file
+src/MacroPage.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/MacroPage.cpp.s
+.PHONY : src/MacroPage.cpp.s
 
 src/MainWindow.obj: src/MainWindow.cpp.obj
 .PHONY : src/MainWindow.obj
@@ -465,6 +681,30 @@ src/ModulesPage.s: src/ModulesPage.cpp.s
 src/ModulesPage.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/ModulesPage.cpp.s
 .PHONY : src/ModulesPage.cpp.s
+
+src/NetworkOptimizerPage.obj: src/NetworkOptimizerPage.cpp.obj
+.PHONY : src/NetworkOptimizerPage.obj
+
+# target to build an object file
+src/NetworkOptimizerPage.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/NetworkOptimizerPage.cpp.obj
+.PHONY : src/NetworkOptimizerPage.cpp.obj
+
+src/NetworkOptimizerPage.i: src/NetworkOptimizerPage.cpp.i
+.PHONY : src/NetworkOptimizerPage.i
+
+# target to preprocess a source file
+src/NetworkOptimizerPage.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/NetworkOptimizerPage.cpp.i
+.PHONY : src/NetworkOptimizerPage.cpp.i
+
+src/NetworkOptimizerPage.s: src/NetworkOptimizerPage.cpp.s
+.PHONY : src/NetworkOptimizerPage.s
+
+# target to generate assembly for a file
+src/NetworkOptimizerPage.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/NetworkOptimizerPage.cpp.s
+.PHONY : src/NetworkOptimizerPage.cpp.s
 
 src/SettingsPage.obj: src/SettingsPage.cpp.obj
 .PHONY : src/SettingsPage.obj
@@ -854,27 +1094,54 @@ help:
 	@echo ... src/AppController.obj
 	@echo ... src/AppController.i
 	@echo ... src/AppController.s
+	@echo ... src/BenchmarkManager.obj
+	@echo ... src/BenchmarkManager.i
+	@echo ... src/BenchmarkManager.s
+	@echo ... src/BenchmarkPage.obj
+	@echo ... src/BenchmarkPage.i
+	@echo ... src/BenchmarkPage.s
 	@echo ... src/DashboardPage.obj
 	@echo ... src/DashboardPage.i
 	@echo ... src/DashboardPage.s
+	@echo ... src/DriverOptPage.obj
+	@echo ... src/DriverOptPage.i
+	@echo ... src/DriverOptPage.s
 	@echo ... src/FadeLabel.obj
 	@echo ... src/FadeLabel.i
 	@echo ... src/FadeLabel.s
+	@echo ... src/FortniteSettingsPage.obj
+	@echo ... src/FortniteSettingsPage.i
+	@echo ... src/FortniteSettingsPage.s
 	@echo ... src/GlassCard.obj
 	@echo ... src/GlassCard.i
 	@echo ... src/GlassCard.s
 	@echo ... src/GlowButton.obj
 	@echo ... src/GlowButton.i
 	@echo ... src/GlowButton.s
+	@echo ... src/GuidePage.obj
+	@echo ... src/GuidePage.i
+	@echo ... src/GuidePage.s
 	@echo ... src/HoverCard.obj
 	@echo ... src/HoverCard.i
 	@echo ... src/HoverCard.s
+	@echo ... src/InputSender.obj
+	@echo ... src/InputSender.i
+	@echo ... src/InputSender.s
+	@echo ... src/KeyBindButton.obj
+	@echo ... src/KeyBindButton.i
+	@echo ... src/KeyBindButton.s
 	@echo ... src/LicenseScreen.obj
 	@echo ... src/LicenseScreen.i
 	@echo ... src/LicenseScreen.s
 	@echo ... src/LogsPage.obj
 	@echo ... src/LogsPage.i
 	@echo ... src/LogsPage.s
+	@echo ... src/MacroEngine.obj
+	@echo ... src/MacroEngine.i
+	@echo ... src/MacroEngine.s
+	@echo ... src/MacroPage.obj
+	@echo ... src/MacroPage.i
+	@echo ... src/MacroPage.s
 	@echo ... src/MainWindow.obj
 	@echo ... src/MainWindow.i
 	@echo ... src/MainWindow.s
@@ -884,6 +1151,9 @@ help:
 	@echo ... src/ModulesPage.obj
 	@echo ... src/ModulesPage.i
 	@echo ... src/ModulesPage.s
+	@echo ... src/NetworkOptimizerPage.obj
+	@echo ... src/NetworkOptimizerPage.i
+	@echo ... src/NetworkOptimizerPage.s
 	@echo ... src/SettingsPage.obj
 	@echo ... src/SettingsPage.i
 	@echo ... src/SettingsPage.s

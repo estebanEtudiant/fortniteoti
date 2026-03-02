@@ -426,8 +426,6 @@ CMakeFiles/FortniteOptimizer2026.dir/src/SidebarWidget.cpp.obj: \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qpainter.h \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qtextoption.h \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qpen.h \
- B:/Qt/6.10.2/mingw_64/include/QtGui/QLinearGradient \
- B:/Qt/6.10.2/mingw_64/include/QtGui/qbrush.h \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/QVBoxLayout \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qboxlayout.h \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qlayout.h \
@@ -437,7 +435,5 @@ CMakeFiles/FortniteOptimizer2026.dir/src/SidebarWidget.cpp.obj: \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/QHBoxLayout \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/QFrame \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qframe.h \
- B:/Qt/6.10.2/mingw_64/include/QtGui/QFontMetrics \
- B:/Qt/6.10.2/mingw_64/include/QtGui/qfontmetrics.h \
  B:/Qt/6.10.2/mingw_64/include/QtCore/QEasingCurve \
  B:/Qt/6.10.2/mingw_64/include/QtCore/qeasingcurve.h

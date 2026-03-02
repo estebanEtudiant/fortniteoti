@@ -1,25 +1,22 @@
 // ══════════════════════════════════════════════════════
-//  TitleBarWidget.cpp
+//  TitleBarWidget.cpp — Minimal flat title bar
 // ══════════════════════════════════════════════════════
 #include "TitleBarWidget.h"
 #include "Palette.h"
 
 #include <QPainter>
-#include <QPainterPath>
 #include <QMouseEvent>
-#include <QLinearGradient>
 #include <QHBoxLayout>
 
-// Button layout constants
-static constexpr int BTN_W   = 46;
-static constexpr int BTN_H   = 28;
-static constexpr int BTN_TOP = 6;   // vertical offset in 40px bar
+static constexpr int BTN_W   = 44;
+static constexpr int BTN_H   = 26;
+static constexpr int BTN_TOP = 7;
 
 static QRect closeRect(int barW) {
-    return QRect(barW - BTN_W - 6, BTN_TOP, BTN_W, BTN_H);
+    return QRect(barW - BTN_W - 8, BTN_TOP, BTN_W, BTN_H);
 }
 static QRect minRect(int barW) {
-    return QRect(barW - BTN_W * 2 - 10, BTN_TOP, BTN_W, BTN_H);
+    return QRect(barW - BTN_W * 2 - 14, BTN_TOP, BTN_W, BTN_H);
 }
 
 TitleBarWidget::TitleBarWidget(QWidget* parent)
@@ -30,18 +27,17 @@ TitleBarWidget::TitleBarWidget(QWidget* parent)
     setMouseTracking(true);
 }
 
-// ── Helpers to draw the X and – icons via QPainterPath ──
 static void drawMinIcon(QPainter& p, const QRect& r) {
     int cx = r.center().x();
     int cy = r.center().y() + 1;
-    p.drawLine(QPoint(cx - 7, cy), QPoint(cx + 7, cy));
+    p.drawLine(QPoint(cx - 6, cy), QPoint(cx + 6, cy));
 }
 
 static void drawCloseIcon(QPainter& p, const QRect& r) {
     int cx = r.center().x();
     int cy = r.center().y();
-    p.drawLine(QPoint(cx - 6, cy - 6), QPoint(cx + 6, cy + 6));
-    p.drawLine(QPoint(cx + 6, cy - 6), QPoint(cx - 6, cy + 6));
+    p.drawLine(QPoint(cx - 5, cy - 5), QPoint(cx + 5, cy + 5));
+    p.drawLine(QPoint(cx + 5, cy - 5), QPoint(cx - 5, cy + 5));
 }
 
 void TitleBarWidget::paintEvent(QPaintEvent*) {
@@ -51,68 +47,55 @@ void TitleBarWidget::paintEvent(QPaintEvent*) {
     // ── Background ────────────────────────────────────
     p.fillRect(rect(), Pal::TITLEBAR);
 
-    // ── Accent gradient line at bottom ───────────────
-    QLinearGradient grad(0, 38, width() * 0.6, 38);
-    grad.setColorAt(0.0, QColor(0, 180, 240, 200));
-    grad.setColorAt(1.0, Qt::transparent);
-    p.fillRect(QRect(0, 38, width(), 2), grad);
+    // ── Bottom border line (1px) ──────────────────────
+    p.fillRect(QRect(0, 39, width(), 1), Pal::BORDER);
 
     // ── Logo ──────────────────────────────────────────
-    QFont logoFont("Segoe UI", 13, QFont::Bold);
+    QFont logoFont("Segoe UI", 12, QFont::DemiBold);
     p.setFont(logoFont);
-    p.setPen(Pal::ACCENT);
-    p.drawText(QRect(18, 0, 140, 40), Qt::AlignVCenter, "404 Tweaks");
+    p.setPen(Pal::TEXT);
+    p.drawText(QRect(16, 0, 120, 40), Qt::AlignVCenter, "404 Tweaks");
 
+    // ── Version tag ───────────────────────────────────
+    QFontMetrics fm(logoFont);
+    int lw = fm.horizontalAdvance("404 Tweaks");
     QFont vFont("Segoe UI", 9);
     p.setFont(vFont);
     p.setPen(Pal::DIM);
-    QFontMetrics fm(logoFont);
-    int logoW = fm.horizontalAdvance("404 Tweaks");
-    p.drawText(QRect(18 + logoW + 6, 0, 60, 40), Qt::AlignVCenter, "v2026");
+    p.drawText(QRect(16 + lw + 8, 0, 50, 40), Qt::AlignVCenter, "v2026");
 
     QPoint cursor = mapFromGlobal(QCursor::pos());
 
-    // ── Minimize button ───────────────────────────────
+    // ── Minimize ──────────────────────────────────────
     QRect mr = minRect(width());
-    bool hoverMin = mr.contains(cursor);
-    if (hoverMin) {
+    bool hMin = mr.contains(cursor);
+    if (hMin) {
         p.setPen(Qt::NoPen);
-        p.setBrush(QColor(255, 255, 255, 28));
-        p.drawRoundedRect(mr, 5, 5);
-    } else {
-        p.setPen(Qt::NoPen);
-        p.setBrush(QColor(255, 255, 255, 10));
+        p.setBrush(QColor(255, 255, 255, 20));
         p.drawRoundedRect(mr, 5, 5);
     }
-    // Draw — icon
-    QPen linePen(hoverMin ? Pal::TEXT : Pal::DIM, 1.5f);
-    linePen.setCapStyle(Qt::RoundCap);
-    p.setPen(linePen);
+    QPen mPen(hMin ? Pal::TEXT : Pal::DIM, 1.4f);
+    mPen.setCapStyle(Qt::RoundCap);
+    p.setPen(mPen);
     drawMinIcon(p, mr);
 
-    // ── Close button ──────────────────────────────────
+    // ── Close ─────────────────────────────────────────
     QRect cr = closeRect(width());
-    bool hoverClose = cr.contains(cursor);
+    bool hClose = cr.contains(cursor);
     p.setPen(Qt::NoPen);
-    if (hoverClose) {
-        p.setBrush(QColor(0xC4, 0x2B, 0x2B, 220));
-    } else {
-        p.setBrush(QColor(255, 255, 255, 10));
-    }
+    p.setBrush(hClose ? QColor(0xC0, 0x28, 0x28, 200)
+                      : QColor(255, 255, 255, 0));
     p.drawRoundedRect(cr, 5, 5);
-
-    QPen closePen(hoverClose ? Qt::white : Pal::DIM, 1.5f);
-    closePen.setCapStyle(Qt::RoundCap);
-    p.setPen(closePen);
+    QPen cPen(hClose ? QColor(255, 255, 255) : Pal::DIM, 1.4f);
+    cPen.setCapStyle(Qt::RoundCap);
+    p.setPen(cPen);
     drawCloseIcon(p, cr);
 }
 
 void TitleBarWidget::mousePressEvent(QMouseEvent* e) {
     if (e->button() != Qt::LeftButton) return;
-
     if (closeRect(width()).contains(e->pos())) { emit closeRequested();    return; }
     if (minRect(width()).contains(e->pos()))   { emit minimizeRequested(); return; }
-
     m_dragging  = true;
     m_dragStart = e->globalPosition().toPoint() - window()->frameGeometry().topLeft();
     e->accept();
@@ -121,7 +104,7 @@ void TitleBarWidget::mousePressEvent(QMouseEvent* e) {
 void TitleBarWidget::mouseMoveEvent(QMouseEvent* e) {
     if (m_dragging && (e->buttons() & Qt::LeftButton))
         window()->move(e->globalPosition().toPoint() - m_dragStart);
-    update(); // repaint hover
+    update();
 }
 
 void TitleBarWidget::mouseReleaseEvent(QMouseEvent*) {

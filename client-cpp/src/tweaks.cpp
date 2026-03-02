@@ -802,6 +802,111 @@ void applyNicLatency(AppState& s) {
 }
 
 // ─────────────────────────────────────────────────────────────────────
+//  🎮  GAME MODE / GAME BAR / GAMEDVR
+//  Source PDF : WIN-GAME-Mode          [SAFE, Danger 1/5]
+//               WIN-GAME-Bar-Hotkeys   [SAFE, Danger 1/5]
+//               REG-GAMEDVR-AppCapture [SAFE, Danger 1/5] — reboot requis
+//               REG-GAMEDVR-Enabled    [SAFE, Danger 2/5] — reboot requis
+//  Effet : réduit CPU/GPU/IO de la capture arrière-plan, hooks overlay
+// ─────────────────────────────────────────────────────────────────────
+void applyGameMode(AppState& s) {
+    GuiLog(s, "== GAME MODE / GAME BAR / GAMEDVR ==", 5);
+    Stat st(s);
+
+    // [SAFE] Game Mode : priorité CPU/GPU au jeu — Danger 1/5
+    // Réduit variance CPU quand des tâches arrière-plan tournent
+    st.reg("HKCU\\SOFTWARE\\Microsoft\\GameBar",
+           "AllowAutoGameMode",    "REG_DWORD", "1",
+           "Activer Game Mode auto (priorite jeu CPU/GPU)");
+    st.reg("HKCU\\SOFTWARE\\Microsoft\\GameBar",
+           "AutoGameModeEnabled",  "REG_DWORD", "1",
+           "Game Mode auto-detection = ON");
+
+    // [SAFE] Game Bar overlay hotkeys off — Danger 1/5
+    // Supprime hooks d'entrée et injection overlay pendant le jeu
+    st.reg("HKCU\\SOFTWARE\\Microsoft\\GameBar",
+           "ShowStartupPanel",         "REG_DWORD", "0",
+           "Masquer panneau demarrage Game Bar");
+    st.reg("HKCU\\SOFTWARE\\Microsoft\\GameBar",
+           "UseNexusForGameBarEnabled","REG_DWORD", "0",
+           "Desactiver hotkey Xbox Nexus (Game Bar)");
+
+    // [SAFE] GameDVR AppCapture off — Danger 1/5 — reboot requis
+    // Désactive l'enregistrement vidéo en arrière-plan → moins CPU/GPU/I/O
+    st.reg("HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\GameDVR",
+           "AppCaptureEnabled", "REG_DWORD", "0",
+           "Desactiver GameDVR AppCapture (CPU/GPU/IO reduits) [reboot]");
+
+    // [SAFE] GameDVR_Enabled off — Danger 2/5 — reboot requis
+    // Note : effet de bord possible sur color management en fullscreen exclusif
+    st.reg("HKCU\\System\\GameConfigStore",
+           "GameDVR_Enabled", "REG_DWORD", "0",
+           "Desactiver GameDVR GameConfigStore (enreg. fond) [reboot]");
+
+    st.summary("GAME MODE");
+    GuiLog(s, "  Reboot requis pour appliquer GameDVR.", 3);
+    GuiLog(s, "  Rollback : AppCaptureEnabled=1, GameDVR_Enabled=1 + reboot", 4);
+}
+
+// ─────────────────────────────────────────────────────────────────────
+//  🔧  SERVICES & TELEMETRIE
+//  Source PDF : SVC-DeliveryOptimization        [SAFE, Danger 1/5]
+//               SVC-XboxServices                [SAFE, Danger 1/5]
+//               WINU-ActiveHours-DeadlinePolicy  [SAFE, Danger 2/5]
+//               TEL-OptionalDiagnosticData       [SAFE, Danger 1/5]
+// ─────────────────────────────────────────────────────────────────────
+void applyServices(AppState& s) {
+    GuiLog(s, "== SERVICES & TELEMETRIE ==", 5);
+    Stat st(s);
+
+    // [SAFE] Delivery Optimization : LAN uniquement — Danger 1/5
+    // DODownloadMode=1 = HTTP + LAN uniquement (pas de P2P internet)
+    // Évite I/O et bande passante P2P en arrière-plan pendant les sessions
+    // Rollback : DODownloadMode=3 (HTTP + P2P internet, défaut Windows)
+    st.reg("HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DeliveryOptimization",
+           "DODownloadMode", "REG_DWORD", "1",
+           "Delivery Optimization : LAN only (pas P2P internet)");
+
+    // [SAFE] Services Xbox inutiles — Danger 1/5
+    // Libère RAM + réduit CPU si overlay/capture Xbox non utilisés
+    // Rollback : sc config Xbox* start= demand/auto
+    st.cmd("sc config XblGameSave    start= disabled",
+           "Desactiver XblGameSave (Xbox save sync)");
+    st.cmd("sc config XboxNetApiSvc  start= disabled",
+           "Desactiver XboxNetApiSvc (Xbox network API)");
+    st.cmd("sc config XboxGipSvc     start= disabled",
+           "Desactiver XboxGipSvc (Xbox accessory mgmt)");
+    st.cmd("sc config XblAuthManager start= disabled",
+           "Desactiver XblAuthManager (Xbox authentication)");
+
+    // [SAFE] Windows Update heures actives — Danger 2/5
+    // Prévient les scans/downloads/reboots pendant les sessions compétitives
+    // Risque : patching retardé (sécurité) — acceptable profil gaming
+    const std::string WUA =
+        "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU";
+    st.reg(WUA, "AUOptions",                    "REG_DWORD", "2",
+           "WU : notifier seulement (pas install auto)");
+    st.reg(WUA, "NoAutoRebootWithLoggedOnUsers", "REG_DWORD", "1",
+           "WU : bloquer reboot auto si utilisateur connecte");
+
+    // [SAFE] Télémétrie : données Required seulement — Danger 1/5
+    // AllowTelemetry=1 = Required Diagnostic Data (minimum légal Win10)
+    // Réduit trafic réseau + CPU DiagTrack en arrière-plan
+    st.reg("HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection",
+           "AllowTelemetry", "REG_DWORD", "1",
+           "Telemetrie : Required uniquement (Basic, niveau minimum)");
+    st.reg("HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection",
+           "DoNotShowFeedbackNotifications", "REG_DWORD", "1",
+           "Desactiver notifications feedback Windows");
+    st.ps("Set-Service -Name 'DiagTrack' -StartupType Manual"
+          " -ErrorAction SilentlyContinue",
+          "DiagTrack (Connected User Experiences) : demarrage manuel");
+
+    st.summary("SERVICES");
+    GuiLog(s, "  Rollback : sc config Xbox* start= auto + AUOptions=4", 4);
+}
+
+// ─────────────────────────────────────────────────────────────────────
 //  🚀  TOUT APPLIQUER — Séquence complète
 // ─────────────────────────────────────────────────────────────────────
 void applyAll(AppState& s) {
@@ -812,6 +917,8 @@ void applyAll(AppState& s) {
 
     applyBackup(s);        GuiLog(s, "", 0);
     applyWindows(s);       GuiLog(s, "", 0);
+    applyGameMode(s);      GuiLog(s, "", 0);
+    applyServices(s);      GuiLog(s, "", 0);
     applyGpu(s);           GuiLog(s, "", 0);
     applyCpu(s);           GuiLog(s, "", 0);
     applyRam(s);           GuiLog(s, "", 0);
@@ -838,16 +945,49 @@ void revertAll(AppState& s) {
     GuiLog(s, "== RESTAURATION PARAMETRES PAR DEFAUT ==", 2);
     Stat st(s);
 
-    // Game Bar / DVR
-    st.reg("HKCU\\Software\\Microsoft\\GameBar",
-           "AllowAutoGameMode", "REG_DWORD", "1",
-           "Restaurer Game Bar auto mode");
+    // Game Mode / Game Bar / DVR
+    st.reg("HKCU\\SOFTWARE\\Microsoft\\GameBar",
+           "AllowAutoGameMode",         "REG_DWORD", "1",
+           "Restaurer Game Mode auto");
+    st.reg("HKCU\\SOFTWARE\\Microsoft\\GameBar",
+           "AutoGameModeEnabled",       "REG_DWORD", "1",
+           "Restaurer Game Mode detection");
+    st.reg("HKCU\\SOFTWARE\\Microsoft\\GameBar",
+           "ShowStartupPanel",          "REG_DWORD", "1",
+           "Restaurer panneau Game Bar");
+    st.reg("HKCU\\SOFTWARE\\Microsoft\\GameBar",
+           "UseNexusForGameBarEnabled", "REG_DWORD", "1",
+           "Restaurer hotkey Xbox Nexus");
+    st.reg("HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\GameDVR",
+           "AppCaptureEnabled",         "REG_DWORD", "1",
+           "Restaurer GameDVR AppCapture");
     st.reg("HKCU\\System\\GameConfigStore",
-           "GameDVR_Enabled", "REG_DWORD", "1",
-           "Restaurer Game DVR");
+           "GameDVR_Enabled",           "REG_DWORD", "1",
+           "Restaurer GameDVR_Enabled");
     st.reg("HKCU\\System\\GameConfigStore",
-           "GameDVR_FSEBehaviorMode", "REG_DWORD", "0",
+           "GameDVR_FSEBehaviorMode",   "REG_DWORD", "0",
            "Restaurer FSE Behavior");
+
+    // Services & Télémétrie
+    st.reg("HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DeliveryOptimization",
+           "DODownloadMode",  "REG_DWORD", "3",
+           "Restaurer Delivery Optimization (P2P internet, defaut)");
+    st.cmd("sc config XblGameSave    start= demand",   "Restaurer XblGameSave");
+    st.cmd("sc config XboxNetApiSvc  start= demand",   "Restaurer XboxNetApiSvc");
+    st.cmd("sc config XboxGipSvc     start= demand",   "Restaurer XboxGipSvc");
+    st.cmd("sc config XblAuthManager start= auto",     "Restaurer XblAuthManager");
+    st.reg("HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU",
+           "AUOptions",                    "REG_DWORD", "4",
+           "Restaurer Windows Update (install auto)");
+    st.reg("HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU",
+           "NoAutoRebootWithLoggedOnUsers", "REG_DWORD", "0",
+           "Restaurer reboot auto WU");
+    st.reg("HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection",
+           "AllowTelemetry", "REG_DWORD", "3",
+           "Restaurer telemetrie (Full, defaut Windows)");
+    st.ps("Set-Service -Name 'DiagTrack' -StartupType Automatic"
+          " -ErrorAction SilentlyContinue",
+          "Restaurer DiagTrack (auto)");
 
     // Plan alimentation (Équilibré)
     st.cmd("powercfg /setactive 381b4222-f694-41f0-9685-ff5bb260df2e",
@@ -1010,38 +1150,94 @@ void revertAll(AppState& s) {
 
 // ══════════════════════════════════════════════════════════════════════
 //  Fonctions de vérification — lecture registre read-only
+//  total = nombre de tweaks vérifiables pour chaque module
 // ══════════════════════════════════════════════════════════════════════
 
 CheckResult checkWindows() {
-    CheckResult r{ 0, 3 };
+    // Vérifie les 34 clés registre de applyWindows() — total=34
+    CheckResult r{ 0, 34 };
+    // Remote Assistance
     if (chkDWORD(HKEY_LOCAL_MACHINE,
         "SYSTEM\\CurrentControlSet\\Control\\Remote Assistance",
         "fAllowToGetHelp", 0)) ++r.applied;
-    if (chkDWORD(HKEY_LOCAL_MACHINE,
-        "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile",
-        "SystemResponsiveness", 0)) ++r.applied;
+    // Edge
+    if (chkDWORD(HKEY_LOCAL_MACHINE, "SOFTWARE\\Policies\\Microsoft\\Edge",
+        "StartupBoostEnabled",  0)) ++r.applied;
+    if (chkDWORD(HKEY_LOCAL_MACHINE, "SOFTWARE\\Policies\\Microsoft\\Edge",
+        "BackgroundModeEnabled",0)) ++r.applied;
+    // Search history
     if (chkDWORD(HKEY_CURRENT_USER,
-        "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager",
-        "ContentDeliveryAllowed", 0)) ++r.applied;
+        "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\SearchSettings",
+        "IsDeviceSearchHistoryEnabled", 0)) ++r.applied;
+    // LanmanServer
+    const char* LS = "SYSTEM\\CurrentControlSet\\Services\\LanmanServer\\Parameters";
+    if (chkDWORD(HKEY_LOCAL_MACHINE, LS, "autodisconnect",    0xFFFFFFFFUL)) ++r.applied;
+    if (chkDWORD(HKEY_LOCAL_MACHINE, LS, "Size",              3))  ++r.applied;
+    if (chkDWORD(HKEY_LOCAL_MACHINE, LS, "EnableOplocks",     0))  ++r.applied;
+    if (chkDWORD(HKEY_LOCAL_MACHINE, LS, "IRPStackSize",      32)) ++r.applied;
+    if (chkDWORD(HKEY_LOCAL_MACHINE, LS, "EnableForcedLogoff",0))  ++r.applied;
+    // Multimedia SystemProfile
+    const char* MM = "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile";
+    if (chkDWORD(HKEY_LOCAL_MACHINE, MM, "SystemResponsiveness", 0)) ++r.applied;
+    if (chkDWORD(HKEY_LOCAL_MACHINE, MM, "AlwaysOn",             1)) ++r.applied;
+    const char* MMG = "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion"
+                      "\\Multimedia\\SystemProfile\\Tasks\\Games";
+    if (chkDWORD(HKEY_LOCAL_MACHINE, MMG, "LazyModeTimeout", 0)) ++r.applied;
+    if (chkDWORD(HKEY_LOCAL_MACHINE, MMG, "GPU Priority",    8)) ++r.applied;
+    if (chkDWORD(HKEY_LOCAL_MACHINE, MMG, "Priority",        6)) ++r.applied;
+    if (chkSZ   (HKEY_LOCAL_MACHINE, MMG, "Scheduling Category", "High")) ++r.applied;
+    if (chkSZ   (HKEY_LOCAL_MACHINE, MMG, "SFIO Priority",       "High")) ++r.applied;
+    // Content Delivery Manager
+    const char* CDM = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager";
+    if (chkDWORD(HKEY_CURRENT_USER, CDM, "ContentDeliveryAllowed",          0)) ++r.applied;
+    if (chkDWORD(HKEY_CURRENT_USER, CDM, "SubscribedContent-338388Enabled", 0)) ++r.applied;
+    if (chkDWORD(HKEY_CURRENT_USER, CDM, "SubscribedContent-338389Enabled", 0)) ++r.applied;
+    if (chkDWORD(HKEY_CURRENT_USER, CDM, "SubscribedContent-353694Enabled", 0)) ++r.applied;
+    if (chkDWORD(HKEY_CURRENT_USER, CDM, "SubscribedContent-353696Enabled", 0)) ++r.applied;
+    if (chkDWORD(HKEY_CURRENT_USER, CDM, "SilentInstalledAppsEnabled",      0)) ++r.applied;
+    if (chkDWORD(HKEY_CURRENT_USER, CDM, "OemPreInstalledAppsEnabled",      0)) ++r.applied;
+    // Settings Sync
+    if (chkDWORD(HKEY_CURRENT_USER,
+        "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\SettingSync",
+        "SyncPolicy", 5)) ++r.applied;
+    const char* SS = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\SettingSync\\Groups";
+    for (const char* grp : {"BrowserSettings","Credentials","Accessibility",
+                             "Windows","Personalization","Language"}) {
+        std::string p = std::string(SS) + "\\" + grp;
+        if (chkDWORD(HKEY_CURRENT_USER, p.c_str(), "Enabled", 0)) ++r.applied;
+    }
+    // UI
+    if (chkSZ(HKEY_CURRENT_USER,
+        "Control Panel\\Desktop", "FontSmoothing", "2")) ++r.applied;
+    if (chkDWORD(HKEY_CURRENT_USER,
+        "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "ShowTaskViewButton", 0)) ++r.applied;
+    if (chkSZ(HKEY_CURRENT_USER,
+        "Control Panel\\Desktop\\WindowMetrics", "MinAnimate", "0")) ++r.applied;
+    if (chkDWORD(HKEY_CURRENT_USER,
+        "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+        "TaskbarAnimations", 0)) ++r.applied;
     return r;
 }
 
 CheckResult checkGpu() {
-    CheckResult r{ 0, 3 };
-    if (chkDWORD(HKEY_LOCAL_MACHINE,
-        "SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers",
-        "HwSchMode", 2)) ++r.applied;
-    if (chkDWORD(HKEY_CURRENT_USER,
-        "SOFTWARE\\Microsoft\\Windows\\DWM",
-        "Animations", 0)) ++r.applied;
-    if (chkDWORD(HKEY_LOCAL_MACHINE,
-        "SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers",
-        "TdrDelay", 60)) ++r.applied;
+    // 6 clés registre vérifiables (les 4 ops powercfg/PS ne sont pas vérifiables)
+    CheckResult r{ 0, 6 };
+    const char* GFX = "SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers";
+    if (chkDWORD(HKEY_LOCAL_MACHINE, GFX, "HwSchMode",   2))  ++r.applied;
+    if (chkDWORD(HKEY_LOCAL_MACHINE, GFX, "TdrDelay",    60)) ++r.applied;
+    if (chkDWORD(HKEY_LOCAL_MACHINE, GFX, "TdrDdiDelay", 60)) ++r.applied;
+    if (chkDWORD(HKEY_LOCAL_MACHINE, GFX, "TdrLevel",    3))  ++r.applied;
+    if (chkDWORD(HKEY_CURRENT_USER,  "SOFTWARE\\Microsoft\\Windows\\DWM",
+        "Animations",     0)) ++r.applied;
+    if (chkDWORD(HKEY_CURRENT_USER,  "SOFTWARE\\Microsoft\\Windows\\DWM",
+        "EnableAeroPeek", 0)) ++r.applied;
     return r;
 }
 
 CheckResult checkCpu() {
-    CheckResult r{ 0, 3 };
+    // 4 clés registre directement vérifiables (les ops powercfg/bcdedit ne le sont pas)
+    CheckResult r{ 0, 4 };
     if (chkDWORD(HKEY_LOCAL_MACHINE,
         "SYSTEM\\CurrentControlSet\\Control\\Power\\PowerThrottling",
         "PowerThrottlingOff", 1)) ++r.applied;
@@ -1051,58 +1247,94 @@ CheckResult checkCpu() {
     if (chkDWORD(HKEY_LOCAL_MACHINE,
         "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile",
         "SystemResponsiveness", 0)) ++r.applied;
+    if (chkDWORD(HKEY_LOCAL_MACHINE,
+        "SYSTEM\\CurrentControlSet\\Control\\Power",
+        "PlatformAoAcOverride", 0)) ++r.applied;
     return r;
 }
 
 CheckResult checkRam() {
+    // 2 clés vérifiables (les PS NtSetSystemInformation / MMAgent ne laissent pas d'état persistant)
     CheckResult r{ 0, 2 };
-    if (chkDWORD(HKEY_LOCAL_MACHINE,
-        "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management",
-        "DisablePagingExecutive", 1)) ++r.applied;
-    if (chkDWORD(HKEY_LOCAL_MACHINE,
-        "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management",
-        "LargeSystemCache", 0)) ++r.applied;
+    const char* MM2 = "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management";
+    if (chkDWORD(HKEY_LOCAL_MACHINE, MM2, "DisablePagingExecutive", 1)) ++r.applied;
+    if (chkDWORD(HKEY_LOCAL_MACHINE, MM2, "LargeSystemCache",       0)) ++r.applied;
     return r;
 }
 
 CheckResult checkNetwork() {
-    CheckResult r{ 0, 3 };
-    if (chkDWORD(HKEY_LOCAL_MACHINE,
-        "SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters",
-        "TCPNoDelay", 1)) ++r.applied;
-    if (chkDWORD(HKEY_LOCAL_MACHINE,
-        "SYSTEM\\CurrentControlSet\\Services\\Dnscache\\Parameters",
-        "MaxCacheTtl", 86400)) ++r.applied;
-    if (chkDWORD(HKEY_LOCAL_MACHINE,
-        "SYSTEM\\CurrentControlSet\\Services\\LanmanWorkstation\\Parameters",
-        "MaxCmds", 50)) ++r.applied;
+    // 8 clés registre vérifiables (les ops netsh/winsock reset sont one-shot)
+    CheckResult r{ 0, 8 };
+    const char* TCP = "SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters";
+    if (chkDWORD(HKEY_LOCAL_MACHINE, TCP, "TCPNoDelay",          1)) ++r.applied;
+    if (chkDWORD(HKEY_LOCAL_MACHINE, TCP, "EnablePMTUDiscovery", 1)) ++r.applied;
+    const char* LW = "SYSTEM\\CurrentControlSet\\Services\\LanmanWorkstation\\Parameters";
+    if (chkDWORD(HKEY_LOCAL_MACHINE, LW, "MaxCmds",            50)) ++r.applied;
+    if (chkDWORD(HKEY_LOCAL_MACHINE, LW, "MaxCollectionCount", 32)) ++r.applied;
+    if (chkDWORD(HKEY_LOCAL_MACHINE, LW, "MaxThreads",         30)) ++r.applied;
+    const char* DNS2 = "SYSTEM\\CurrentControlSet\\Services\\Dnscache\\Parameters";
+    if (chkDWORD(HKEY_LOCAL_MACHINE, DNS2, "MaxCacheTtl",        86400)) ++r.applied;
+    if (chkDWORD(HKEY_LOCAL_MACHINE, DNS2, "NegativeCacheTime",  0))     ++r.applied;
+    if (chkDWORD(HKEY_LOCAL_MACHINE, DNS2, "MaxNegativeCacheTtl",0))     ++r.applied;
     return r;
 }
 
 CheckResult checkStorage() {
-    CheckResult r{ 0, 2 };
+    // 5 états vérifiables via registre (fsutil + service SysMain)
+    CheckResult r{ 0, 5 };
+    const char* PF = "SYSTEM\\CurrentControlSet\\Control\\Session Manager"
+                     "\\Memory Management\\PrefetchParameters";
+    if (chkDWORD(HKEY_LOCAL_MACHINE, PF, "EnablePrefetcher", 0)) ++r.applied;
+    if (chkDWORD(HKEY_LOCAL_MACHINE, PF, "EnableSuperfetch", 0)) ++r.applied;
+    // SysMain (Superfetch) service: Start=4 = disabled
     if (chkDWORD(HKEY_LOCAL_MACHINE,
-        "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management\\PrefetchParameters",
-        "EnablePrefetcher", 0)) ++r.applied;
+        "SYSTEM\\CurrentControlSet\\Services\\SysMain", "Start", 4)) ++r.applied;
+    // fsutil behavior set disablelastaccess 1
     if (chkDWORD(HKEY_LOCAL_MACHINE,
-        "SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management\\PrefetchParameters",
-        "EnableSuperfetch", 0)) ++r.applied;
+        "SYSTEM\\CurrentControlSet\\Control\\FileSystem",
+        "NtfsDisableLastAccessUpdate", 1)) ++r.applied;
+    // fsutil behavior set disable8dot3 1
+    if (chkDWORD(HKEY_LOCAL_MACHINE,
+        "SYSTEM\\CurrentControlSet\\Control\\FileSystem",
+        "NtfsDisable8dot3NameCreation", 1)) ++r.applied;
     return r;
 }
 
 CheckResult checkInput() {
-    CheckResult r{ 0, 3 };
-    if (chkSZ(HKEY_CURRENT_USER, "Control Panel\\Mouse", "MouseSpeed",     "0")) ++r.applied;
-    if (chkSZ(HKEY_CURRENT_USER, "Control Panel\\Mouse", "MouseThreshold1","0")) ++r.applied;
-    if (chkSZ(HKEY_CURRENT_USER, "Control Panel\\Keyboard", "KeyboardDelay","0")) ++r.applied;
+    // 12 clés string/dword vérifiables (skip REG_BINARY curves + PS USB)
+    CheckResult r{ 0, 12 };
+    const char* MOU = "Control Panel\\Mouse";
+    const char* KBD = "Control Panel\\Keyboard";
+    if (chkSZ(HKEY_CURRENT_USER, MOU, "MouseSpeed",          "0"))  ++r.applied;
+    if (chkSZ(HKEY_CURRENT_USER, MOU, "MouseThreshold1",     "0"))  ++r.applied;
+    if (chkSZ(HKEY_CURRENT_USER, MOU, "MouseThreshold2",     "0"))  ++r.applied;
+    if (chkSZ(HKEY_CURRENT_USER, MOU, "MouseTrails",         "0"))  ++r.applied;
+    if (chkSZ(HKEY_CURRENT_USER, MOU, "MouseHoverTime",      "10")) ++r.applied;
+    if (chkSZ(HKEY_CURRENT_USER, MOU, "SnapToDefaultButton", "0"))  ++r.applied;
+    if (chkSZ(HKEY_CURRENT_USER, KBD, "KeyboardDelay", "0"))        ++r.applied;
+    if (chkSZ(HKEY_CURRENT_USER, KBD, "KeyboardSpeed", "31"))       ++r.applied;
+    if (chkSZ(HKEY_CURRENT_USER, "Control Panel\\Accessibility\\StickyKeys",
+        "Flags", "506")) ++r.applied;
+    if (chkSZ(HKEY_CURRENT_USER, "Control Panel\\Accessibility\\Keyboard Filter",
+        "Flags", "0"))   ++r.applied;
+    if (chkSZ(HKEY_CURRENT_USER, "Control Panel\\Accessibility\\ToggleKeys",
+        "Flags", "58"))  ++r.applied;
+    if (chkSZ(HKEY_CURRENT_USER, "Control Panel\\Accessibility\\Bounce Keys",
+        "Flags", "0"))   ++r.applied;
     return r;
 }
 
 CheckResult checkPower() {
-    CheckResult r{ 0, 2 };
+    // 3 états vérifiables (les powercfg scheme values sont dans des chemins GUID dynamiques)
+    CheckResult r{ 0, 3 };
     if (chkDWORD(HKEY_LOCAL_MACHINE,
         "SYSTEM\\CurrentControlSet\\Control\\Power\\PowerThrottling",
         "PowerThrottlingOff", 1)) ++r.applied;
+    // Hibernation désactivée
+    if (chkDWORD(HKEY_LOCAL_MACHINE,
+        "SYSTEM\\CurrentControlSet\\Control\\Power",
+        "HibernateEnabled", 0)) ++r.applied;
+    // HAGS actif (aussi vérifié par checkGpu)
     if (chkDWORD(HKEY_LOCAL_MACHINE,
         "SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers",
         "HwSchMode", 2)) ++r.applied;
@@ -1139,6 +1371,53 @@ CheckResult checkMPO() {
     if (chkDWORD(HKEY_LOCAL_MACHINE,
         "SOFTWARE\\Microsoft\\Windows\\Dwm",
         "OverlayTestMode", 5)) ++r.applied;
+    return r;
+}
+
+CheckResult checkGameMode() {
+    // Vérifie les 6 clés registre de applyGameMode() — total=6
+    CheckResult r{ 0, 6 };
+    const char* GB = "SOFTWARE\\Microsoft\\GameBar";
+    if (chkDWORD(HKEY_CURRENT_USER, GB, "AllowAutoGameMode",         1)) ++r.applied;
+    if (chkDWORD(HKEY_CURRENT_USER, GB, "AutoGameModeEnabled",       1)) ++r.applied;
+    if (chkDWORD(HKEY_CURRENT_USER, GB, "ShowStartupPanel",          0)) ++r.applied;
+    if (chkDWORD(HKEY_CURRENT_USER, GB, "UseNexusForGameBarEnabled", 0)) ++r.applied;
+    if (chkDWORD(HKEY_CURRENT_USER,
+        "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\GameDVR",
+        "AppCaptureEnabled", 0)) ++r.applied;
+    if (chkDWORD(HKEY_CURRENT_USER,
+        "System\\GameConfigStore",
+        "GameDVR_Enabled", 0)) ++r.applied;
+    return r;
+}
+
+CheckResult checkServices() {
+    // 9 états vérifiables : 4 reg + 4 services Start (=4 disabled) + 1 DiagTrack Start (=3 manual)
+    CheckResult r{ 0, 9 };
+    // Delivery Optimization
+    if (chkDWORD(HKEY_LOCAL_MACHINE,
+        "SOFTWARE\\Policies\\Microsoft\\Windows\\DeliveryOptimization",
+        "DODownloadMode", 1)) ++r.applied;
+    // Xbox services Start=4 (disabled)
+    if (chkDWORD(HKEY_LOCAL_MACHINE,
+        "SYSTEM\\CurrentControlSet\\Services\\XblGameSave",    "Start", 4)) ++r.applied;
+    if (chkDWORD(HKEY_LOCAL_MACHINE,
+        "SYSTEM\\CurrentControlSet\\Services\\XboxNetApiSvc",  "Start", 4)) ++r.applied;
+    if (chkDWORD(HKEY_LOCAL_MACHINE,
+        "SYSTEM\\CurrentControlSet\\Services\\XboxGipSvc",     "Start", 4)) ++r.applied;
+    if (chkDWORD(HKEY_LOCAL_MACHINE,
+        "SYSTEM\\CurrentControlSet\\Services\\XblAuthManager", "Start", 4)) ++r.applied;
+    // Windows Update policy
+    const char* WUA = "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU";
+    if (chkDWORD(HKEY_LOCAL_MACHINE, WUA, "AUOptions",                    2)) ++r.applied;
+    if (chkDWORD(HKEY_LOCAL_MACHINE, WUA, "NoAutoRebootWithLoggedOnUsers", 1)) ++r.applied;
+    // Télémétrie
+    if (chkDWORD(HKEY_LOCAL_MACHINE,
+        "SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection",
+        "AllowTelemetry", 1)) ++r.applied;
+    // DiagTrack Start=3 (manual)
+    if (chkDWORD(HKEY_LOCAL_MACHINE,
+        "SYSTEM\\CurrentControlSet\\Services\\DiagTrack", "Start", 3)) ++r.applied;
     return r;
 }
 

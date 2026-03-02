@@ -408,6 +408,8 @@ CMakeFiles/FortniteOptimizer2026.dir/src/LicenseScreen.cpp.obj: \
  B:/Qt/6.10.2/mingw_64/include/QtCore/qdeadlinetimer.h \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/QFrame \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qframe.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/QStackedWidget \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qstackedwidget.h \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/AppController.h \
  B:/Qt/6.10.2/mingw_64/include/QtCore/QObject \
  B:/Qt/6.10.2/mingw_64/include/QtCore/qobject.h \
@@ -425,7 +427,6 @@ CMakeFiles/FortniteOptimizer2026.dir/src/LicenseScreen.cpp.obj: \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/tweaks.h \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/updater.h \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/Palette.h \
- B:/FortniteOptiEbook/FTN-main/client-cpp/include/GlassCard.h \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/GlowButton.h \
  B:/Qt/6.10.2/mingw_64/include/QtCore/QPropertyAnimation \
  B:/Qt/6.10.2/mingw_64/include/QtCore/qpropertyanimation.h \
@@ -443,12 +444,8 @@ CMakeFiles/FortniteOptimizer2026.dir/src/LicenseScreen.cpp.obj: \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qgridlayout.h \
  B:/Qt/6.10.2/mingw_64/include/QtGui/QPainter \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qpainter.h \
- B:/Qt/6.10.2/mingw_64/include/QtGui/QLinearGradient \
- B:/Qt/6.10.2/mingw_64/include/QtGui/qbrush.h \
- B:/Qt/6.10.2/mingw_64/include/QtGui/QRadialGradient \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/QGraphicsDropShadowEffect \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/qgraphicseffect.h \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/QGraphicsOpacityEffect \
+ B:/Qt/6.10.2/mingw_64/include/QtGui/QPen \
+ B:/Qt/6.10.2/mingw_64/include/QtGui/qpen.h \
  B:/Qt/6.10.2/mingw_64/include/QtGui/QKeyEvent \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qevent.h \
  B:/Qt/6.10.2/mingw_64/include/QtCore/qcoreevent.h \

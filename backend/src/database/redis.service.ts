@@ -99,4 +99,38 @@ export class RedisService implements OnModuleDestroy {
   async incr(key: string): Promise<number> {
     return this.client.incr(key);
   }
+
+  // ── Analytics helpers ──
+  async hincrby(key: string, field: string, delta: number): Promise<number> {
+    return this.client.hincrby(key, field, delta);
+  }
+
+  async hgetall(key: string): Promise<Record<string, string> | null> {
+    const result = await this.client.hgetall(key);
+    return result && Object.keys(result).length > 0 ? result : null;
+  }
+
+  async pfadd(key: string, ...elements: string[]): Promise<number> {
+    return this.client.pfadd(key, ...elements) as Promise<number>;
+  }
+
+  async pfcount(key: string): Promise<number> {
+    return this.client.pfcount(key);
+  }
+
+  async expire(key: string, seconds: number): Promise<void> {
+    await this.client.expire(key, seconds);
+  }
+
+  async zadd(key: string, score: number, member: string): Promise<number> {
+    return this.client.zadd(key, score, member) as unknown as Promise<number>;
+  }
+
+  async zcount(key: string, min: number | string, max: number | string): Promise<number> {
+    return this.client.zcount(key, min, max);
+  }
+
+  async zremrangebyscore(key: string, min: number | string, max: number | string): Promise<number> {
+    return this.client.zremrangebyscore(key, min, max);
+  }
 }

@@ -478,11 +478,161 @@ CMakeFiles/FortniteOptimizer2026.dir/src/SystemMonitorWidget.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/FortniteOptimizer2026.dir/src/SystemMonitorWidget.cpp.s"
 	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S B:\FortniteOptiEbook\FTN-main\client-cpp\src\SystemMonitorWidget.cpp -o CMakeFiles\FortniteOptimizer2026.dir\src\SystemMonitorWidget.cpp.s
 
+CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkManager.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/flags.make
+CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkManager.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/includes_CXX.rsp
+CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkManager.cpp.obj: B:/FortniteOptiEbook/FTN-main/client-cpp/src/BenchmarkManager.cpp
+CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkManager.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=B:\FortniteOptiEbook\FTN-main\client-cpp\build-mingw\CMakeFiles --progress-num=$(CMAKE_PROGRESS_29) "Building CXX object CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkManager.cpp.obj"
+	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkManager.cpp.obj -MF CMakeFiles\FortniteOptimizer2026.dir\src\BenchmarkManager.cpp.obj.d -o CMakeFiles\FortniteOptimizer2026.dir\src\BenchmarkManager.cpp.obj -c B:\FortniteOptiEbook\FTN-main\client-cpp\src\BenchmarkManager.cpp
+
+CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkManager.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkManager.cpp.i"
+	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E B:\FortniteOptiEbook\FTN-main\client-cpp\src\BenchmarkManager.cpp > CMakeFiles\FortniteOptimizer2026.dir\src\BenchmarkManager.cpp.i
+
+CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkManager.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkManager.cpp.s"
+	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S B:\FortniteOptiEbook\FTN-main\client-cpp\src\BenchmarkManager.cpp -o CMakeFiles\FortniteOptimizer2026.dir\src\BenchmarkManager.cpp.s
+
+CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkPage.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/flags.make
+CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkPage.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/includes_CXX.rsp
+CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkPage.cpp.obj: B:/FortniteOptiEbook/FTN-main/client-cpp/src/BenchmarkPage.cpp
+CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkPage.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=B:\FortniteOptiEbook\FTN-main\client-cpp\build-mingw\CMakeFiles --progress-num=$(CMAKE_PROGRESS_30) "Building CXX object CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkPage.cpp.obj"
+	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkPage.cpp.obj -MF CMakeFiles\FortniteOptimizer2026.dir\src\BenchmarkPage.cpp.obj.d -o CMakeFiles\FortniteOptimizer2026.dir\src\BenchmarkPage.cpp.obj -c B:\FortniteOptiEbook\FTN-main\client-cpp\src\BenchmarkPage.cpp
+
+CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkPage.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkPage.cpp.i"
+	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E B:\FortniteOptiEbook\FTN-main\client-cpp\src\BenchmarkPage.cpp > CMakeFiles\FortniteOptimizer2026.dir\src\BenchmarkPage.cpp.i
+
+CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkPage.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkPage.cpp.s"
+	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S B:\FortniteOptiEbook\FTN-main\client-cpp\src\BenchmarkPage.cpp -o CMakeFiles\FortniteOptimizer2026.dir\src\BenchmarkPage.cpp.s
+
+CMakeFiles/FortniteOptimizer2026.dir/src/GuidePage.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/flags.make
+CMakeFiles/FortniteOptimizer2026.dir/src/GuidePage.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/includes_CXX.rsp
+CMakeFiles/FortniteOptimizer2026.dir/src/GuidePage.cpp.obj: B:/FortniteOptiEbook/FTN-main/client-cpp/src/GuidePage.cpp
+CMakeFiles/FortniteOptimizer2026.dir/src/GuidePage.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=B:\FortniteOptiEbook\FTN-main\client-cpp\build-mingw\CMakeFiles --progress-num=$(CMAKE_PROGRESS_31) "Building CXX object CMakeFiles/FortniteOptimizer2026.dir/src/GuidePage.cpp.obj"
+	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/FortniteOptimizer2026.dir/src/GuidePage.cpp.obj -MF CMakeFiles\FortniteOptimizer2026.dir\src\GuidePage.cpp.obj.d -o CMakeFiles\FortniteOptimizer2026.dir\src\GuidePage.cpp.obj -c B:\FortniteOptiEbook\FTN-main\client-cpp\src\GuidePage.cpp
+
+CMakeFiles/FortniteOptimizer2026.dir/src/GuidePage.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/FortniteOptimizer2026.dir/src/GuidePage.cpp.i"
+	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E B:\FortniteOptiEbook\FTN-main\client-cpp\src\GuidePage.cpp > CMakeFiles\FortniteOptimizer2026.dir\src\GuidePage.cpp.i
+
+CMakeFiles/FortniteOptimizer2026.dir/src/GuidePage.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/FortniteOptimizer2026.dir/src/GuidePage.cpp.s"
+	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S B:\FortniteOptiEbook\FTN-main\client-cpp\src\GuidePage.cpp -o CMakeFiles\FortniteOptimizer2026.dir\src\GuidePage.cpp.s
+
+CMakeFiles/FortniteOptimizer2026.dir/src/NetworkOptimizerPage.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/flags.make
+CMakeFiles/FortniteOptimizer2026.dir/src/NetworkOptimizerPage.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/includes_CXX.rsp
+CMakeFiles/FortniteOptimizer2026.dir/src/NetworkOptimizerPage.cpp.obj: B:/FortniteOptiEbook/FTN-main/client-cpp/src/NetworkOptimizerPage.cpp
+CMakeFiles/FortniteOptimizer2026.dir/src/NetworkOptimizerPage.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=B:\FortniteOptiEbook\FTN-main\client-cpp\build-mingw\CMakeFiles --progress-num=$(CMAKE_PROGRESS_32) "Building CXX object CMakeFiles/FortniteOptimizer2026.dir/src/NetworkOptimizerPage.cpp.obj"
+	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/FortniteOptimizer2026.dir/src/NetworkOptimizerPage.cpp.obj -MF CMakeFiles\FortniteOptimizer2026.dir\src\NetworkOptimizerPage.cpp.obj.d -o CMakeFiles\FortniteOptimizer2026.dir\src\NetworkOptimizerPage.cpp.obj -c B:\FortniteOptiEbook\FTN-main\client-cpp\src\NetworkOptimizerPage.cpp
+
+CMakeFiles/FortniteOptimizer2026.dir/src/NetworkOptimizerPage.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/FortniteOptimizer2026.dir/src/NetworkOptimizerPage.cpp.i"
+	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E B:\FortniteOptiEbook\FTN-main\client-cpp\src\NetworkOptimizerPage.cpp > CMakeFiles\FortniteOptimizer2026.dir\src\NetworkOptimizerPage.cpp.i
+
+CMakeFiles/FortniteOptimizer2026.dir/src/NetworkOptimizerPage.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/FortniteOptimizer2026.dir/src/NetworkOptimizerPage.cpp.s"
+	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S B:\FortniteOptiEbook\FTN-main\client-cpp\src\NetworkOptimizerPage.cpp -o CMakeFiles\FortniteOptimizer2026.dir\src\NetworkOptimizerPage.cpp.s
+
+CMakeFiles/FortniteOptimizer2026.dir/src/DriverOptPage.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/flags.make
+CMakeFiles/FortniteOptimizer2026.dir/src/DriverOptPage.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/includes_CXX.rsp
+CMakeFiles/FortniteOptimizer2026.dir/src/DriverOptPage.cpp.obj: B:/FortniteOptiEbook/FTN-main/client-cpp/src/DriverOptPage.cpp
+CMakeFiles/FortniteOptimizer2026.dir/src/DriverOptPage.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=B:\FortniteOptiEbook\FTN-main\client-cpp\build-mingw\CMakeFiles --progress-num=$(CMAKE_PROGRESS_33) "Building CXX object CMakeFiles/FortniteOptimizer2026.dir/src/DriverOptPage.cpp.obj"
+	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/FortniteOptimizer2026.dir/src/DriverOptPage.cpp.obj -MF CMakeFiles\FortniteOptimizer2026.dir\src\DriverOptPage.cpp.obj.d -o CMakeFiles\FortniteOptimizer2026.dir\src\DriverOptPage.cpp.obj -c B:\FortniteOptiEbook\FTN-main\client-cpp\src\DriverOptPage.cpp
+
+CMakeFiles/FortniteOptimizer2026.dir/src/DriverOptPage.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/FortniteOptimizer2026.dir/src/DriverOptPage.cpp.i"
+	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E B:\FortniteOptiEbook\FTN-main\client-cpp\src\DriverOptPage.cpp > CMakeFiles\FortniteOptimizer2026.dir\src\DriverOptPage.cpp.i
+
+CMakeFiles/FortniteOptimizer2026.dir/src/DriverOptPage.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/FortniteOptimizer2026.dir/src/DriverOptPage.cpp.s"
+	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S B:\FortniteOptiEbook\FTN-main\client-cpp\src\DriverOptPage.cpp -o CMakeFiles\FortniteOptimizer2026.dir\src\DriverOptPage.cpp.s
+
+CMakeFiles/FortniteOptimizer2026.dir/src/FortniteSettingsPage.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/flags.make
+CMakeFiles/FortniteOptimizer2026.dir/src/FortniteSettingsPage.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/includes_CXX.rsp
+CMakeFiles/FortniteOptimizer2026.dir/src/FortniteSettingsPage.cpp.obj: B:/FortniteOptiEbook/FTN-main/client-cpp/src/FortniteSettingsPage.cpp
+CMakeFiles/FortniteOptimizer2026.dir/src/FortniteSettingsPage.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=B:\FortniteOptiEbook\FTN-main\client-cpp\build-mingw\CMakeFiles --progress-num=$(CMAKE_PROGRESS_34) "Building CXX object CMakeFiles/FortniteOptimizer2026.dir/src/FortniteSettingsPage.cpp.obj"
+	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/FortniteOptimizer2026.dir/src/FortniteSettingsPage.cpp.obj -MF CMakeFiles\FortniteOptimizer2026.dir\src\FortniteSettingsPage.cpp.obj.d -o CMakeFiles\FortniteOptimizer2026.dir\src\FortniteSettingsPage.cpp.obj -c B:\FortniteOptiEbook\FTN-main\client-cpp\src\FortniteSettingsPage.cpp
+
+CMakeFiles/FortniteOptimizer2026.dir/src/FortniteSettingsPage.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/FortniteOptimizer2026.dir/src/FortniteSettingsPage.cpp.i"
+	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E B:\FortniteOptiEbook\FTN-main\client-cpp\src\FortniteSettingsPage.cpp > CMakeFiles\FortniteOptimizer2026.dir\src\FortniteSettingsPage.cpp.i
+
+CMakeFiles/FortniteOptimizer2026.dir/src/FortniteSettingsPage.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/FortniteOptimizer2026.dir/src/FortniteSettingsPage.cpp.s"
+	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S B:\FortniteOptiEbook\FTN-main\client-cpp\src\FortniteSettingsPage.cpp -o CMakeFiles\FortniteOptimizer2026.dir\src\FortniteSettingsPage.cpp.s
+
+CMakeFiles/FortniteOptimizer2026.dir/src/MacroEngine.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/flags.make
+CMakeFiles/FortniteOptimizer2026.dir/src/MacroEngine.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/includes_CXX.rsp
+CMakeFiles/FortniteOptimizer2026.dir/src/MacroEngine.cpp.obj: B:/FortniteOptiEbook/FTN-main/client-cpp/src/MacroEngine.cpp
+CMakeFiles/FortniteOptimizer2026.dir/src/MacroEngine.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=B:\FortniteOptiEbook\FTN-main\client-cpp\build-mingw\CMakeFiles --progress-num=$(CMAKE_PROGRESS_35) "Building CXX object CMakeFiles/FortniteOptimizer2026.dir/src/MacroEngine.cpp.obj"
+	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/FortniteOptimizer2026.dir/src/MacroEngine.cpp.obj -MF CMakeFiles\FortniteOptimizer2026.dir\src\MacroEngine.cpp.obj.d -o CMakeFiles\FortniteOptimizer2026.dir\src\MacroEngine.cpp.obj -c B:\FortniteOptiEbook\FTN-main\client-cpp\src\MacroEngine.cpp
+
+CMakeFiles/FortniteOptimizer2026.dir/src/MacroEngine.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/FortniteOptimizer2026.dir/src/MacroEngine.cpp.i"
+	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E B:\FortniteOptiEbook\FTN-main\client-cpp\src\MacroEngine.cpp > CMakeFiles\FortniteOptimizer2026.dir\src\MacroEngine.cpp.i
+
+CMakeFiles/FortniteOptimizer2026.dir/src/MacroEngine.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/FortniteOptimizer2026.dir/src/MacroEngine.cpp.s"
+	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S B:\FortniteOptiEbook\FTN-main\client-cpp\src\MacroEngine.cpp -o CMakeFiles\FortniteOptimizer2026.dir\src\MacroEngine.cpp.s
+
+CMakeFiles/FortniteOptimizer2026.dir/src/MacroPage.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/flags.make
+CMakeFiles/FortniteOptimizer2026.dir/src/MacroPage.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/includes_CXX.rsp
+CMakeFiles/FortniteOptimizer2026.dir/src/MacroPage.cpp.obj: B:/FortniteOptiEbook/FTN-main/client-cpp/src/MacroPage.cpp
+CMakeFiles/FortniteOptimizer2026.dir/src/MacroPage.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=B:\FortniteOptiEbook\FTN-main\client-cpp\build-mingw\CMakeFiles --progress-num=$(CMAKE_PROGRESS_36) "Building CXX object CMakeFiles/FortniteOptimizer2026.dir/src/MacroPage.cpp.obj"
+	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/FortniteOptimizer2026.dir/src/MacroPage.cpp.obj -MF CMakeFiles\FortniteOptimizer2026.dir\src\MacroPage.cpp.obj.d -o CMakeFiles\FortniteOptimizer2026.dir\src\MacroPage.cpp.obj -c B:\FortniteOptiEbook\FTN-main\client-cpp\src\MacroPage.cpp
+
+CMakeFiles/FortniteOptimizer2026.dir/src/MacroPage.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/FortniteOptimizer2026.dir/src/MacroPage.cpp.i"
+	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E B:\FortniteOptiEbook\FTN-main\client-cpp\src\MacroPage.cpp > CMakeFiles\FortniteOptimizer2026.dir\src\MacroPage.cpp.i
+
+CMakeFiles/FortniteOptimizer2026.dir/src/MacroPage.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/FortniteOptimizer2026.dir/src/MacroPage.cpp.s"
+	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S B:\FortniteOptiEbook\FTN-main\client-cpp\src\MacroPage.cpp -o CMakeFiles\FortniteOptimizer2026.dir\src\MacroPage.cpp.s
+
+CMakeFiles/FortniteOptimizer2026.dir/src/KeyBindButton.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/flags.make
+CMakeFiles/FortniteOptimizer2026.dir/src/KeyBindButton.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/includes_CXX.rsp
+CMakeFiles/FortniteOptimizer2026.dir/src/KeyBindButton.cpp.obj: B:/FortniteOptiEbook/FTN-main/client-cpp/src/KeyBindButton.cpp
+CMakeFiles/FortniteOptimizer2026.dir/src/KeyBindButton.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=B:\FortniteOptiEbook\FTN-main\client-cpp\build-mingw\CMakeFiles --progress-num=$(CMAKE_PROGRESS_37) "Building CXX object CMakeFiles/FortniteOptimizer2026.dir/src/KeyBindButton.cpp.obj"
+	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/FortniteOptimizer2026.dir/src/KeyBindButton.cpp.obj -MF CMakeFiles\FortniteOptimizer2026.dir\src\KeyBindButton.cpp.obj.d -o CMakeFiles\FortniteOptimizer2026.dir\src\KeyBindButton.cpp.obj -c B:\FortniteOptiEbook\FTN-main\client-cpp\src\KeyBindButton.cpp
+
+CMakeFiles/FortniteOptimizer2026.dir/src/KeyBindButton.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/FortniteOptimizer2026.dir/src/KeyBindButton.cpp.i"
+	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E B:\FortniteOptiEbook\FTN-main\client-cpp\src\KeyBindButton.cpp > CMakeFiles\FortniteOptimizer2026.dir\src\KeyBindButton.cpp.i
+
+CMakeFiles/FortniteOptimizer2026.dir/src/KeyBindButton.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/FortniteOptimizer2026.dir/src/KeyBindButton.cpp.s"
+	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S B:\FortniteOptiEbook\FTN-main\client-cpp\src\KeyBindButton.cpp -o CMakeFiles\FortniteOptimizer2026.dir\src\KeyBindButton.cpp.s
+
+CMakeFiles/FortniteOptimizer2026.dir/src/InputSender.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/flags.make
+CMakeFiles/FortniteOptimizer2026.dir/src/InputSender.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/includes_CXX.rsp
+CMakeFiles/FortniteOptimizer2026.dir/src/InputSender.cpp.obj: B:/FortniteOptiEbook/FTN-main/client-cpp/src/InputSender.cpp
+CMakeFiles/FortniteOptimizer2026.dir/src/InputSender.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=B:\FortniteOptiEbook\FTN-main\client-cpp\build-mingw\CMakeFiles --progress-num=$(CMAKE_PROGRESS_38) "Building CXX object CMakeFiles/FortniteOptimizer2026.dir/src/InputSender.cpp.obj"
+	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/FortniteOptimizer2026.dir/src/InputSender.cpp.obj -MF CMakeFiles\FortniteOptimizer2026.dir\src\InputSender.cpp.obj.d -o CMakeFiles\FortniteOptimizer2026.dir\src\InputSender.cpp.obj -c B:\FortniteOptiEbook\FTN-main\client-cpp\src\InputSender.cpp
+
+CMakeFiles/FortniteOptimizer2026.dir/src/InputSender.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/FortniteOptimizer2026.dir/src/InputSender.cpp.i"
+	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E B:\FortniteOptiEbook\FTN-main\client-cpp\src\InputSender.cpp > CMakeFiles\FortniteOptimizer2026.dir\src\InputSender.cpp.i
+
+CMakeFiles/FortniteOptimizer2026.dir/src/InputSender.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/FortniteOptimizer2026.dir/src/InputSender.cpp.s"
+	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S B:\FortniteOptiEbook\FTN-main\client-cpp\src\InputSender.cpp -o CMakeFiles\FortniteOptimizer2026.dir\src\InputSender.cpp.s
+
 CMakeFiles/FortniteOptimizer2026.dir/src/anti_debug_stub.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/flags.make
 CMakeFiles/FortniteOptimizer2026.dir/src/anti_debug_stub.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/includes_CXX.rsp
 CMakeFiles/FortniteOptimizer2026.dir/src/anti_debug_stub.cpp.obj: B:/FortniteOptiEbook/FTN-main/client-cpp/src/anti_debug_stub.cpp
 CMakeFiles/FortniteOptimizer2026.dir/src/anti_debug_stub.cpp.obj: CMakeFiles/FortniteOptimizer2026.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=B:\FortniteOptiEbook\FTN-main\client-cpp\build-mingw\CMakeFiles --progress-num=$(CMAKE_PROGRESS_29) "Building CXX object CMakeFiles/FortniteOptimizer2026.dir/src/anti_debug_stub.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=B:\FortniteOptiEbook\FTN-main\client-cpp\build-mingw\CMakeFiles --progress-num=$(CMAKE_PROGRESS_39) "Building CXX object CMakeFiles/FortniteOptimizer2026.dir/src/anti_debug_stub.cpp.obj"
 	B:\Qt\Tools\mingw1310_64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/FortniteOptimizer2026.dir/src/anti_debug_stub.cpp.obj -MF CMakeFiles\FortniteOptimizer2026.dir\src\anti_debug_stub.cpp.obj.d -o CMakeFiles\FortniteOptimizer2026.dir\src\anti_debug_stub.cpp.obj -c B:\FortniteOptiEbook\FTN-main\client-cpp\src\anti_debug_stub.cpp
 
 CMakeFiles/FortniteOptimizer2026.dir/src/anti_debug_stub.cpp.i: cmake_force
@@ -523,6 +673,16 @@ FortniteOptimizer2026_OBJECTS = \
 "CMakeFiles/FortniteOptimizer2026.dir/src/SystemStats.cpp.obj" \
 "CMakeFiles/FortniteOptimizer2026.dir/src/MiniGraph.cpp.obj" \
 "CMakeFiles/FortniteOptimizer2026.dir/src/SystemMonitorWidget.cpp.obj" \
+"CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkManager.cpp.obj" \
+"CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkPage.cpp.obj" \
+"CMakeFiles/FortniteOptimizer2026.dir/src/GuidePage.cpp.obj" \
+"CMakeFiles/FortniteOptimizer2026.dir/src/NetworkOptimizerPage.cpp.obj" \
+"CMakeFiles/FortniteOptimizer2026.dir/src/DriverOptPage.cpp.obj" \
+"CMakeFiles/FortniteOptimizer2026.dir/src/FortniteSettingsPage.cpp.obj" \
+"CMakeFiles/FortniteOptimizer2026.dir/src/MacroEngine.cpp.obj" \
+"CMakeFiles/FortniteOptimizer2026.dir/src/MacroPage.cpp.obj" \
+"CMakeFiles/FortniteOptimizer2026.dir/src/KeyBindButton.cpp.obj" \
+"CMakeFiles/FortniteOptimizer2026.dir/src/InputSender.cpp.obj" \
 "CMakeFiles/FortniteOptimizer2026.dir/src/anti_debug_stub.cpp.obj"
 
 # External object files for target FortniteOptimizer2026
@@ -556,6 +716,16 @@ FortniteOptimizer2026.exe: CMakeFiles/FortniteOptimizer2026.dir/src/AnimatedStac
 FortniteOptimizer2026.exe: CMakeFiles/FortniteOptimizer2026.dir/src/SystemStats.cpp.obj
 FortniteOptimizer2026.exe: CMakeFiles/FortniteOptimizer2026.dir/src/MiniGraph.cpp.obj
 FortniteOptimizer2026.exe: CMakeFiles/FortniteOptimizer2026.dir/src/SystemMonitorWidget.cpp.obj
+FortniteOptimizer2026.exe: CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkManager.cpp.obj
+FortniteOptimizer2026.exe: CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkPage.cpp.obj
+FortniteOptimizer2026.exe: CMakeFiles/FortniteOptimizer2026.dir/src/GuidePage.cpp.obj
+FortniteOptimizer2026.exe: CMakeFiles/FortniteOptimizer2026.dir/src/NetworkOptimizerPage.cpp.obj
+FortniteOptimizer2026.exe: CMakeFiles/FortniteOptimizer2026.dir/src/DriverOptPage.cpp.obj
+FortniteOptimizer2026.exe: CMakeFiles/FortniteOptimizer2026.dir/src/FortniteSettingsPage.cpp.obj
+FortniteOptimizer2026.exe: CMakeFiles/FortniteOptimizer2026.dir/src/MacroEngine.cpp.obj
+FortniteOptimizer2026.exe: CMakeFiles/FortniteOptimizer2026.dir/src/MacroPage.cpp.obj
+FortniteOptimizer2026.exe: CMakeFiles/FortniteOptimizer2026.dir/src/KeyBindButton.cpp.obj
+FortniteOptimizer2026.exe: CMakeFiles/FortniteOptimizer2026.dir/src/InputSender.cpp.obj
 FortniteOptimizer2026.exe: CMakeFiles/FortniteOptimizer2026.dir/src/anti_debug_stub.cpp.obj
 FortniteOptimizer2026.exe: CMakeFiles/FortniteOptimizer2026.dir/build.make
 FortniteOptimizer2026.exe: B:/Qt/6.10.2/mingw_64/lib/libQt6Widgets.a
@@ -566,7 +736,7 @@ FortniteOptimizer2026.exe: B:/Qt/6.10.2/mingw_64/lib/libQt6EntryPoint.a
 FortniteOptimizer2026.exe: CMakeFiles/FortniteOptimizer2026.dir/linkLibs.rsp
 FortniteOptimizer2026.exe: CMakeFiles/FortniteOptimizer2026.dir/objects1.rsp
 FortniteOptimizer2026.exe: CMakeFiles/FortniteOptimizer2026.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=B:\FortniteOptiEbook\FTN-main\client-cpp\build-mingw\CMakeFiles --progress-num=$(CMAKE_PROGRESS_30) "Linking CXX executable FortniteOptimizer2026.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=B:\FortniteOptiEbook\FTN-main\client-cpp\build-mingw\CMakeFiles --progress-num=$(CMAKE_PROGRESS_40) "Linking CXX executable FortniteOptimizer2026.exe"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\FortniteOptimizer2026.dir\link.txt --verbose=$(VERBOSE)
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold "Running windeployqt..."
 	B:\Qt\6.10.2\mingw_64\bin\windeployqt.exe --no-translations --no-system-d3d-compiler B:/FortniteOptiEbook/FTN-main/client-cpp/build-mingw/FortniteOptimizer2026.exe

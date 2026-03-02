@@ -28,13 +28,13 @@ const DEFAULT_BOT_CONFIG = {
 };
 
 const DEFAULT_PLANS = {
-  DAYS_1:   { name: '1 Jour',   price: 199,  active: false, stripePrice: '' },
-  DAYS_7:   { name: '7 Jours',  price: 499,  active: false, stripePrice: '' },
-  DAYS_14:  { name: '14 Jours', price: 799,  active: false, stripePrice: '' },
-  DAYS_30:  { name: '30 Jours', price: 999,  active: true,  stripePrice: '' },
-  DAYS_90:  { name: '90 Jours', price: 1999, active: true,  stripePrice: '' },
-  DAYS_365: { name: '1 An',     price: 2499, active: true,  stripePrice: '' },
-  LIFETIME: { name: 'Lifetime',  price: 2999, active: true, stripePrice: '' },
+  DAYS_1:   { name: '1 Jour',   price: 199,  active: false, stripePrice: '', description: '' },
+  DAYS_7:   { name: '7 Jours',  price: 499,  active: false, stripePrice: '', description: '' },
+  DAYS_14:  { name: '14 Jours', price: 799,  active: false, stripePrice: '', description: '' },
+  DAYS_30:  { name: '30 Jours', price: 999,  active: true,  stripePrice: '', description: 'Idéal pour tester et progresser rapidement sur Fortnite.' },
+  DAYS_90:  { name: '90 Jours', price: 1999, active: true,  stripePrice: '', description: 'Le choix des joueurs réguliers. 3 mois d\'optimisation complète.' },
+  DAYS_365: { name: '1 An',     price: 2499, active: true,  stripePrice: '', description: 'Accès 1 an à toutes les mises à jour et nouveaux tweaks.' },
+  LIFETIME: { name: 'Lifetime',  price: 2999, active: true, stripePrice: '', description: 'Accès illimité à vie — le meilleur rapport qualité/prix.' },
 };
 
 const DEFAULT_SETTINGS = {
@@ -430,7 +430,7 @@ export class AdminService {
     const token = crypto.randomBytes(32).toString('hex');
     await this.redis.set(`pwd_reset:${token}`, customer.id, 3600);
     const storefrontUrl = this.config.get<string>('storefrontUrl', 'http://localhost:3002');
-    const resetUrl = `${storefrontUrl}/#/reset-password?token=${token}`;
+    const resetUrl = `${storefrontUrl}/reset-password?token=${token}`;
     await this.mail.sendPasswordReset(customer.email, resetUrl);
     this.logger.log(`Admin sent password reset to ${customer.email}`);
     return { success: true };
@@ -466,16 +466,16 @@ export class AdminService {
     try { return { ...DEFAULT_PLANS, ...JSON.parse(raw) }; } catch { return DEFAULT_PLANS; }
   }
 
-  async createPlan(key: string, config: { name: string; price: number; originalPrice?: number; popular?: boolean; stripePrice?: string }): Promise<any> {
+  async createPlan(key: string, config: { name: string; price: number; originalPrice?: number; popular?: boolean; stripePrice?: string; description?: string }): Promise<any> {
     const current = await this.getPlans() as any;
     if (key in current) throw new BadRequestException(`Plan "${key}" already exists`);
-    current[key] = { name: config.name, price: config.price, originalPrice: config.originalPrice || 0, active: true, popular: config.popular || false, stripePrice: config.stripePrice || '' };
+    current[key] = { name: config.name, price: config.price, originalPrice: config.originalPrice || 0, active: true, popular: config.popular || false, stripePrice: config.stripePrice || '', description: config.description || '' };
     await this.redis.set(PLANS_CONFIG_KEY, JSON.stringify(current));
     this.logger.log(`Plan created: ${key}`);
     return current[key];
   }
 
-  async updatePlan(plan: string, config: { name?: string; price?: number; originalPrice?: number; active?: boolean; popular?: boolean; stripePrice?: string }): Promise<any> {
+  async updatePlan(plan: string, config: { name?: string; price?: number; originalPrice?: number; active?: boolean; popular?: boolean; stripePrice?: string; description?: string }): Promise<any> {
     const current = await this.getPlans() as any;
     if (!(plan in current)) throw new NotFoundException(`Plan "${plan}" not found`);
     current[plan] = { ...current[plan], ...config };
@@ -491,6 +491,135 @@ export class AdminService {
     await this.redis.set(PLANS_CONFIG_KEY, JSON.stringify(current));
     this.logger.log(`Plan deleted: ${key}`);
     return { deleted: key };
+  }
+
+  // ══════════════════════════════════════════════════
+  //  PROMO CODES
+  // ══════════════════════════════════════════════════
+  private readonly PROMO_CODES_KEY = 'admin:promo_codes';
+
+  async getPromoCodes(): Promise<Record<string, any>> {
+    const raw = await this.redis.get(this.PROMO_CODES_KEY);
+    return raw ? JSON.parse(raw) : {};
+  }
+
+  async createPromoCode(dto: {
+    code: string;
+    type: 'percent' | 'fixed';
+    amount: number;
+    maxUses?: number;
+    stripeId?: string;
+  }): Promise<any> {
+    const code = dto.code.toUpperCase().trim();
+    if (!code || !/^[A-Z0-9_-]{2,20}$/.test(code)) {
+      throw new BadRequestException('Code invalide (2–20 caractères alphanumériques)');
+    }
+    const current = await this.getPromoCodes();
+    if (current[code]) throw new BadRequestException(`Code "${code}" existe déjà`);
+    current[code] = {
+      type: dto.type,
+      amount: dto.amount,
+      maxUses: dto.maxUses || 0,
+      uses: 0,
+      active: true,
+      stripeId: dto.stripeId || '',
+      createdAt: new Date().toISOString(),
+    };
+    await this.redis.set(this.PROMO_CODES_KEY, JSON.stringify(current));
+    this.logger.log(`Promo code created: ${code}`);
+    return { code, ...current[code] };
+  }
+
+  async deletePromoCode(code: string): Promise<{ deleted: string }> {
+    const current = await this.getPromoCodes();
+    const key = code.toUpperCase();
+    if (!current[key]) throw new NotFoundException(`Code "${key}" introuvable`);
+    delete current[key];
+    await this.redis.set(this.PROMO_CODES_KEY, JSON.stringify(current));
+    return { deleted: key };
+  }
+
+  async togglePromoCode(code: string, active: boolean): Promise<any> {
+    const current = await this.getPromoCodes();
+    const key = code.toUpperCase();
+    if (!current[key]) throw new NotFoundException(`Code "${key}" introuvable`);
+    current[key].active = active;
+    await this.redis.set(this.PROMO_CODES_KEY, JSON.stringify(current));
+    return { code: key, active };
+  }
+
+  // ══════════════════════════════════════════════════
+  //  ACTIVITY TRACKING
+  // ══════════════════════════════════════════════════
+  private dateKey(date: Date): string {
+    return date.toISOString().slice(0, 10); // YYYY-MM-DD
+  }
+
+  async trackPageview(path: string, sessionId?: string): Promise<void> {
+    const today = this.dateKey(new Date());
+    const now = Date.now();
+    const ttl = 90 * 24 * 3600;
+
+    await this.redis.hincrby(`analytics:pv:${today}`, path, 1);
+    await this.redis.expire(`analytics:pv:${today}`, ttl);
+
+    if (sessionId) {
+      await this.redis.pfadd(`analytics:uv:${today}`, sessionId);
+      await this.redis.expire(`analytics:uv:${today}`, ttl);
+    }
+
+    // Real-time sorted set — member scored by timestamp (ms)
+    await this.redis.zadd('analytics:rt', now, `${sessionId || 'anon'}-${now}-${Math.random()}`);
+    await this.redis.expire('analytics:rt', 600);
+  }
+
+  async getActivityStats(): Promise<any> {
+    const now = new Date();
+    const daily: { date: string; pageViews: number; sessions: number }[] = [];
+    const pageMap: Record<string, number> = {};
+
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const key = this.dateKey(d);
+
+      const pvData = await this.redis.hgetall(`analytics:pv:${key}`);
+      const pageViews = pvData ? Object.values(pvData).reduce((sum, v) => sum + parseInt(v, 10), 0) : 0;
+      const sessions = await this.redis.pfcount(`analytics:uv:${key}`);
+
+      daily.push({ date: key, pageViews, sessions });
+
+      if (pvData) {
+        for (const [p, count] of Object.entries(pvData)) {
+          pageMap[p] = (pageMap[p] || 0) + parseInt(count, 10);
+        }
+      }
+    }
+
+    // Today's top pages sorted by hit count
+    const today = this.dateKey(now);
+    const todayPv = await this.redis.hgetall(`analytics:pv:${today}`);
+    const topPages = Object.entries(todayPv || {})
+      .sort(([, a], [, b]) => parseInt(b, 10) - parseInt(a, 10))
+      .slice(0, 10)
+      .map(([path, count]) => ({ path, count: parseInt(count, 10) }));
+
+    // Real-time: sessions active in the last 10 minutes
+    const tenMinAgo = Date.now() - 10 * 60 * 1000;
+    const realtimeVisitors = await this.redis.zcount('analytics:rt', tenMinAgo, '+inf');
+    await this.redis.zremrangebyscore('analytics:rt', 0, tenMinAgo - 1);
+
+    return {
+      daily,
+      topPages,
+      realtimeVisitors,
+      summary: {
+        pageviews7d:      daily.slice(-7).reduce((s, d) => s + d.pageViews, 0),
+        pageviews30d:     daily.reduce((s, d) => s + d.pageViews, 0),
+        sessions7d:       daily.slice(-7).reduce((s, d) => s + d.sessions, 0),
+        sessions30d:      daily.reduce((s, d) => s + d.sessions, 0),
+      },
+    };
   }
 
   // ══════════════════════════════════════════════════

@@ -8,6 +8,7 @@
 #include <QPushButton>
 #include <QTimer>
 #include <QFrame>
+#include <QStackedWidget>
 
 class AppController;
 
@@ -28,20 +29,18 @@ protected:
 
 private slots:
     void onActivateClicked();
-    void onSpinnerTick();
 
 private:
-    AppController* m_ctrl;
-    QFrame*        m_card       = nullptr;
-    QLabel*        m_hwidLabel  = nullptr;
-    QLabel*        m_osLabel    = nullptr;
-    QLineEdit*     m_keyInput   = nullptr;
-    QPushButton*   m_activateBtn= nullptr;
-    QLabel*        m_statusLbl  = nullptr;
-    QTimer*        m_spinner    = nullptr;
-    int            m_spinFrame  = 0;
-    bool           m_busy       = false;
+    AppController*  m_ctrl;
+    QFrame*         m_card       = nullptr;
+    QLabel*         m_hwidLabel  = nullptr;
+    QLabel*         m_osLabel    = nullptr;
+    QLineEdit*      m_keyInput   = nullptr;
+    QPushButton*    m_activateBtn= nullptr;
+    QStackedWidget* m_btnStack   = nullptr;  // 0=button, 1=spinner row
+    QWidget*        m_arc        = nullptr;  // ArcSpinner (defined in .cpp)
+    QLabel*         m_statusLbl  = nullptr;
+    bool            m_busy       = false;
 
     void buildUi();
-    void updateSpinnerLabel();
 };

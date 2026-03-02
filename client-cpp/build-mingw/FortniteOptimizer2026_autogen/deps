@@ -6,16 +6,26 @@ FortniteOptimizer2026_autogen/timestamp: \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/build-mingw/FortniteOptimizer2026_autogen/moc_predefs.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/AnimatedStackedWidget.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/AppController.h \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/include/BenchmarkManager.h \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/include/BenchmarkPage.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/DashboardPage.h \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/include/DriverOptPage.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/FadeLabel.h \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/include/FortniteSettingsPage.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/GlassCard.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/GlowButton.h \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/include/GuidePage.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/HoverCard.h \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/include/InputSender.h \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/include/KeyBindButton.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/LicenseScreen.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/LogsPage.h \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/include/MacroEngine.h \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/include/MacroPage.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/MainWindow.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/MiniGraph.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/ModulesPage.h \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/include/NetworkOptimizerPage.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/Palette.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/SettingsPage.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/SidebarWidget.h \
@@ -28,21 +38,32 @@ FortniteOptimizer2026_autogen/timestamp: \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/gui.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/http_client.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/hwid.h \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/include/interception.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/licensing.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/tweaks.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/updater.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/AnimatedStackedWidget.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/AppController.cpp \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/src/BenchmarkManager.cpp \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/src/BenchmarkPage.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/DashboardPage.cpp \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/src/DriverOptPage.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/FadeLabel.cpp \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/src/FortniteSettingsPage.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/GlassCard.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/GlowButton.cpp \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/src/GuidePage.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/HoverCard.cpp \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/src/InputSender.cpp \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/src/KeyBindButton.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/LicenseScreen.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/LogsPage.cpp \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/src/MacroEngine.cpp \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/src/MacroPage.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/MainWindow.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/MiniGraph.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/ModulesPage.cpp \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/src/NetworkOptimizerPage.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/SettingsPage.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/SidebarWidget.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/SystemMonitorWidget.cpp \
@@ -59,6 +80,7 @@ FortniteOptimizer2026_autogen/timestamp: \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/tweaks.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/updater.cpp \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/QList \
+	B:/Qt/6.10.2/mingw_64/include/QtCore/QMap \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/QObject \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/QParallelAnimationGroup \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/QPoint \
@@ -68,6 +90,7 @@ FortniteOptimizer2026_autogen/timestamp: \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/QSize \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/QSizeF \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/QString \
+	B:/Qt/6.10.2/mingw_64/include/QtCore/QStringList \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/QTimer \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/QVector \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/q17memory.h \
@@ -80,6 +103,7 @@ FortniteOptimizer2026_autogen/timestamp: \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/q23utility.h \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/qabstractanimation.h \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/qabstracteventdispatcher.h \
+	B:/Qt/6.10.2/mingw_64/include/QtCore/qabstractitemmodel.h \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/qalgorithms.h \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/qalloc.h \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/qanimationgroup.h \
@@ -161,6 +185,7 @@ FortniteOptimizer2026_autogen/timestamp: \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/qpropertyanimation.h \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/qrect.h \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/qrefcount.h \
+	B:/Qt/6.10.2/mingw_64/include/QtCore/qregularexpression.h \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/qscopedpointer.h \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/qscopeguard.h \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/qsequentialanimationgroup.h \
@@ -218,6 +243,9 @@ FortniteOptimizer2026_autogen/timestamp: \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/qxptype_traits.h \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/qyieldcpu.h \
 	B:/Qt/6.10.2/mingw_64/include/QtGui/QColor \
+	B:/Qt/6.10.2/mingw_64/include/QtGui/QFocusEvent \
+	B:/Qt/6.10.2/mingw_64/include/QtGui/QKeyEvent \
+	B:/Qt/6.10.2/mingw_64/include/QtGui/QMouseEvent \
 	B:/Qt/6.10.2/mingw_64/include/QtGui/QTextCharFormat \
 	B:/Qt/6.10.2/mingw_64/include/QtGui/QTransform \
 	B:/Qt/6.10.2/mingw_64/include/QtGui/qabstracttextdocumentlayout.h \
@@ -264,34 +292,54 @@ FortniteOptimizer2026_autogen/timestamp: \
 	B:/Qt/6.10.2/mingw_64/include/QtGui/qtguiexports.h \
 	B:/Qt/6.10.2/mingw_64/include/QtGui/qtguiglobal.h \
 	B:/Qt/6.10.2/mingw_64/include/QtGui/qtransform.h \
+	B:/Qt/6.10.2/mingw_64/include/QtGui/qvalidator.h \
 	B:/Qt/6.10.2/mingw_64/include/QtGui/qvector2d.h \
 	B:/Qt/6.10.2/mingw_64/include/QtGui/qvectornd.h \
 	B:/Qt/6.10.2/mingw_64/include/QtGui/qwindowdefs.h \
 	B:/Qt/6.10.2/mingw_64/include/QtGui/qwindowdefs_win.h \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/QCheckBox \
+	B:/Qt/6.10.2/mingw_64/include/QtWidgets/QComboBox \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/QDialog \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/QFrame \
+	B:/Qt/6.10.2/mingw_64/include/QtWidgets/QHBoxLayout \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/QLabel \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/QLineEdit \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/QMainWindow \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/QPlainTextEdit \
+	B:/Qt/6.10.2/mingw_64/include/QtWidgets/QProgressBar \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/QPushButton \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/QScrollArea \
+	B:/Qt/6.10.2/mingw_64/include/QtWidgets/QSlider \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/QStackedWidget \
+	B:/Qt/6.10.2/mingw_64/include/QtWidgets/QVBoxLayout \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/QWidget \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qabstractbutton.h \
+	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qabstractitemdelegate.h \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qabstractscrollarea.h \
+	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qabstractslider.h \
+	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qabstractspinbox.h \
+	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qboxlayout.h \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qcheckbox.h \
+	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qcombobox.h \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qdialog.h \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qframe.h \
+	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qgridlayout.h \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qlabel.h \
+	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qlayout.h \
+	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qlayoutitem.h \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qlineedit.h \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qmainwindow.h \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qplaintextedit.h \
+	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qprogressbar.h \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qpushbutton.h \
+	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qrubberband.h \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qscrollarea.h \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qsizepolicy.h \
+	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qslider.h \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qstackedwidget.h \
+	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qstyle.h \
+	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qstyleoption.h \
+	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qtabbar.h \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qtabwidget.h \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qtextedit.h \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qtwidgets-config.h \
@@ -515,6 +563,7 @@ FortniteOptimizer2026_autogen/timestamp: \
 	B:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/std_abs.h \
 	B:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/std_function.h \
 	B:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/std_mutex.h \
+	B:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/std_thread.h \
 	B:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/stl_algo.h \
 	B:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/stl_algobase.h \
 	B:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/stl_bvector.h \
@@ -542,6 +591,7 @@ FortniteOptimizer2026_autogen/timestamp: \
 	B:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/streambuf_iterator.h \
 	B:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/string_view.tcc \
 	B:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/stringfwd.h \
+	B:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/this_thread_sleep.h \
 	B:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/uniform_int_dist.h \
 	B:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/unique_lock.h \
 	B:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/unique_ptr.h \
@@ -601,6 +651,7 @@ FortniteOptimizer2026_autogen/timestamp: \
 	B:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/string \
 	B:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/string_view \
 	B:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/system_error \
+	B:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/thread \
 	B:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/tr1/bessel_function.tcc \
 	B:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/tr1/beta_function.tcc \
 	B:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/tr1/ell_integral.tcc \

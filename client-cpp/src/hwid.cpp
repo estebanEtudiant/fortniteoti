@@ -1,6 +1,6 @@
-// ══════════════════════════════════════════════════════
-//  hwid.cpp — Hardware ID Generation Implementation
-// ══════════════════════════════════════════════════════
+
+
+
 #include "hwid.h"
 #include "crypto_utils.h"
 

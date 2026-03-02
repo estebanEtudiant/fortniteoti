@@ -62,6 +62,7 @@ public:
     QString updateVersion()   const { return QString::fromStdString(m_state.updateVersion); }
     QString updateUrl()       const { return QString::fromStdString(m_state.updateUrl); }
     QString updateChangelog() const { return QString::fromStdString(m_state.updateChangelog); }
+    bool    updateMandatory() const { return m_state.updateMandatory; }
 
 signals:
     // Navigation
@@ -94,7 +95,7 @@ public slots:
     void runSingleModule(int idx);
     void refreshChecks();
     void clearLogs();
-    void dismissUpdate() { m_state.updateDismissed = true; }
+    void dismissUpdate() { if (!m_state.updateMandatory) m_state.updateDismissed = true; }
 
 private:
     AppState                         m_state;

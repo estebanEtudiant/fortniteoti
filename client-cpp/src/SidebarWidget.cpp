@@ -1,16 +1,14 @@
 // ══════════════════════════════════════════════════════
-//  SidebarWidget.cpp
+//  SidebarWidget.cpp — Slim 200px clean navigation
 // ══════════════════════════════════════════════════════
 #include "SidebarWidget.h"
 #include "AppController.h"
 #include "Palette.h"
 
 #include <QPainter>
-#include <QLinearGradient>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFrame>
-#include <QFontMetrics>
 #include <QEasingCurve>
 #include <cmath>
 
@@ -20,7 +18,7 @@
 NavButton::NavButton(const QString& text, QWidget* parent)
     : QPushButton(text, parent)
 {
-    setFixedHeight(44);
+    setFixedHeight(38);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     setCursor(Qt::PointingHandCursor);
     setFlat(true);
@@ -37,54 +35,46 @@ void NavButton::paintEvent(QPaintEvent*) {
 
     QRect r = rect();
 
-    // Background
     if (m_active) {
-        p.setBrush(QColor(0x10, 0x2E, 0x3D));
+        // Active: subtle light bg + left accent bar
         p.setPen(Qt::NoPen);
-        p.drawRoundedRect(r, 9, 9);
-        // Left accent bar
+        p.setBrush(QColor(255, 255, 255, 9));
+        p.drawRoundedRect(r.adjusted(4, 1, -4, -1), 6, 6);
+
+        // Left accent pill
         p.setBrush(Pal::ACCENT);
-        p.drawRoundedRect(QRect(2, 8, 4, 28), 2, 2);
+        p.drawRoundedRect(QRect(4, 7, 3, 24), 2, 2);
     } else if (underMouse()) {
-        p.setBrush(QColor(255, 255, 255, 10));
         p.setPen(Qt::NoPen);
-        p.drawRoundedRect(r, 9, 9);
+        p.setBrush(QColor(255, 255, 255, 5));
+        p.drawRoundedRect(r.adjusted(4, 1, -4, -1), 6, 6);
     }
 
     // Text
     QFont f("Segoe UI", 12);
     p.setFont(f);
     p.setPen(m_active ? Pal::TEXT : Pal::DIM);
-    p.drawText(QRect(22, 0, r.width() - 22, r.height()),
+    p.drawText(QRect(20, 0, r.width() - 20, r.height()),
                Qt::AlignVCenter | Qt::AlignLeft, text());
 }
 
 // ════════════════════════════════════════════════════════
-//  PulsingDot
+//  PulsingDot — static dot (no animation for sober look)
 // ════════════════════════════════════════════════════════
 PulsingDot::PulsingDot(QWidget* parent)
     : QWidget(parent)
 {
-    setFixedSize(12, 14);
-    m_timer = new QTimer(this);
-    m_timer->setInterval(30);
-    connect(m_timer, &QTimer::timeout, this, [this]() {
-        m_phase += 0.08;
-        update();
-    });
-    m_timer->start();
+    setFixedSize(10, 10);
+    // No timer — static dot
+    m_timer = nullptr;
 }
 
 void PulsingDot::paintEvent(QPaintEvent*) {
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
-    float alpha = 0.55f + 0.45f * (float)std::sin(m_phase);
-    QColor c = m_color;
-    c.setAlphaF(alpha);
-    p.setBrush(c);
+    p.setBrush(m_color);
     p.setPen(Qt::NoPen);
-    int r = 5;
-    p.drawEllipse(QPoint(width()/2, height()/2), r, r);
+    p.drawEllipse(QPoint(5, 5), 4, 4);
 }
 
 // ════════════════════════════════════════════════════════
@@ -93,117 +83,107 @@ void PulsingDot::paintEvent(QPaintEvent*) {
 SidebarWidget::SidebarWidget(AppController* ctrl, QWidget* parent)
     : QWidget(parent), m_ctrl(ctrl)
 {
-    setFixedWidth(226);
+    setFixedWidth(200);
     m_indAnim = new QPropertyAnimation(this, "indicatorY", this);
-    m_indAnim->setDuration(280);
-    m_indAnim->setEasingCurve(QEasingCurve::OutBack);
+    m_indAnim->setDuration(240);
+    m_indAnim->setEasingCurve(QEasingCurve::OutCubic);
     buildUi();
     updateSession();
-    // Init indicator once layout is settled
     QTimer::singleShot(0, this, [this]() { animateIndicatorTo(0); });
 }
 
 void SidebarWidget::buildUi() {
     auto* outerV = new QVBoxLayout(this);
-    outerV->setContentsMargins(18, 18, 18, 18);
+    outerV->setContentsMargins(8, 12, 8, 12);
     outerV->setSpacing(0);
 
-    outerV->addSpacing(4);
+    // ── Logo area ─────────────────────────────────────
+    auto* logoLbl = new QLabel("404 Tweaks");
+    logoLbl->setFixedHeight(36);
+    QFont lf("Segoe UI", 13, QFont::DemiBold);
+    logoLbl->setFont(lf);
+    logoLbl->setStyleSheet(QString(
+        "color: %1; background: transparent; padding-left: 14px;")
+        .arg(Pal::ACCENT.name()));
+    outerV->addWidget(logoLbl);
+    outerV->addSpacing(6);
 
-    // Separator
-    auto makeSep = [this]() {
-        auto* s = new QFrame;
-        s->setFrameShape(QFrame::HLine);
-        s->setFixedHeight(1);
-        s->setStyleSheet(QString("background: %1;").arg(Pal::BORDER.name()));
-        return s;
-    };
+    // ── Separator ─────────────────────────────────────
+    auto* sep1 = new QFrame;
+    sep1->setFrameShape(QFrame::HLine);
+    sep1->setFixedHeight(1);
+    sep1->setStyleSheet(QString("background: %1; margin: 0 4px;")
+        .arg(Pal::BORDER.name()));
+    outerV->addWidget(sep1);
+    outerV->addSpacing(8);
 
-    outerV->addSpacing(14);
-    outerV->addWidget(makeSep());
-    outerV->addSpacing(10);
-
-    // Record where buttons start (18 margin + 4 spacing + 1px sep + 10 spacing + 14 spacing)
-    // We compute dynamically from geometry in paintEvent — just initialise m_indicatorY = 0
-    m_indicatorY = 0.0;
-
-    // Nav buttons
+    // ── Nav buttons ───────────────────────────────────
     static const char* labels[] = {
-        "◆  Dashboard",
-        "⚡  Modules",
-        "☰  Logs",
-        "⚙  Parametres"
+        "Dashboard",
+        "Modules",
+        "Logs",
+        "Parametres",
+        "Guide",
+        "Reseau",
+        "Drivers",
+        "Fortnite",
+        "Macros"
     };
-    for (int i = 0; i < 4; ++i) {
-        m_btns[i] = new NavButton(QString::fromUtf8(labels[i]));
+
+    for (int i = 0; i < TAB_COUNT; ++i) {
+        m_btns[i] = new NavButton(labels[i]);
         connect(m_btns[i], &QPushButton::clicked, this, [this, i]() {
             setCurrentTab(static_cast<Tab>(i));
         });
         outerV->addWidget(m_btns[i]);
-        outerV->addSpacing(2);
+        outerV->addSpacing(1);
     }
     m_btns[0]->setActive(true);
 
     outerV->addStretch();
-    outerV->addWidget(makeSep());
-    outerV->addSpacing(10);
 
-    // Session card
-    auto* sessCard = new QFrame;
-    sessCard->setFixedHeight(110);
-    sessCard->setStyleSheet(QString(
-        "QFrame { background: %1; border: 1px solid %2; border-radius: 8px; }")
-        .arg(Pal::CARD2.name(), Pal::BORDER.name()));
-    auto* sessV = new QVBoxLayout(sessCard);
-    sessV->setContentsMargins(12, 10, 12, 10);
-    sessV->setSpacing(3);
-
-    // Status row
-    auto* statusRow = new QHBoxLayout;
-    m_dot = new PulsingDot;
-    m_statusLbl = new QLabel("Session active");
-    m_statusLbl->setStyleSheet(QString("color: %1; background: transparent; font-size: 12px;")
-        .arg(Pal::OK.name()));
-    statusRow->addWidget(m_dot);
-    statusRow->addSpacing(4);
-    statusRow->addWidget(m_statusLbl);
-    statusRow->addStretch();
-    sessV->addLayout(statusRow);
-
-    // Separator
+    // ── Separator ─────────────────────────────────────
     auto* sep2 = new QFrame;
     sep2->setFrameShape(QFrame::HLine);
     sep2->setFixedHeight(1);
-    sep2->setStyleSheet(QString("background: %1;").arg(Pal::BORDER.name()));
-    sessV->addWidget(sep2);
+    sep2->setStyleSheet(sep1->styleSheet());
+    outerV->addWidget(sep2);
+    outerV->addSpacing(10);
 
-    // Info rows
-    auto makeRow = [&](const QString& key, QLabel*& valLbl, const QString& color) {
-        auto* row = new QHBoxLayout;
-        auto* kl  = new QLabel(key);
-        kl->setStyleSheet(QString("color: %1; background: transparent; font-size: 11px;")
-            .arg(Pal::DIM.name()));
-        kl->setFixedWidth(68);
-        valLbl = new QLabel("—");
-        valLbl->setStyleSheet(QString("color: %1; background: transparent; font-size: 11px;")
-            .arg(color));
-        row->addWidget(kl);
-        row->addWidget(valLbl, 1);
-        sessV->addLayout(row);
+    // ── Session info (minimal) ────────────────────────
+    auto makeInfo = [&](QLabel*& lbl, const QString& placeholder, const QColor& col) {
+        lbl = new QLabel(placeholder);
+        lbl->setStyleSheet(QString(
+            "color: %1; background: transparent; font-size: 11px; padding-left: 12px;")
+            .arg(col.name()));
+        outerV->addWidget(lbl);
+        outerV->addSpacing(2);
     };
 
-    makeRow("Plan     ", m_planLbl, Pal::ACCENT.name());
-    makeRow("Expiration", m_expLbl, Pal::WARN.name());
-    makeRow("HWID     ", m_hwidLbl, Pal::SOFT.name());
+    // Status row with dot
+    auto* statusRow = new QHBoxLayout;
+    statusRow->setContentsMargins(12, 0, 0, 0);
+    statusRow->setSpacing(6);
+    m_dot = new PulsingDot;
+    statusRow->addWidget(m_dot);
+    m_statusLbl = new QLabel("Session active");
+    m_statusLbl->setStyleSheet(QString(
+        "color: %1; background: transparent; font-size: 11px;")
+        .arg(Pal::OK.name()));
+    statusRow->addWidget(m_statusLbl, 1);
+    outerV->addLayout(statusRow);
+    outerV->addSpacing(4);
 
-    outerV->addWidget(sessCard);
+    makeInfo(m_planLbl, "—", Pal::ACCENT);
+    makeInfo(m_expLbl,  "—", Pal::DIM);
+    makeInfo(m_hwidLbl, "—", Pal::DIM);
+    outerV->addSpacing(4);
 }
 
 void SidebarWidget::animateIndicatorTo(int tabIndex) {
     if (!m_btns[tabIndex]) return;
-    // Target Y = button's mapToParent position (center)
     QPoint btnPos = m_btns[tabIndex]->mapTo(this, QPoint(0, 0));
-    qreal targetY = btnPos.y() + m_btns[tabIndex]->height() / 2.0 - 14; // 28px indicator height / 2
+    qreal targetY = btnPos.y() + m_btns[tabIndex]->height() / 2.0 - 12;
     m_indAnim->stop();
     m_indAnim->setStartValue(m_indicatorY);
     m_indAnim->setEndValue(targetY);
@@ -212,29 +192,30 @@ void SidebarWidget::animateIndicatorTo(int tabIndex) {
 
 void SidebarWidget::setCurrentTab(Tab t) {
     m_tab = t;
-    for (int i = 0; i < 4; ++i)
+    for (int i = 0; i < TAB_COUNT; ++i)
         m_btns[i]->setActive(i == (int)t);
     animateIndicatorTo((int)t);
     emit tabChanged(t);
 }
 
-void SidebarWidget::onRunningChanged(bool running, const QString& title) {
+void SidebarWidget::onRunningChanged(bool running, const QString&) {
     if (running) {
         m_dot->setColor(Pal::WARN);
-        m_statusLbl->setText("Optimisation en cours");
+        m_statusLbl->setText("En cours...");
         m_statusLbl->setStyleSheet(QString(
-            "color: %1; background: transparent; font-size: 12px;")
+            "color: %1; background: transparent; font-size: 11px;")
             .arg(Pal::WARN.name()));
     } else {
         m_dot->setColor(Pal::OK);
         m_statusLbl->setText("Session active");
         m_statusLbl->setStyleSheet(QString(
-            "color: %1; background: transparent; font-size: 12px;")
+            "color: %1; background: transparent; font-size: 11px;")
             .arg(Pal::OK.name()));
     }
+    m_dot->update();
 }
 
-void SidebarWidget::onLicenseActivated(const QString& plan, const QString& expiresAt) {
+void SidebarWidget::onLicenseActivated(const QString&, const QString&) {
     updateSession();
 }
 
@@ -247,13 +228,10 @@ void SidebarWidget::updateSession() {
     if (exp.isEmpty()) {
         m_expLbl->setText("Lifetime");
         m_expLbl->setStyleSheet(QString(
-            "color: %1; background: transparent; font-size: 11px;")
+            "color: %1; background: transparent; font-size: 11px; padding-left: 12px;")
             .arg(Pal::OK.name()));
     } else {
         m_expLbl->setText(exp.left(10));
-        m_expLbl->setStyleSheet(QString(
-            "color: %1; background: transparent; font-size: 11px;")
-            .arg(Pal::WARN.name()));
     }
 
     QString h = m_ctrl->hwid();
@@ -261,31 +239,13 @@ void SidebarWidget::updateSession() {
     m_hwidLbl->setText(h);
 }
 
-void SidebarWidget::paintEvent(QPaintEvent* e) {
+void SidebarWidget::paintEvent(QPaintEvent*) {
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
 
-    // Sidebar background
+    // Clean flat sidebar background
     p.fillRect(rect(), Pal::SIDEBAR);
 
-    // Top-left gradient splash behind logo zone
-    QLinearGradient grad(0, 0, 226, 0);
-    grad.setColorAt(0, QColor(0, 140, 210, 28));
-    grad.setColorAt(1, Qt::transparent);
-    p.fillRect(QRect(0, 0, 226, 76), grad);
-
-    // Animated indicator pill on the left edge
-    if (m_indAnim) {
-        int indH = 28;
-        QRectF pill(0, m_indicatorY, 4, indH);
-        // Gradient glow behind indicator
-        QLinearGradient glow(4, m_indicatorY, 60, m_indicatorY + indH);
-        glow.setColorAt(0, QColor(Pal::ACCENT.red(), Pal::ACCENT.green(), Pal::ACCENT.blue(), 22));
-        glow.setColorAt(1, Qt::transparent);
-        p.fillRect(QRectF(0, m_indicatorY, 60, indH), glow);
-        // Pill itself
-        p.setBrush(Pal::ACCENT);
-        p.setPen(Qt::NoPen);
-        p.drawRoundedRect(pill, 2, 2);
-    }
+    // Right border line
+    p.fillRect(QRect(width() - 1, 0, 1, height()), Pal::BORDER);
 }

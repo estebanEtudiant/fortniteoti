@@ -55,6 +55,7 @@ struct AppState {
     // Update notification (set by background thread)
     std::atomic<bool> updateAvailable{false};
     bool              updateDismissed = false;
+    bool              updateMandatory = false;  // true → cannot be dismissed
     std::string       updateVersion;
     std::string       updateUrl;
     std::string       updateChangelog;

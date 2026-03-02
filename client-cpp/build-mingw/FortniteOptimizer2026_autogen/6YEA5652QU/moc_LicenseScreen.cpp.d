@@ -171,6 +171,7 @@ B:/FortniteOptiEbook/FTN-main/client-cpp/build-mingw/FortniteOptimizer2026_autog
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/QLabel \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/QLineEdit \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/QPushButton \
+  B:/Qt/6.10.2/mingw_64/include/QtWidgets/QStackedWidget \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/QWidget \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/qabstractbutton.h \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/qframe.h \
@@ -178,6 +179,7 @@ B:/FortniteOptiEbook/FTN-main/client-cpp/build-mingw/FortniteOptimizer2026_autog
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/qlineedit.h \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/qpushbutton.h \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/qsizepolicy.h \
+  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qstackedwidget.h \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/qtwidgets-config.h \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/qtwidgetsexports.h \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/qtwidgetsglobal.h \

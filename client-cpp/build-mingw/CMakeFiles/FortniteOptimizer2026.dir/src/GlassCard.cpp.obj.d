@@ -392,6 +392,4 @@ CMakeFiles/FortniteOptimizer2026.dir/src/GlassCard.cpp.obj: \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qtextoption.h \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qpen.h \
  B:/Qt/6.10.2/mingw_64/include/QtGui/QPainterPath \
- B:/Qt/6.10.2/mingw_64/include/QtGui/qpainterpath.h \
- B:/Qt/6.10.2/mingw_64/include/QtGui/QLinearGradient \
- B:/Qt/6.10.2/mingw_64/include/QtGui/qbrush.h
+ B:/Qt/6.10.2/mingw_64/include/QtGui/qpainterpath.h

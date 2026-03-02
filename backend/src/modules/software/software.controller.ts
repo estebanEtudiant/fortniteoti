@@ -19,13 +19,19 @@ import { diskStorage } from 'multer';
 import { extname, join, resolve } from 'path';
 import { Response } from 'express';
 import { createReadStream } from 'fs';
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsBoolean } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { AdminAuthGuard } from '../../common/guards/auth.guard';
 import { SoftwareService } from './software.service';
 
 class UploadDto {
   @IsString() @IsNotEmpty() version: string;
   @IsString() @IsNotEmpty() changelog: string;
+  // FormData sends booleans as strings — transform 'true'/'1' → true
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true || value === '1')
+  @IsBoolean()
+  mandatory?: boolean;
 }
 
 // __dirname = dist/modules/software/ → 3 niveaux au-dessus = racine backend/
@@ -64,7 +70,7 @@ export class SoftwareController {
     @Body() dto: UploadDto,
   ) {
     if (!file) throw new BadRequestException('Aucun fichier fourni');
-    return this.softwareService.handleUpload(file, dto.version, dto.changelog);
+    return this.softwareService.handleUpload(file, dto.version, dto.changelog, dto.mandatory ?? false);
   }
 
   // Public endpoint — called by C++ client to check for updates

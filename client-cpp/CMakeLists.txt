@@ -43,6 +43,17 @@ set(HEADERS
     include/SystemStats.h
     include/MiniGraph.h
     include/SystemMonitorWidget.h
+    include/BenchmarkManager.h
+    include/BenchmarkPage.h
+    include/GuidePage.h
+    include/NetworkOptimizerPage.h
+    include/DriverOptPage.h
+    include/FortniteSettingsPage.h
+    include/MacroEngine.h
+    include/MacroPage.h
+    include/KeyBindButton.h
+    include/interception.h
+    include/InputSender.h
 )
 
 # ── Sources ────────────────────────────────────────────────────────────
@@ -74,6 +85,16 @@ set(SOURCES
     src/SystemStats.cpp
     src/MiniGraph.cpp
     src/SystemMonitorWidget.cpp
+    src/BenchmarkManager.cpp
+    src/BenchmarkPage.cpp
+    src/GuidePage.cpp
+    src/NetworkOptimizerPage.cpp
+    src/DriverOptPage.cpp
+    src/FortniteSettingsPage.cpp
+    src/MacroEngine.cpp
+    src/MacroPage.cpp
+    src/KeyBindButton.cpp
+    src/InputSender.cpp
 )
 
 if(ENABLE_ANTI_DEBUG)

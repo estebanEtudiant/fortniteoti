@@ -610,5 +610,4 @@ CMakeFiles/FortniteOptimizer2026.dir/src/main.cpp.obj: \
  B:/Qt/Tools/mingw1310_64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/c++/bits/unique_lock.h \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/licensing.h \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/tweaks.h \
- B:/FortniteOptiEbook/FTN-main/client-cpp/include/updater.h \
- B:/FortniteOptiEbook/FTN-main/client-cpp/include/anti_debug.h
+ B:/FortniteOptiEbook/FTN-main/client-cpp/include/updater.h

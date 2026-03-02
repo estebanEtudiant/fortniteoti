@@ -14,6 +14,11 @@ class ModulesPage;
 class LogsPage;
 class SettingsPage;
 class UpdateDialog;
+class NetworkOptimizerPage;
+class DriverOptPage;
+class GuidePage;
+class FortniteSettingsPage;
+class MacroPage;
 
 enum class Screen;
 
@@ -40,11 +45,16 @@ private:
     QWidget*                m_mainWidget  = nullptr;
     SidebarWidget*          m_sidebar     = nullptr;
     AnimatedStackedWidget*  m_contentStack= nullptr;   // Dashboard|Modules|Logs|Settings
-    DashboardPage*  m_dashboard   = nullptr;
-    ModulesPage*    m_modules     = nullptr;
-    LogsPage*       m_logs        = nullptr;
-    SettingsPage*   m_settings    = nullptr;
-    UpdateDialog*   m_updateDlg   = nullptr;
+    DashboardPage*         m_dashboard   = nullptr;
+    ModulesPage*           m_modules     = nullptr;
+    LogsPage*              m_logs        = nullptr;
+    SettingsPage*          m_settings    = nullptr;
+    GuidePage*             m_guide       = nullptr;
+    NetworkOptimizerPage*  m_network     = nullptr;
+    DriverOptPage*         m_drivers     = nullptr;
+    FortniteSettingsPage*  m_fortnite    = nullptr;
+    MacroPage*             m_macros      = nullptr;
+    UpdateDialog*          m_updateDlg   = nullptr;
 
     void buildUi();
     void connectSignals();

@@ -26,13 +26,12 @@ class PulsingDot : public QWidget {
     Q_OBJECT
 public:
     explicit PulsingDot(QWidget* parent = nullptr);
-    void setColor(const QColor& c) { m_color = c; }
+    void setColor(const QColor& c) { m_color = c; update(); }
 protected:
     void paintEvent(QPaintEvent*) override;
 private:
-    QColor  m_color{ 0x33, 0xC7, 0x6B };
-    QTimer* m_timer;
-    double  m_phase = 0.0;
+    QColor  m_color{ 0x22, 0xC5, 0x5E };
+    QTimer* m_timer = nullptr; // unused — static dot
 };
 
 class SidebarWidget : public QWidget {
@@ -41,7 +40,8 @@ class SidebarWidget : public QWidget {
 public:
     explicit SidebarWidget(AppController* ctrl, QWidget* parent = nullptr);
 
-    enum Tab { Dashboard=0, Modules, Logs, Settings };
+    enum Tab { Dashboard=0, Modules, Logs, Settings, Guide, Network, Drivers, Fortnite, Macros };
+    static constexpr int TAB_COUNT = 9;
     void setCurrentTab(Tab t);
     Tab  currentTab() const { return m_tab; }
 
@@ -61,7 +61,7 @@ protected:
 private:
     AppController*      m_ctrl;
     Tab                 m_tab = Dashboard;
-    NavButton*          m_btns[4];
+    NavButton*          m_btns[TAB_COUNT];
     PulsingDot*         m_dot = nullptr;
     QLabel*             m_statusLbl = nullptr;
     QLabel*             m_planLbl   = nullptr;
