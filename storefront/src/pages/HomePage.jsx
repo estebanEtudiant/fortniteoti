@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import api from '../lib/api.js';
 import { navigate } from '../lib/router.js';
 import { useTranslation } from '../lib/i18n.jsx';
@@ -9,17 +10,52 @@ import BeforeAfterSlider from '../components/BeforeAfterSlider.jsx';
 
 const planIcons = { DAYS_30: 'fa-calendar', DAYS_90: 'fa-calendar-days', DAYS_365: 'fa-star', LIFETIME: 'fa-infinity' };
 
-export default function HomePage({ customer, screenshotUrl }) {
+const MACROS = ['Double Edit','Drag Edit','Shotgun Pullout','Auto Build','Pick Up','Single Edit','Instant Build','Item Pullout','Wall Retake','Prefire'];
+
+function SoftwareCarousel({ images, onZoom }) {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    if (images.length <= 1) return;
+    const t = setInterval(() => setIdx(i => (i + 1) % images.length), 3500);
+    return () => clearInterval(t);
+  }, [images.length]);
+  if (images.length === 0) return <div className="book-preview animate-on-scroll"><i className="fa-solid fa-laptop-code"></i></div>;
+  return (
+    <div className="book-preview book-preview--img software-carousel animate-on-scroll">
+      <img
+        key={idx}
+        src={images[idx]}
+        alt="404 Tweaks"
+        className="carousel-img"
+        style={{ cursor: 'zoom-in' }}
+        onClick={() => onZoom(images[idx])}
+      />
+      {images.length > 1 && (
+        <>
+          <button className="carousel-btn carousel-btn--prev" onClick={() => setIdx(i => (i - 1 + images.length) % images.length)}>‹</button>
+          <button className="carousel-btn carousel-btn--next" onClick={() => setIdx(i => (i + 1) % images.length)}>›</button>
+          <div className="carousel-dots">
+            {images.map((_, i) => (
+              <button key={i} className={`carousel-dot${i === idx ? ' carousel-dot--active' : ''}`} onClick={() => setIdx(i)} />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+export default function HomePage({ customer, screenshotUrl, screenshotUrls }) {
   const [plans, setPlans] = useState([]);
   const [reviews, setReviews] = useState([]);
-  const [lightbox, setLightbox] = useState(false);
+  const [lightbox, setLightbox] = useState(null);
   const [activeClients, setActiveClients] = useState(null);
   const [showSticky, setShowSticky] = useState(false);
   const { t } = useTranslation();
 
   useEffect(() => {
     if (!lightbox) return;
-    const handler = (e) => { if (e.key === 'Escape') setLightbox(false); };
+    const handler = (e) => { if (e.key === 'Escape') setLightbox(null); };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [lightbox]);
@@ -46,6 +82,9 @@ export default function HomePage({ customer, screenshotUrl }) {
   }, []);
 
   const minPrice = plans.length > 0 ? Math.min(...plans.map(p => p.price)) : null;
+  const carouselImages = screenshotUrls
+    ? screenshotUrls.split('\n').map(s => s.trim()).filter(Boolean)
+    : screenshotUrl ? [screenshotUrl] : [];
 
   const handlePurchase = (planKey) => {
     if (!customer) {
@@ -84,7 +123,7 @@ export default function HomePage({ customer, screenshotUrl }) {
               <span className="stat-label">{t('hero.stat.delay')}</span>
             </div>
             <div className="stat">
-              <CountUpStat value="98" />
+              <CountUpStat value="100+" />
               <span className="stat-label">{t('hero.stat.tweaks')}</span>
             </div>
           </div>
@@ -141,7 +180,7 @@ export default function HomePage({ customer, screenshotUrl }) {
         <div className="secret-container">
           <div className="secret-content animate-on-scroll">
             <div className="product-tweaks-badge">
-              <span className="tweaks-count">98</span>
+              <span className="tweaks-count">100+</span>
               <div className="tweaks-label-wrap">
                 <span className="tweaks-label">{t('product.tweaksBadge')}</span>
                 <span className="tweaks-sublabel">{t('product.available')}</span>
@@ -162,24 +201,17 @@ export default function HomePage({ customer, screenshotUrl }) {
               {t('product.seePrices')}
             </button>
           </div>
-          <div
-            className={`book-preview${screenshotUrl ? ' book-preview--img' : ''} animate-on-scroll`}
-            onClick={() => screenshotUrl && setLightbox(true)}
-          >
-            {screenshotUrl
-              ? <img src={screenshotUrl} alt="404 Tweaks" />
-              : <i className="fa-solid fa-laptop-code"></i>
-            }
-          </div>
+          <SoftwareCarousel images={carouselImages} onZoom={url => setLightbox(url)} />
         </div>
       </section>
 
-      {/* Lightbox */}
-      {lightbox && screenshotUrl && (
-        <div className="lightbox-overlay" onClick={() => setLightbox(false)} role="dialog" aria-modal="true">
-          <button className="lightbox-close" onClick={() => setLightbox(false)} aria-label="Fermer">✕</button>
-          <img src={screenshotUrl} alt="404 Tweaks — plein écran" onClick={e => e.stopPropagation()} />
-        </div>
+      {/* Lightbox — rendu via portal pour éviter les conflits de transform/stacking */}
+      {lightbox && createPortal(
+        <div className="lightbox-overlay" onClick={() => setLightbox(null)} role="dialog" aria-modal="true">
+          <button className="lightbox-close" onClick={() => setLightbox(null)} aria-label="Fermer">✕</button>
+          <img src={lightbox} alt="404 Tweaks — plein écran" onClick={e => e.stopPropagation()} />
+        </div>,
+        document.body
       )}
 
       {/* ── VIDEO DÉMO ── (décommente et remplace l'URL YouTube quand la vidéo est prête)
@@ -299,7 +331,11 @@ export default function HomePage({ customer, screenshotUrl }) {
                 <li><i className="fa-solid fa-check"></i> {t('pricing.feat2')}</li>
                 <li><i className="fa-solid fa-check"></i> {t('pricing.feat3')}</li>
                 <li><i className="fa-solid fa-check"></i> {t('pricing.feat4')}</li>
+                <li><i className="fa-solid fa-gamepad"></i> {t('pricing.feat5')}</li>
               </ul>
+              <div className="plan-macros">
+                {MACROS.map(m => <span key={m} className="plan-macro-tag">{m}</span>)}
+              </div>
               <button
                 className={`plan-cta${plan.popular ? ' plan-cta--popular' : ''}`}
                 onClick={() => handlePurchase(plan.key)}

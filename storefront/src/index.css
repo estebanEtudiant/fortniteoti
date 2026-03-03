@@ -855,6 +855,89 @@ h1 {
     flex-shrink: 0;
 }
 
+/* Macros grid in plan cards */
+.plan-macros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-bottom: 1.25rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(255,255,255,0.06);
+}
+.plan-macro-tag {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.18rem 0.48rem;
+    border-radius: 4px;
+    background: rgba(0,212,255,0.08);
+    border: 1px solid rgba(0,212,255,0.2);
+    color: var(--accent);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    transition: background 0.2s;
+}
+.plan-card:hover .plan-macro-tag {
+    background: rgba(0,212,255,0.14);
+}
+
+/* ── Software Carousel ── */
+.software-carousel { position: relative; }
+
+.carousel-img {
+    animation: carousel-fadein 0.4s ease;
+}
+@keyframes carousel-fadein {
+    from { opacity: 0; transform: scale(1.02); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+.carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.55);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #fff;
+    font-size: 1.6rem;
+    line-height: 1;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    z-index: 2;
+}
+.carousel-btn:hover { background: rgba(0,212,255,0.4); }
+.carousel-btn--prev { left: 10px; }
+.carousel-btn--next { right: 10px; }
+
+.carousel-dots {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 2;
+}
+.carousel-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.35);
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.2s, transform 0.2s;
+}
+.carousel-dot--active {
+    background: var(--accent);
+    transform: scale(1.25);
+}
+
 /* CTA button */
 .plan-cta {
     width: 100%;

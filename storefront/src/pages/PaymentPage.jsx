@@ -224,11 +224,29 @@ export default function PaymentPage({ customer }) {
             <div style={{ background: 'var(--card-bg)', borderRadius: 10, padding: '1rem 1.25rem', marginBottom: '1.25rem', border: '1px solid var(--border-subtle)' }}>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Inclus avec votre achat</p>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: 'var(--text-secondary)', fontSize: '0.88rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                <li><i className="fa-solid fa-check" style={{ color: 'var(--accent)', marginRight: 8 }}></i>Logiciel d'optimisation complet</li>
+                <li><i className="fa-solid fa-check" style={{ color: 'var(--accent)', marginRight: 8 }}></i><strong style={{ color: '#fff' }}>+100 tweaks</strong> automatiques Windows</li>
                 <li><i className="fa-solid fa-check" style={{ color: 'var(--accent)', marginRight: 8 }}></i>Acces Discord VIP prive</li>
                 <li><i className="fa-solid fa-check" style={{ color: 'var(--accent)', marginRight: 8 }}></i>Mises a jour incluses</li>
                 <li><i className="fa-solid fa-check" style={{ color: 'var(--accent)', marginRight: 8 }}></i>Support technique direct</li>
               </ul>
+
+              {/* Macros */}
+              <div style={{ marginTop: '0.9rem', paddingTop: '0.9rem', borderTop: '1px solid var(--border-subtle)' }}>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <i className="fa-solid fa-gamepad" style={{ color: 'var(--accent)', marginRight: 6 }}></i>
+                  10 Macros incluses
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+                  {['Double Edit','Drag Edit','Shotgun Pullout','Auto Build','Pick Up','Single Edit','Instant Build','Item Pullout','Wall Retake','Prefire'].map(m => (
+                    <span key={m} style={{
+                      fontSize: '0.72rem', fontWeight: 700, padding: '0.2rem 0.55rem',
+                      borderRadius: 4, background: 'rgba(0,212,255,0.1)',
+                      border: '1px solid rgba(0,212,255,0.25)', color: 'var(--accent)',
+                      letterSpacing: '0.03em',
+                    }}>{m}</span>
+                  ))}
+                </div>
+              </div>
             </div>
           </>
         )}

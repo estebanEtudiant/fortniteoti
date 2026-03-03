@@ -107,7 +107,7 @@ export default function App() {
       page = <StatusPage />;
       break;
     default:
-      page = <HomePage customer={customer} screenshotUrl={publicSettings.screenshotUrl} />;
+      page = <HomePage customer={customer} screenshotUrl={publicSettings.screenshotUrl} screenshotUrls={publicSettings.screenshotUrls} />;
   }
 
   return (

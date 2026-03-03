@@ -48,6 +48,7 @@ const DEFAULT_SETTINGS = {
   announcementLink: '',
   announcementLinkText: 'En savoir plus',
   screenshotUrl: '',
+  screenshotUrls: '',
   discordInviteUrl: '',
 };
 

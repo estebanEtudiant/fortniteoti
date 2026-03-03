@@ -148,6 +148,25 @@ export default function SettingsPage() {
                 </div>
               </div>
             </div>
+            {/* ── Screenshots carousel ── */}
+            <div className="border border-gray-700 rounded-xl p-4 space-y-3">
+              <p className="text-sm font-semibold text-gray-200">Screenshots du logiciel</p>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Image principale (section produit)</label>
+                <input type="url" value={settings.screenshotUrl || ''}
+                  onChange={e => setSettings(s => ({ ...s, screenshotUrl: e.target.value }))}
+                  className="w-full text-sm" placeholder="https://..." />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Images carousel — une URL par ligne</label>
+                <textarea value={settings.screenshotUrls || ''}
+                  onChange={e => setSettings(s => ({ ...s, screenshotUrls: e.target.value }))}
+                  className="w-full text-sm h-24 resize-none font-mono"
+                  placeholder={"https://exemple.com/img1.png\nhttps://exemple.com/img2.png\nhttps://exemple.com/img3.png"} />
+                <p className="text-xs text-gray-500 mt-1">Si renseigné, remplace l'image principale par un carousel défilant. Laissez vide pour utiliser l'image principale seule.</p>
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm text-gray-400 mb-1">URL d'invitation Discord</label>
               <input type="url" value={settings.discordInviteUrl || ''}

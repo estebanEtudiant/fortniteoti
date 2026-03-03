@@ -78,6 +78,7 @@ class UpdateSettingsBody {
   @IsOptional() @IsString() announcementLink?: string;
   @IsOptional() @IsString() announcementLinkText?: string;
   @IsOptional() @IsString() screenshotUrl?: string;
+  @IsOptional() @IsString() screenshotUrls?: string;
   @IsOptional() @IsString() discordInviteUrl?: string;
 }
 class ChangePasswordBody {
@@ -344,6 +345,7 @@ export class AdminController {
     const s = await this.adminService.getSettings();
     return {
       screenshotUrl:     s.screenshotUrl     || '',
+      screenshotUrls:    s.screenshotUrls    || '',
       discordInviteUrl:  s.discordInviteUrl  || '',
       announcement:            s.announcement            || '',
       announcementColor:       s.announcementColor       || 'orange',
