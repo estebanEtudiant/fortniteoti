@@ -1,12 +1,19 @@
 B:/FortniteOptiEbook/FTN-main/client-cpp/build-mingw/FortniteOptimizer2026_autogen/6YEA5652QU/moc_MacroPage.cpp: B:/FortniteOptiEbook/FTN-main/client-cpp/include/MacroPage.h \
   B:/FortniteOptiEbook/FTN-main/client-cpp/build-mingw/FortniteOptimizer2026_autogen/moc_predefs.h \
+  B:/FortniteOptiEbook/FTN-main/client-cpp/include/CollapsibleCard.h \
   B:/FortniteOptiEbook/FTN-main/client-cpp/include/KeyBindButton.h \
   B:/FortniteOptiEbook/FTN-main/client-cpp/include/MacroEngine.h \
+  B:/FortniteOptiEbook/FTN-main/client-cpp/include/ToggleSwitch.h \
+  B:/FortniteOptiEbook/FTN-main/client-cpp/include/VirtualKeyboard.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/QList \
+  B:/Qt/6.10.2/mingw_64/include/QtCore/QMap \
   B:/Qt/6.10.2/mingw_64/include/QtCore/QObject \
+  B:/Qt/6.10.2/mingw_64/include/QtCore/QPropertyAnimation \
   B:/Qt/6.10.2/mingw_64/include/QtCore/QRect \
   B:/Qt/6.10.2/mingw_64/include/QtCore/QSize \
   B:/Qt/6.10.2/mingw_64/include/QtCore/QSizeF \
+  B:/Qt/6.10.2/mingw_64/include/QtCore/QString \
+  B:/Qt/6.10.2/mingw_64/include/QtCore/QVector \
   B:/Qt/6.10.2/mingw_64/include/QtCore/q17memory.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/q20functional.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/q20iterator.h \
@@ -15,6 +22,7 @@ B:/FortniteOptiEbook/FTN-main/client-cpp/build-mingw/FortniteOptimizer2026_autog
   B:/Qt/6.10.2/mingw_64/include/QtCore/q20utility.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/q23type_traits.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/q23utility.h \
+  B:/Qt/6.10.2/mingw_64/include/QtCore/qabstractanimation.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qabstracteventdispatcher.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qalgorithms.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qalloc.h \
@@ -51,6 +59,7 @@ B:/FortniteOptiEbook/FTN-main/client-cpp/build-mingw/FortniteOptimizer2026_autog
   B:/Qt/6.10.2/mingw_64/include/QtCore/qdatastream.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qdeadlinetimer.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qdebug.h \
+  B:/Qt/6.10.2/mingw_64/include/QtCore/qeasingcurve.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qendian.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qeventloop.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qexceptionhandling.h \
@@ -91,6 +100,7 @@ B:/FortniteOptiEbook/FTN-main/client-cpp/build-mingw/FortniteOptimizer2026_autog
   B:/Qt/6.10.2/mingw_64/include/QtCore/qpair.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qpoint.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qprocessordetection.h \
+  B:/Qt/6.10.2/mingw_64/include/QtCore/qpropertyanimation.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qrect.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qrefcount.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qscopedpointer.h \
@@ -141,10 +151,13 @@ B:/FortniteOptiEbook/FTN-main/client-cpp/build-mingw/FortniteOptimizer2026_autog
   B:/Qt/6.10.2/mingw_64/include/QtCore/qurl.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qutf8stringview.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qvariant.h \
+  B:/Qt/6.10.2/mingw_64/include/QtCore/qvariantanimation.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qvarlengtharray.h \
+  B:/Qt/6.10.2/mingw_64/include/QtCore/qvector.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qversiontagging.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qxptype_traits.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qyieldcpu.h \
+  B:/Qt/6.10.2/mingw_64/include/QtGui/QColor \
   B:/Qt/6.10.2/mingw_64/include/QtGui/QFocusEvent \
   B:/Qt/6.10.2/mingw_64/include/QtGui/QKeyEvent \
   B:/Qt/6.10.2/mingw_64/include/QtGui/QMouseEvent \
@@ -188,16 +201,23 @@ B:/FortniteOptiEbook/FTN-main/client-cpp/build-mingw/FortniteOptimizer2026_autog
   B:/Qt/6.10.2/mingw_64/include/QtGui/qvectornd.h \
   B:/Qt/6.10.2/mingw_64/include/QtGui/qwindowdefs.h \
   B:/Qt/6.10.2/mingw_64/include/QtGui/qwindowdefs_win.h \
+  B:/Qt/6.10.2/mingw_64/include/QtWidgets/QAbstractButton \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/QCheckBox \
+  B:/Qt/6.10.2/mingw_64/include/QtWidgets/QFrame \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/QLabel \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/QPushButton \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/QSlider \
+  B:/Qt/6.10.2/mingw_64/include/QtWidgets/QVBoxLayout \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/QWidget \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/qabstractbutton.h \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/qabstractslider.h \
+  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qboxlayout.h \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/qcheckbox.h \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/qframe.h \
+  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qgridlayout.h \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/qlabel.h \
+  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qlayout.h \
+  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qlayoutitem.h \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/qpushbutton.h \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/qsizepolicy.h \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/qslider.h \

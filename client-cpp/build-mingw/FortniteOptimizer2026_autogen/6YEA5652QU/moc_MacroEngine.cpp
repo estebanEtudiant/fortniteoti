@@ -41,13 +41,19 @@ template <> constexpr inline auto MacroEngine::qt_create_metaobjectdata<qt_meta_
         "MacroEngine",
         "autoBuildToggled",
         "",
-        "on"
+        "on",
+        "globalToggled",
+        "enabled"
     };
 
     QtMocHelpers::UintData qt_methods {
         // Signal 'autoBuildToggled'
         QtMocHelpers::SignalData<void(bool)>(1, 2, QMC::AccessPublic, QMetaType::Void, {{
             { QMetaType::Bool, 3 },
+        }}),
+        // Signal 'globalToggled'
+        QtMocHelpers::SignalData<void(bool)>(4, 2, QMC::AccessPublic, QMetaType::Void, {{
+            { QMetaType::Bool, 5 },
         }}),
     };
     QtMocHelpers::UintData qt_properties {
@@ -73,11 +79,14 @@ void MacroEngine::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id,
     if (_c == QMetaObject::InvokeMetaMethod) {
         switch (_id) {
         case 0: _t->autoBuildToggled((*reinterpret_cast<std::add_pointer_t<bool>>(_a[1]))); break;
+        case 1: _t->globalToggled((*reinterpret_cast<std::add_pointer_t<bool>>(_a[1]))); break;
         default: ;
         }
     }
     if (_c == QMetaObject::IndexOfMethod) {
         if (QtMocHelpers::indexOfMethod<void (MacroEngine::*)(bool )>(_a, &MacroEngine::autoBuildToggled, 0))
+            return;
+        if (QtMocHelpers::indexOfMethod<void (MacroEngine::*)(bool )>(_a, &MacroEngine::globalToggled, 1))
             return;
     }
 }
@@ -101,14 +110,14 @@ int MacroEngine::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 1)
+        if (_id < 2)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 1;
+        _id -= 2;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 1)
+        if (_id < 2)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 1;
+        _id -= 2;
     }
     return _id;
 }
@@ -117,5 +126,11 @@ int MacroEngine::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 void MacroEngine::autoBuildToggled(bool _t1)
 {
     QMetaObject::activate<void>(this, &staticMetaObject, 0, nullptr, _t1);
+}
+
+// SIGNAL 1
+void MacroEngine::globalToggled(bool _t1)
+{
+    QMetaObject::activate<void>(this, &staticMetaObject, 1, nullptr, _t1);
 }
 QT_WARNING_POP

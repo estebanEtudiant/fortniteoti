@@ -8,6 +8,7 @@ FortniteOptimizer2026_autogen/timestamp: \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/AppController.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/BenchmarkManager.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/BenchmarkPage.h \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/include/CollapsibleCard.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/DashboardPage.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/DriverOptPage.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/FadeLabel.h \
@@ -32,7 +33,9 @@ FortniteOptimizer2026_autogen/timestamp: \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/SystemMonitorWidget.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/SystemStats.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/TitleBarWidget.h \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/include/ToggleSwitch.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/UpdateDialog.h \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/include/VirtualKeyboard.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/anti_debug.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/crypto_utils.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/gui.h \
@@ -46,6 +49,7 @@ FortniteOptimizer2026_autogen/timestamp: \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/AppController.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/BenchmarkManager.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/BenchmarkPage.cpp \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/src/CollapsibleCard.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/DashboardPage.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/DriverOptPage.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/FadeLabel.cpp \
@@ -69,7 +73,9 @@ FortniteOptimizer2026_autogen/timestamp: \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/SystemMonitorWidget.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/SystemStats.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/TitleBarWidget.cpp \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/src/ToggleSwitch.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/UpdateDialog.cpp \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/src/VirtualKeyboard.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/anti_debug_stub.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/crypto_utils.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/gui.cpp \
@@ -297,6 +303,7 @@ FortniteOptimizer2026_autogen/timestamp: \
 	B:/Qt/6.10.2/mingw_64/include/QtGui/qvectornd.h \
 	B:/Qt/6.10.2/mingw_64/include/QtGui/qwindowdefs.h \
 	B:/Qt/6.10.2/mingw_64/include/QtGui/qwindowdefs_win.h \
+	B:/Qt/6.10.2/mingw_64/include/QtWidgets/QAbstractButton \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/QCheckBox \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/QComboBox \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/QDialog \

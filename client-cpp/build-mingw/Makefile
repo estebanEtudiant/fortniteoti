@@ -274,6 +274,30 @@ src/BenchmarkPage.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/BenchmarkPage.cpp.s
 .PHONY : src/BenchmarkPage.cpp.s
 
+src/CollapsibleCard.obj: src/CollapsibleCard.cpp.obj
+.PHONY : src/CollapsibleCard.obj
+
+# target to build an object file
+src/CollapsibleCard.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/CollapsibleCard.cpp.obj
+.PHONY : src/CollapsibleCard.cpp.obj
+
+src/CollapsibleCard.i: src/CollapsibleCard.cpp.i
+.PHONY : src/CollapsibleCard.i
+
+# target to preprocess a source file
+src/CollapsibleCard.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/CollapsibleCard.cpp.i
+.PHONY : src/CollapsibleCard.cpp.i
+
+src/CollapsibleCard.s: src/CollapsibleCard.cpp.s
+.PHONY : src/CollapsibleCard.s
+
+# target to generate assembly for a file
+src/CollapsibleCard.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/CollapsibleCard.cpp.s
+.PHONY : src/CollapsibleCard.cpp.s
+
 src/DashboardPage.obj: src/DashboardPage.cpp.obj
 .PHONY : src/DashboardPage.obj
 
@@ -826,6 +850,30 @@ src/TitleBarWidget.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/TitleBarWidget.cpp.s
 .PHONY : src/TitleBarWidget.cpp.s
 
+src/ToggleSwitch.obj: src/ToggleSwitch.cpp.obj
+.PHONY : src/ToggleSwitch.obj
+
+# target to build an object file
+src/ToggleSwitch.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/ToggleSwitch.cpp.obj
+.PHONY : src/ToggleSwitch.cpp.obj
+
+src/ToggleSwitch.i: src/ToggleSwitch.cpp.i
+.PHONY : src/ToggleSwitch.i
+
+# target to preprocess a source file
+src/ToggleSwitch.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/ToggleSwitch.cpp.i
+.PHONY : src/ToggleSwitch.cpp.i
+
+src/ToggleSwitch.s: src/ToggleSwitch.cpp.s
+.PHONY : src/ToggleSwitch.s
+
+# target to generate assembly for a file
+src/ToggleSwitch.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/ToggleSwitch.cpp.s
+.PHONY : src/ToggleSwitch.cpp.s
+
 src/UpdateDialog.obj: src/UpdateDialog.cpp.obj
 .PHONY : src/UpdateDialog.obj
 
@@ -849,6 +897,30 @@ src/UpdateDialog.s: src/UpdateDialog.cpp.s
 src/UpdateDialog.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/UpdateDialog.cpp.s
 .PHONY : src/UpdateDialog.cpp.s
+
+src/VirtualKeyboard.obj: src/VirtualKeyboard.cpp.obj
+.PHONY : src/VirtualKeyboard.obj
+
+# target to build an object file
+src/VirtualKeyboard.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/VirtualKeyboard.cpp.obj
+.PHONY : src/VirtualKeyboard.cpp.obj
+
+src/VirtualKeyboard.i: src/VirtualKeyboard.cpp.i
+.PHONY : src/VirtualKeyboard.i
+
+# target to preprocess a source file
+src/VirtualKeyboard.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/VirtualKeyboard.cpp.i
+.PHONY : src/VirtualKeyboard.cpp.i
+
+src/VirtualKeyboard.s: src/VirtualKeyboard.cpp.s
+.PHONY : src/VirtualKeyboard.s
+
+# target to generate assembly for a file
+src/VirtualKeyboard.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/VirtualKeyboard.cpp.s
+.PHONY : src/VirtualKeyboard.cpp.s
 
 src/anti_debug_stub.obj: src/anti_debug_stub.cpp.obj
 .PHONY : src/anti_debug_stub.obj
@@ -1100,6 +1172,9 @@ help:
 	@echo ... src/BenchmarkPage.obj
 	@echo ... src/BenchmarkPage.i
 	@echo ... src/BenchmarkPage.s
+	@echo ... src/CollapsibleCard.obj
+	@echo ... src/CollapsibleCard.i
+	@echo ... src/CollapsibleCard.s
 	@echo ... src/DashboardPage.obj
 	@echo ... src/DashboardPage.i
 	@echo ... src/DashboardPage.s
@@ -1169,9 +1244,15 @@ help:
 	@echo ... src/TitleBarWidget.obj
 	@echo ... src/TitleBarWidget.i
 	@echo ... src/TitleBarWidget.s
+	@echo ... src/ToggleSwitch.obj
+	@echo ... src/ToggleSwitch.i
+	@echo ... src/ToggleSwitch.s
 	@echo ... src/UpdateDialog.obj
 	@echo ... src/UpdateDialog.i
 	@echo ... src/UpdateDialog.s
+	@echo ... src/VirtualKeyboard.obj
+	@echo ... src/VirtualKeyboard.i
+	@echo ... src/VirtualKeyboard.s
 	@echo ... src/anti_debug_stub.obj
 	@echo ... src/anti_debug_stub.i
 	@echo ... src/anti_debug_stub.s

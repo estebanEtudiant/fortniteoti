@@ -179,23 +179,21 @@ export default function HomePage({ customer, screenshotUrl }) {
         </div>
       )}
 
-      {/* ── VIDEO DÉMO ── */}
+      {/* ── VIDEO DÉMO ── (décommente et remplace l'URL YouTube quand la vidéo est prête)
       <section className="section" style={{ textAlign: 'center' }}>
         <h2 className="section-title animate-on-scroll">{t('video.title')} <span className="highlight">{t('video.highlight')}</span></h2>
         <p className="section-subtitle animate-on-scroll">{t('video.subtitle')}</p>
         <div className="video-embed-wrapper animate-on-scroll">
           <iframe
-            src="https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0&modestbranding=1"
+            src="https://www.youtube.com/embed/REMPLACE_PAR_TON_ID_VIDEO?rel=0&modestbranding=1"
             title="404 Tweaks — Démo"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
             loading="lazy"
           />
         </div>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '1rem' }}>
-          Remplace l'URL par ta vraie vidéo YouTube dans HomePage.jsx
-        </p>
       </section>
+      */}
 
       {/* ── PERFORMANCE ── */}
       <section className="section" style={{ background: 'var(--card-bg)' }}>

@@ -442,9 +442,34 @@ CMakeFiles/FortniteOptimizer2026.dir/src/MacroPage.cpp.obj: \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qguiapplication_platform.h \
  B:/Qt/6.10.2/mingw_64/include/QtGui/QMouseEvent \
  B:/Qt/6.10.2/mingw_64/include/QtGui/QFocusEvent \
- B:/FortniteOptiEbook/FTN-main/client-cpp/include/Palette.h \
+ B:/FortniteOptiEbook/FTN-main/client-cpp/include/ToggleSwitch.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/QAbstractButton \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qabstractbutton.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/QPropertyAnimation \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qpropertyanimation.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qvariantanimation.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qabstractanimation.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qeasingcurve.h \
+ B:/FortniteOptiEbook/FTN-main/client-cpp/include/CollapsibleCard.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/QFrame \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qframe.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/QVBoxLayout \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qboxlayout.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qlayout.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qlayoutitem.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qboxlayout.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qgridlayout.h \
+ B:/FortniteOptiEbook/FTN-main/client-cpp/include/VirtualKeyboard.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/QMap \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qmap.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/QString \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qstring.h \
  B:/Qt/6.10.2/mingw_64/include/QtGui/QColor \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qcolor.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/QVector \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qvector.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/QRect \
+ B:/FortniteOptiEbook/FTN-main/client-cpp/include/Palette.h \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/InputSender.h \
  B:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/windows.h \
  B:/Qt/Tools/mingw1310_64/x86_64-w64-mingw32/include/sdkddkver.h \
@@ -626,14 +651,6 @@ CMakeFiles/FortniteOptimizer2026.dir/src/MacroPage.cpp.obj: \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/QScrollArea \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qscrollarea.h \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qabstractscrollarea.h \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/QFrame \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/qframe.h \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/QVBoxLayout \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/qboxlayout.h \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/qlayout.h \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/qlayoutitem.h \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/qboxlayout.h \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/qgridlayout.h \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/QHBoxLayout \
  B:/Qt/6.10.2/mingw_64/include/QtCore/QProcess \
  B:/Qt/6.10.2/mingw_64/include/QtCore/qprocess.h \

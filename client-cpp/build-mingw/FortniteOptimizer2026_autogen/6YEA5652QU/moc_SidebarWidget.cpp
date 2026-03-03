@@ -39,12 +39,15 @@ template <> constexpr inline auto NavButton::qt_create_metaobjectdata<qt_meta_ta
 {
     namespace QMC = QtMocConstants;
     QtMocHelpers::StringRefStorage qt_stringData {
-        "NavButton"
+        "NavButton",
+        "hoverT"
     };
 
     QtMocHelpers::UintData qt_methods {
     };
     QtMocHelpers::UintData qt_properties {
+        // property 'hoverT'
+        QtMocHelpers::PropertyData<qreal>(1, QMetaType::QReal, QMC::DefaultPropertyFlags | QMC::Writable | QMC::StdCppSet),
     };
     QtMocHelpers::UintData qt_enums {
     };
@@ -64,10 +67,20 @@ Q_CONSTINIT const QMetaObject NavButton::staticMetaObject = { {
 void NavButton::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
 {
     auto *_t = static_cast<NavButton *>(_o);
-    (void)_t;
-    (void)_c;
-    (void)_id;
-    (void)_a;
+    if (_c == QMetaObject::ReadProperty) {
+        void *_v = _a[0];
+        switch (_id) {
+        case 0: *reinterpret_cast<qreal*>(_v) = _t->hoverT(); break;
+        default: break;
+        }
+    }
+    if (_c == QMetaObject::WriteProperty) {
+        void *_v = _a[0];
+        switch (_id) {
+        case 0: _t->setHoverT(*reinterpret_cast<qreal*>(_v)); break;
+        default: break;
+        }
+    }
 }
 
 const QMetaObject *NavButton::metaObject() const
@@ -86,6 +99,14 @@ void *NavButton::qt_metacast(const char *_clname)
 int NavButton::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 {
     _id = QPushButton::qt_metacall(_c, _id, _a);
+    if (_id < 0)
+        return _id;
+    if (_c == QMetaObject::ReadProperty || _c == QMetaObject::WriteProperty
+            || _c == QMetaObject::ResetProperty || _c == QMetaObject::BindableProperty
+            || _c == QMetaObject::RegisterPropertyMetaType) {
+        qt_static_metacall(this, _c, _id, _a);
+        _id -= 1;
+    }
     return _id;
 }
 namespace {

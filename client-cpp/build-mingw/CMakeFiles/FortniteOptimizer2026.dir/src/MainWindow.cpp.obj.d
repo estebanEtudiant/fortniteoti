@@ -535,6 +535,12 @@ CMakeFiles/FortniteOptimizer2026.dir/src/MainWindow.cpp.obj: \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qevent.h \
  B:/Qt/6.10.2/mingw_64/include/QtGui/QMouseEvent \
  B:/Qt/6.10.2/mingw_64/include/QtGui/QFocusEvent \
+ B:/FortniteOptiEbook/FTN-main/client-cpp/include/ToggleSwitch.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/QAbstractButton \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qabstractbutton.h \
+ B:/FortniteOptiEbook/FTN-main/client-cpp/include/CollapsibleCard.h \
+ B:/FortniteOptiEbook/FTN-main/client-cpp/include/VirtualKeyboard.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/QRect \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/Palette.h \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/QApplication \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qapplication.h \

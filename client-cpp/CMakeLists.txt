@@ -52,6 +52,9 @@ set(HEADERS
     include/MacroEngine.h
     include/MacroPage.h
     include/KeyBindButton.h
+    include/ToggleSwitch.h
+    include/CollapsibleCard.h
+    include/VirtualKeyboard.h
     include/interception.h
     include/InputSender.h
 )
@@ -94,6 +97,9 @@ set(SOURCES
     src/MacroEngine.cpp
     src/MacroPage.cpp
     src/KeyBindButton.cpp
+    src/ToggleSwitch.cpp
+    src/CollapsibleCard.cpp
+    src/VirtualKeyboard.cpp
     src/InputSender.cpp
 )
 

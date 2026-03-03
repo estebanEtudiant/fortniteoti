@@ -436,4 +436,31 @@ CMakeFiles/FortniteOptimizer2026.dir/src/SidebarWidget.cpp.obj: \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/QFrame \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qframe.h \
  B:/Qt/6.10.2/mingw_64/include/QtCore/QEasingCurve \
- B:/Qt/6.10.2/mingw_64/include/QtCore/qeasingcurve.h
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qeasingcurve.h \
+ B:/Qt/6.10.2/mingw_64/include/QtGui/QEnterEvent \
+ B:/Qt/6.10.2/mingw_64/include/QtGui/qevent.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qcoreevent.h \
+ B:/Qt/6.10.2/mingw_64/include/QtGui/qeventpoint.h \
+ B:/Qt/6.10.2/mingw_64/include/QtGui/qvector2d.h \
+ B:/Qt/6.10.2/mingw_64/include/QtGui/qvectornd.h \
+ B:/Qt/6.10.2/mingw_64/include/QtGui/qpointingdevice.h \
+ B:/Qt/6.10.2/mingw_64/include/QtGui/qinputdevice.h \
+ B:/Qt/6.10.2/mingw_64/include/QtGui/qscreen.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/QList \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qlist.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/QObject \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/QRect \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qrect.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/QSize \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qsize.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/QSizeF \
+ B:/Qt/6.10.2/mingw_64/include/QtGui/QTransform \
+ B:/Qt/6.10.2/mingw_64/include/QtGui/qtransform.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qnativeinterface.h \
+ B:/Qt/6.10.2/mingw_64/include/QtGui/qscreen_platform.h \
+ B:/Qt/6.10.2/mingw_64/include/QtGui/qguiapplication.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qcoreapplication.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qcoreapplication_platform.h \
+ B:/Qt/6.10.2/mingw_64/include/QtGui/qinputmethod.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qlocale.h \
+ B:/Qt/6.10.2/mingw_64/include/QtGui/qguiapplication_platform.h

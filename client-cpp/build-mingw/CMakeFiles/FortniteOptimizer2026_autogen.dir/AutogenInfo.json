@@ -295,6 +295,12 @@
 			null
 		],
 		[
+			"B:/FortniteOptiEbook/FTN-main/client-cpp/include/CollapsibleCard.h",
+			"Mu",
+			"6YEA5652QU/moc_CollapsibleCard.cpp",
+			null
+		],
+		[
 			"B:/FortniteOptiEbook/FTN-main/client-cpp/include/DashboardPage.h",
 			"Mu",
 			"6YEA5652QU/moc_DashboardPage.cpp",
@@ -439,9 +445,21 @@
 			null
 		],
 		[
+			"B:/FortniteOptiEbook/FTN-main/client-cpp/include/ToggleSwitch.h",
+			"Mu",
+			"6YEA5652QU/moc_ToggleSwitch.cpp",
+			null
+		],
+		[
 			"B:/FortniteOptiEbook/FTN-main/client-cpp/include/UpdateDialog.h",
 			"Mu",
 			"6YEA5652QU/moc_UpdateDialog.cpp",
+			null
+		],
+		[
+			"B:/FortniteOptiEbook/FTN-main/client-cpp/include/VirtualKeyboard.h",
+			"Mu",
+			"6YEA5652QU/moc_VirtualKeyboard.cpp",
 			null
 		],
 		[
@@ -601,6 +619,11 @@
 			null
 		],
 		[
+			"B:/FortniteOptiEbook/FTN-main/client-cpp/src/CollapsibleCard.cpp",
+			"Mu",
+			null
+		],
+		[
 			"B:/FortniteOptiEbook/FTN-main/client-cpp/src/DashboardPage.cpp",
 			"Mu",
 			null
@@ -716,7 +739,17 @@
 			null
 		],
 		[
+			"B:/FortniteOptiEbook/FTN-main/client-cpp/src/ToggleSwitch.cpp",
+			"Mu",
+			null
+		],
+		[
 			"B:/FortniteOptiEbook/FTN-main/client-cpp/src/UpdateDialog.cpp",
+			"Mu",
+			null
+		],
+		[
+			"B:/FortniteOptiEbook/FTN-main/client-cpp/src/VirtualKeyboard.cpp",
 			"Mu",
 			null
 		],

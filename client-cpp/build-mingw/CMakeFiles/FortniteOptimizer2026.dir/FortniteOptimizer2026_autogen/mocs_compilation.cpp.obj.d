@@ -445,6 +445,13 @@ CMakeFiles/FortniteOptimizer2026.dir/FortniteOptimizer2026_autogen/mocs_compilat
  B:/Qt/6.10.2/mingw_64/include/QtGui/qtextformat.h \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qpen.h \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qtextoption.h \
+ B:\FortniteOptiEbook\FTN-main\client-cpp\build-mingw\FortniteOptimizer2026_autogen\6YEA5652QU/moc_CollapsibleCard.cpp \
+ B:/FortniteOptiEbook/FTN-main/client-cpp/include/CollapsibleCard.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/QFrame \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qframe.h \
+ B:/FortniteOptiEbook/FTN-main/client-cpp/include/ToggleSwitch.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/QAbstractButton \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qabstractbutton.h \
  B:\FortniteOptiEbook\FTN-main\client-cpp\build-mingw\FortniteOptimizer2026_autogen\6YEA5652QU/moc_DashboardPage.cpp \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/DashboardPage.h \
  B:/Qt/6.10.2/mingw_64/include/QtCore/QTimer \
@@ -489,8 +496,6 @@ CMakeFiles/FortniteOptimizer2026.dir/FortniteOptimizer2026_autogen/mocs_compilat
  B:/Qt/6.10.2/mingw_64/include/QtCore/qmap.h \
  B:\FortniteOptiEbook\FTN-main\client-cpp\build-mingw\FortniteOptimizer2026_autogen\6YEA5652QU/moc_GlassCard.cpp \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/GlassCard.h \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/QFrame \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/qframe.h \
  B:\FortniteOptiEbook\FTN-main\client-cpp\build-mingw\FortniteOptimizer2026_autogen\6YEA5652QU/moc_GlowButton.cpp \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/GlowButton.h \
  B:\FortniteOptiEbook\FTN-main\client-cpp\build-mingw\FortniteOptimizer2026_autogen\6YEA5652QU/moc_GuidePage.cpp \
@@ -551,6 +556,8 @@ CMakeFiles/FortniteOptimizer2026.dir/FortniteOptimizer2026_autogen/mocs_compilat
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/MacroPage.h \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/QSlider \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qslider.h \
+ B:/FortniteOptiEbook/FTN-main/client-cpp/include/VirtualKeyboard.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/QRect \
  B:\FortniteOptiEbook\FTN-main\client-cpp\build-mingw\FortniteOptimizer2026_autogen\6YEA5652QU/moc_MainWindow.cpp \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/MainWindow.h \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/QMainWindow \
@@ -570,7 +577,9 @@ CMakeFiles/FortniteOptimizer2026.dir/FortniteOptimizer2026_autogen/mocs_compilat
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/TitleBarWidget.h \
  B:/Qt/6.10.2/mingw_64/include/QtCore/QPoint \
  B:/Qt/6.10.2/mingw_64/include/QtCore/qpoint.h \
+ B:\FortniteOptiEbook\FTN-main\client-cpp\build-mingw\FortniteOptimizer2026_autogen\6YEA5652QU/moc_ToggleSwitch.cpp \
  B:\FortniteOptiEbook\FTN-main\client-cpp\build-mingw\FortniteOptimizer2026_autogen\6YEA5652QU/moc_UpdateDialog.cpp \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/UpdateDialog.h \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/QDialog \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/qdialog.h
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qdialog.h \
+ B:\FortniteOptiEbook\FTN-main\client-cpp\build-mingw\FortniteOptimizer2026_autogen\6YEA5652QU/moc_VirtualKeyboard.cpp
