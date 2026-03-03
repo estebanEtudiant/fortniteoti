@@ -28,7 +28,7 @@ function SoftwareCarousel({ images, onZoom }) {
         alt="404 Tweaks"
         className="carousel-img"
         style={{ cursor: 'zoom-in' }}
-        onClick={() => onZoom(images[idx])}
+        onClick={() => onZoom(images, idx)}
       />
       {images.length > 1 && (
         <>
@@ -48,14 +48,18 @@ function SoftwareCarousel({ images, onZoom }) {
 export default function HomePage({ customer, screenshotUrl, screenshotUrls }) {
   const [plans, setPlans] = useState([]);
   const [reviews, setReviews] = useState([]);
-  const [lightbox, setLightbox] = useState(null);
+  const [lightbox, setLightbox] = useState(null); // { images: string[], idx: number }
   const [activeClients, setActiveClients] = useState(null);
   const [showSticky, setShowSticky] = useState(false);
   const { t } = useTranslation();
 
   useEffect(() => {
     if (!lightbox) return;
-    const handler = (e) => { if (e.key === 'Escape') setLightbox(null); };
+    const handler = (e) => {
+      if (e.key === 'Escape')      setLightbox(null);
+      if (e.key === 'ArrowRight')  setLightbox(l => l && l.images.length > 1 ? { ...l, idx: (l.idx + 1) % l.images.length } : l);
+      if (e.key === 'ArrowLeft')   setLightbox(l => l && l.images.length > 1 ? { ...l, idx: (l.idx - 1 + l.images.length) % l.images.length } : l);
+    };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [lightbox]);
@@ -201,15 +205,44 @@ export default function HomePage({ customer, screenshotUrl, screenshotUrls }) {
               {t('product.seePrices')}
             </button>
           </div>
-          <SoftwareCarousel images={carouselImages} onZoom={url => setLightbox(url)} />
+          <SoftwareCarousel images={carouselImages} onZoom={(imgs, i) => setLightbox({ images: imgs, idx: i })} />
         </div>
       </section>
 
-      {/* Lightbox — rendu via portal pour éviter les conflits de transform/stacking */}
+      {/* Lightbox — rendu via portal hors de page-transition */}
       {lightbox && createPortal(
         <div className="lightbox-overlay" onClick={() => setLightbox(null)} role="dialog" aria-modal="true">
           <button className="lightbox-close" onClick={() => setLightbox(null)} aria-label="Fermer">✕</button>
-          <img src={lightbox} alt="404 Tweaks — plein écran" onClick={e => e.stopPropagation()} />
+          <img
+            key={lightbox.idx}
+            src={lightbox.images[lightbox.idx]}
+            alt="404 Tweaks — plein écran"
+            style={{ cursor: lightbox.images.length > 1 ? 'pointer' : 'default' }}
+            onClick={e => {
+              e.stopPropagation();
+              if (lightbox.images.length > 1)
+                setLightbox(l => ({ ...l, idx: (l.idx + 1) % l.images.length }));
+            }}
+          />
+          {lightbox.images.length > 1 && (
+            <>
+              <button className="lightbox-nav lightbox-nav--prev"
+                onClick={e => { e.stopPropagation(); setLightbox(l => ({ ...l, idx: (l.idx - 1 + l.images.length) % l.images.length })); }}>
+                ‹
+              </button>
+              <button className="lightbox-nav lightbox-nav--next"
+                onClick={e => { e.stopPropagation(); setLightbox(l => ({ ...l, idx: (l.idx + 1) % l.images.length })); }}>
+                ›
+              </button>
+              <div className="lightbox-dots">
+                {lightbox.images.map((_, i) => (
+                  <button key={i}
+                    className={`carousel-dot${i === lightbox.idx ? ' carousel-dot--active' : ''}`}
+                    onClick={e => { e.stopPropagation(); setLightbox(l => ({ ...l, idx: i })); }} />
+                ))}
+              </div>
+            </>
+          )}
         </div>,
         document.body
       )}
