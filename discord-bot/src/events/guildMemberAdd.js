@@ -64,9 +64,15 @@ module.exports = {
         }
 
         if (inviterId && inviterId !== member.id) {
+          // Vérifie que l'inviteur n'est pas exclu du concours
+          const excluded = stmts.isExcluded.get(member.guild.id, inviterId);
+          if (excluded) {
+            logger.info(`[CONCOURS] Invitation ignorée — ${inviterId} est exclu du comptage`);
+          }
+
           // Vérifie que cet invité n'est pas déjà compté dans ce concours
           const already = stmts.alreadyInvited.get(contest.id, member.id);
-          if (!already) {
+          if (!excluded && !already) {
             stmts.addContestInvite.run({ contest_id: contest.id, inviter_id: inviterId, invited_id: member.id });
 
             const { count } = stmts.getContestInviteCount.get(contest.id, inviterId);

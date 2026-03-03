@@ -98,6 +98,17 @@ db.exec(`
   );
 `);
 
+// ─── Table exclusions concours ────────────────────────────────────────────────
+db.exec(`
+  CREATE TABLE IF NOT EXISTS contest_excluded (
+    guild_id   TEXT NOT NULL,
+    user_id    TEXT NOT NULL,
+    added_by   TEXT NOT NULL,
+    added_at   INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+    PRIMARY KEY (guild_id, user_id)
+  );
+`);
+
 // ─── Tables concours invitations ──────────────────────────────────────────────
 db.exec(`
   CREATE TABLE IF NOT EXISTS contests (
@@ -238,6 +249,12 @@ const stmts = {
     GROUP BY inviter_id HAVING invites >= ?
   `),
   alreadyInvited: db.prepare('SELECT id FROM contest_invites WHERE contest_id = ? AND invited_id = ?'),
+
+  // Exclusions concours
+  addExcluded:    db.prepare('INSERT OR REPLACE INTO contest_excluded (guild_id, user_id, added_by) VALUES (?, ?, ?)'),
+  removeExcluded: db.prepare('DELETE FROM contest_excluded WHERE guild_id = ? AND user_id = ?'),
+  isExcluded:     db.prepare('SELECT 1 FROM contest_excluded WHERE guild_id = ? AND user_id = ?'),
+  getExcluded:    db.prepare('SELECT user_id FROM contest_excluded WHERE guild_id = ? ORDER BY added_at DESC'),
 };
 
 module.exports = { db, stmts };

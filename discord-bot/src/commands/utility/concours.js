@@ -70,6 +70,28 @@ module.exports = {
     .addSubcommand(sub => sub
       .setName('terminer')
       .setDescription('Termine le concours, tire un gagnant au sort et envoie la clé en DM')
+    )
+
+    // ── Sous-commande : exclure ─────────────────────────────────────────────
+    .addSubcommand(sub => sub
+      .setName('exclure')
+      .setDescription('Exclut un utilisateur du comptage des invitations (ses invités ne comptent pas)')
+      .addUserOption(o => o
+        .setName('membre')
+        .setDescription('Membre à exclure du concours')
+        .setRequired(true)
+      )
+    )
+
+    // ── Sous-commande : inclure ─────────────────────────────────────────────
+    .addSubcommand(sub => sub
+      .setName('inclure')
+      .setDescription('Retire un utilisateur de la liste d\'exclusion')
+      .addUserOption(o => o
+        .setName('membre')
+        .setDescription('Membre à réintégrer')
+        .setRequired(true)
+      )
     ),
 
   // ─── Handler principal ────────────────────────────────────────────────────
@@ -79,6 +101,8 @@ module.exports = {
     if (sub === 'lancer')     return handleLancer(interaction);
     if (sub === 'classement') return handleClassement(interaction);
     if (sub === 'terminer')   return handleTerminer(interaction);
+    if (sub === 'exclure')    return handleExclure(interaction);
+    if (sub === 'inclure')    return handleInclure(interaction);
   },
 };
 
@@ -278,6 +302,51 @@ async function drawWinner(client, contest, interaction = null) {
       'La clé a été envoyée en DM au gagnant.',
     ].join('\n'),
   }]);
+}
+
+// ─── /concours exclure ───────────────────────────────────────────────────────
+async function handleExclure(interaction) {
+  const target = interaction.options.getUser('membre');
+
+  stmts.addExcluded.run(interaction.guildId, target.id, interaction.user.id);
+  logger.info(`[CONCOURS] ${target.tag} (${target.id}) exclu du comptage par ${interaction.user.tag}`);
+
+  // Récupère la liste complète pour l'afficher
+  const all = stmts.getExcluded.all(interaction.guildId);
+  const list = all.length > 0 ? all.map(r => `<@${r.user_id}>`).join(', ') : '*aucun*';
+
+  return interaction.reply({
+    embeds: [{
+      color: Colors.WARNING,
+      description: [
+        `🚫 **<@${target.id}> est maintenant exclu(e)** — ses invitations ne seront pas comptabilisées.`,
+        '',
+        `**Liste d'exclusion :** ${list}`,
+      ].join('\n'),
+    }],
+    ephemeral: true,
+  });
+}
+
+// ─── /concours inclure ───────────────────────────────────────────────────────
+async function handleInclure(interaction) {
+  const target = interaction.options.getUser('membre');
+
+  const was = stmts.isExcluded.get(interaction.guildId, target.id);
+  stmts.removeExcluded.run(interaction.guildId, target.id);
+
+  const all = stmts.getExcluded.all(interaction.guildId);
+  const list = all.length > 0 ? all.map(r => `<@${r.user_id}>`).join(', ') : '*aucun*';
+
+  return interaction.reply({
+    embeds: [{
+      color: Colors.SUCCESS,
+      description: was
+        ? [`✅ **<@${target.id}> a été retiré(e) de la liste d'exclusion** — ses futures invitations seront comptées.`, '', `**Liste d'exclusion :** ${list}`].join('\n')
+        : `ℹ️ **<@${target.id}> n'était pas exclu(e).**`,
+    }],
+    ephemeral: true,
+  });
 }
 
 // ─── Timer de fin automatique ────────────────────────────────────────────────
