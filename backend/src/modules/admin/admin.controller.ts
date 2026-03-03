@@ -63,11 +63,20 @@ class CreatePlanBody {
 class TrackPageviewDto {
   @IsString() @IsNotEmpty() path: string;
   @IsOptional() @IsString() sessionId?: string;
+  @IsOptional() @IsString() userAgent?: string;
+  @IsOptional() @IsString() referrer?: string;
+  @IsOptional() @IsString() language?: string;
 }
 class UpdateSettingsBody {
   @IsOptional() @IsString() downloadUrl?: string;
   @IsOptional() @IsBoolean() maintenanceMode?: boolean;
   @IsOptional() @IsString() announcement?: string;
+  @IsOptional() @IsString() announcementColor?: string;
+  @IsOptional() @IsString() announcementIcon?: string;
+  @IsOptional() @IsString() announcementLabel?: string;
+  @IsOptional() @IsBoolean() announcementDismissible?: boolean;
+  @IsOptional() @IsString() announcementLink?: string;
+  @IsOptional() @IsString() announcementLinkText?: string;
   @IsOptional() @IsString() screenshotUrl?: string;
   @IsOptional() @IsString() discordInviteUrl?: string;
 }
@@ -143,7 +152,7 @@ export class AdminController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Track a pageview (public, no auth)' })
   async trackPageview(@Body() dto: TrackPageviewDto) {
-    await this.adminService.trackPageview(dto.path, dto.sessionId);
+    await this.adminService.trackPageview(dto.path, dto.sessionId, dto.userAgent, dto.referrer, dto.language);
     return { ok: true };
   }
 
@@ -334,10 +343,16 @@ export class AdminController {
   async getPublicSettings() {
     const s = await this.adminService.getSettings();
     return {
-      screenshotUrl:    s.screenshotUrl    || '',
-      discordInviteUrl: s.discordInviteUrl || '',
-      announcement:     s.announcement     || '',
-      maintenanceMode:  s.maintenanceMode  || false,
+      screenshotUrl:     s.screenshotUrl     || '',
+      discordInviteUrl:  s.discordInviteUrl  || '',
+      announcement:            s.announcement            || '',
+      announcementColor:       s.announcementColor       || 'orange',
+      announcementIcon:        s.announcementIcon        || 'fa-fire',
+      announcementLabel:       s.announcementLabel       || 'Annonce',
+      announcementDismissible: s.announcementDismissible ?? true,
+      announcementLink:        s.announcementLink        || '',
+      announcementLinkText:    s.announcementLinkText    || 'En savoir plus',
+      maintenanceMode:         s.maintenanceMode         || false,
     };
   }
 

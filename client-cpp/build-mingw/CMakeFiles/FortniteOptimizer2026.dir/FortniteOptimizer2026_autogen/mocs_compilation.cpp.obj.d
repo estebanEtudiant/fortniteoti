@@ -567,6 +567,13 @@ CMakeFiles/FortniteOptimizer2026.dir/FortniteOptimizer2026_autogen/mocs_compilat
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/ModulesPage.h \
  B:\FortniteOptiEbook\FTN-main\client-cpp\build-mingw\FortniteOptimizer2026_autogen\6YEA5652QU/moc_NetworkOptimizerPage.cpp \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/NetworkOptimizerPage.h \
+ B:\FortniteOptiEbook\FTN-main\client-cpp\build-mingw\FortniteOptimizer2026_autogen\6YEA5652QU/moc_NotificationCenter.cpp \
+ B:/FortniteOptiEbook/FTN-main/client-cpp/include/NotificationCenter.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/QToolButton \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qtoolbutton.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/QDateTime \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qdatetime.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qcalendar.h \
  B:\FortniteOptiEbook\FTN-main\client-cpp\build-mingw\FortniteOptimizer2026_autogen\6YEA5652QU/moc_SettingsPage.cpp \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/SettingsPage.h \
  B:\FortniteOptiEbook\FTN-main\client-cpp\build-mingw\FortniteOptimizer2026_autogen\6YEA5652QU/moc_SidebarWidget.cpp \

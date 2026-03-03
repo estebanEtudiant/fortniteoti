@@ -730,6 +730,30 @@ src/NetworkOptimizerPage.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/NetworkOptimizerPage.cpp.s
 .PHONY : src/NetworkOptimizerPage.cpp.s
 
+src/NotificationCenter.obj: src/NotificationCenter.cpp.obj
+.PHONY : src/NotificationCenter.obj
+
+# target to build an object file
+src/NotificationCenter.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/NotificationCenter.cpp.obj
+.PHONY : src/NotificationCenter.cpp.obj
+
+src/NotificationCenter.i: src/NotificationCenter.cpp.i
+.PHONY : src/NotificationCenter.i
+
+# target to preprocess a source file
+src/NotificationCenter.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/NotificationCenter.cpp.i
+.PHONY : src/NotificationCenter.cpp.i
+
+src/NotificationCenter.s: src/NotificationCenter.cpp.s
+.PHONY : src/NotificationCenter.s
+
+# target to generate assembly for a file
+src/NotificationCenter.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/NotificationCenter.cpp.s
+.PHONY : src/NotificationCenter.cpp.s
+
 src/SettingsPage.obj: src/SettingsPage.cpp.obj
 .PHONY : src/SettingsPage.obj
 
@@ -1229,6 +1253,9 @@ help:
 	@echo ... src/NetworkOptimizerPage.obj
 	@echo ... src/NetworkOptimizerPage.i
 	@echo ... src/NetworkOptimizerPage.s
+	@echo ... src/NotificationCenter.obj
+	@echo ... src/NotificationCenter.i
+	@echo ... src/NotificationCenter.s
 	@echo ... src/SettingsPage.obj
 	@echo ... src/SettingsPage.i
 	@echo ... src/SettingsPage.s

@@ -1,10 +1,48 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Globe, Users, Eye, RefreshCw, TrendingUp } from 'lucide-react';
+import { Globe, Users, Eye, RefreshCw, TrendingUp, Monitor, Smartphone, Wifi } from 'lucide-react';
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
+  AreaChart, Area, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from 'recharts';
 import { api } from '../lib/api';
 import Loading from '../components/Loading';
+
+const PIE_COLORS = ['#06b6d4', '#8b5cf6', '#f59e0b', '#10b981', '#ef4444', '#6366f1', '#ec4899'];
+
+function MiniPie({ title, data }) {
+  const entries = Object.entries(data || {}).map(([name, value]) => ({ name, value }));
+  if (!entries.length) return null;
+  return (
+    <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+      <h3 className="text-sm font-semibold text-gray-300 mb-3">{title}</h3>
+      <ResponsiveContainer width="100%" height={160}>
+        <PieChart>
+          <Pie data={entries} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={55} paddingAngle={2}>
+            {entries.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+          </Pie>
+          <Tooltip
+            contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 8, fontSize: 12 }}
+          />
+          <Legend wrapperStyle={{ fontSize: 11, color: '#9ca3af' }} />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+function langFlag(lang) {
+  if (!lang || lang === 'unknown') return '🌐';
+  const code = lang.slice(0, 2).toLowerCase();
+  if (code === 'fr') return '🇫🇷';
+  if (code === 'en') return '🇬🇧';
+  if (code === 'es') return '🇪🇸';
+  if (code === 'de') return '🇩🇪';
+  if (code === 'pt') return '🇧🇷';
+  if (code === 'it') return '🇮🇹';
+  if (code === 'ru') return '🇷🇺';
+  if (code === 'ar') return '🇸🇦';
+  return '🌐';
+}
 
 export default function ActivityPage() {
   const [data, setData] = useState(null);
@@ -78,7 +116,7 @@ export default function ActivityPage() {
         </div>
       </div>
 
-      {/* Chart */}
+      {/* Traffic chart */}
       {data.daily?.length > 0 && (
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-6">
           <h2 className="text-lg font-semibold mb-4">Trafic — 30 derniers jours</h2>
@@ -108,6 +146,62 @@ export default function ActivityPage() {
           </ResponsiveContainer>
         </div>
       )}
+
+      {/* Breakdowns 2x2 grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <MiniPie title="Appareils" data={data.deviceBreakdown} />
+        <MiniPie title="Navigateurs" data={data.browserBreakdown} />
+        <MiniPie title="Systèmes d'exploitation" data={data.osBreakdown} />
+        <MiniPie title="Sources / Referrers" data={data.referrerBreakdown} />
+      </div>
+
+      {/* Live visitors table */}
+      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-6">
+        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Wifi className="w-5 h-5 text-green-400" />
+          Visiteurs en direct
+          <span className="ml-2 text-xs bg-green-900/40 text-green-400 px-2 py-0.5 rounded-full border border-green-800">
+            {data.liveVisitors?.length ?? 0} actifs
+          </span>
+        </h2>
+        {!data.liveVisitors?.length ? (
+          <p className="text-gray-500 text-sm text-center py-6">Aucun visiteur actif en ce moment</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-gray-500 border-b border-gray-800">
+                  <th className="pb-2 pr-4 font-medium">Session ID</th>
+                  <th className="pb-2 pr-4 font-medium">Page actuelle</th>
+                  <th className="pb-2 pr-4 font-medium">Dernière activité</th>
+                  <th className="pb-2 font-medium">Langue</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.liveVisitors.map((visitor, i) => {
+                  const minsAgo = Math.floor((Date.now() - visitor.lastSeen) / 60000);
+                  return (
+                    <tr key={i} className="border-b border-gray-800/50 hover:bg-gray-800/30">
+                      <td className="py-2 pr-4 font-mono text-gray-400 text-xs">
+                        {visitor.sessionId}...
+                      </td>
+                      <td className="py-2 pr-4 font-mono text-cyan-400 text-xs">
+                        {visitor.path || '/'}
+                      </td>
+                      <td className="py-2 pr-4 text-gray-400">
+                        {minsAgo === 0 ? 'A l\'instant' : `il y a ${minsAgo} min`}
+                      </td>
+                      <td className="py-2 text-gray-300">
+                        <span title={visitor.lang}>{langFlag(visitor.lang)} {visitor.lang || 'unknown'}</span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
 
       {/* Top pages */}
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">

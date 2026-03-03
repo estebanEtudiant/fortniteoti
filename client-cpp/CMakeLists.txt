@@ -12,7 +12,7 @@ set(CMAKE_AUTORCC ON)
 option(ENABLE_ANTI_DEBUG "Build with anti-debug checks" OFF)
 
 # ── Qt 6 ──────────────────────────────────────────────────────────────
-find_package(Qt6 REQUIRED COMPONENTS Widgets Core Concurrent)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Core Concurrent Network)
 
 # ── Headers ───────────────────────────────────────────────────────────
 set(HEADERS
@@ -55,6 +55,7 @@ set(HEADERS
     include/ToggleSwitch.h
     include/CollapsibleCard.h
     include/VirtualKeyboard.h
+    include/NotificationCenter.h
     include/interception.h
     include/InputSender.h
 )
@@ -100,6 +101,7 @@ set(SOURCES
     src/ToggleSwitch.cpp
     src/CollapsibleCard.cpp
     src/VirtualKeyboard.cpp
+    src/NotificationCenter.cpp
     src/InputSender.cpp
 )
 
@@ -118,6 +120,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt6::Widgets
     Qt6::Core
     Qt6::Concurrent
+    Qt6::Network
 )
 
 # ── Compile definitions ───────────────────────────────────────────────

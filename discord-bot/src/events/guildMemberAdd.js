@@ -4,6 +4,8 @@ const config     = require('../config/config');
 const Colors     = require('../config/colors');
 const logger     = require('../services/logger');
 const { getBotConfig } = require('../services/licenseApi');
+const { stmts }  = require('../services/database');
+const { updateContestEmbed } = require('../services/contestHelper');
 
 const SITE_URL = 'https://404tweaks.tech/';
 
@@ -39,6 +41,56 @@ module.exports = {
 
   async execute(client, member) {
     logger.info(`Nouveau membre : ${member.user.tag} (${member.id}) sur ${member.guild.name}`);
+
+    // ─── Tracking concours : détection de l'inviteur ─────────────────────────
+    try {
+      const contest = stmts.getActiveContest.get(member.guild.id);
+      if (contest) {
+        // Compare le cache avant/après pour trouver quelle invitation a été utilisée
+        const cachedInvites = client.inviteCache.get(member.guild.id) || new Map();
+        const currentInvites = await member.guild.invites.fetch().catch(() => null);
+
+        let inviterId = null;
+        if (currentInvites) {
+          for (const [code, invite] of currentInvites) {
+            const cachedUses = cachedInvites.get(code) ?? 0;
+            if (invite.uses > cachedUses && invite.inviter) {
+              inviterId = invite.inviter.id;
+              break;
+            }
+          }
+          // Met à jour le cache
+          client.inviteCache.set(member.guild.id, new Map(currentInvites.map(i => [i.code, i.uses])));
+        }
+
+        if (inviterId && inviterId !== member.id) {
+          // Vérifie que cet invité n'est pas déjà compté dans ce concours
+          const already = stmts.alreadyInvited.get(contest.id, member.id);
+          if (!already) {
+            stmts.addContestInvite.run({ contest_id: contest.id, inviter_id: inviterId, invited_id: member.id });
+
+            const { count } = stmts.getContestInviteCount.get(contest.id, inviterId);
+            logger.info(`[CONCOURS] ${inviterId} a invité ${member.id} — total: ${count}/${contest.invites_required}`);
+
+            // Notifie l'inviteur de sa progression
+            const inviterUser = await client.users.fetch(inviterId).catch(() => null);
+            if (inviterUser) {
+              const remaining = Math.max(0, contest.invites_required - count);
+              const msg = remaining === 0
+                ? `🎉 **Tu es qualifié pour le concours !**\nTu as invité **${count}** ami(s) — tu participes au tirage au sort !`
+                : `✅ **+1 invitation comptabilisée !**\nTu as invité **${count}/${contest.invites_required}** ami(s).\nEncore **${remaining}** invitation(s) pour être qualifié !`;
+
+              inviterUser.send({ embeds: [{ color: 0x00D1FF, description: msg }] }).catch(() => {});
+            }
+
+            // Met à jour l'embed du concours dans le salon
+            await updateContestEmbed(client, contest).catch(() => {});
+          }
+        }
+      }
+    } catch (err) {
+      logger.error('[CONCOURS] guildMemberAdd tracking error:', err);
+    }
 
     // ─── Rôle automatique ─────────────────────────────────────────────────────
     if (config.roles.member) {

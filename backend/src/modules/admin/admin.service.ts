@@ -41,6 +41,12 @@ const DEFAULT_SETTINGS = {
   downloadUrl: '',
   maintenanceMode: false,
   announcement: '',
+  announcementColor: 'orange',
+  announcementIcon: 'fa-fire',
+  announcementLabel: 'Annonce',
+  announcementDismissible: true,
+  announcementLink: '',
+  announcementLinkText: 'En savoir plus',
   screenshotUrl: '',
   discordInviteUrl: '',
 };
@@ -555,7 +561,43 @@ export class AdminService {
     return date.toISOString().slice(0, 10); // YYYY-MM-DD
   }
 
-  async trackPageview(path: string, sessionId?: string): Promise<void> {
+  private parseUA(ua: string = ''): { browser: string; device: string; os: string } {
+    const lower = ua.toLowerCase();
+    let browser = 'Other';
+    if (lower.includes('edg/'))        browser = 'Edge';
+    else if (lower.includes('chrome')) browser = 'Chrome';
+    else if (lower.includes('firefox')) browser = 'Firefox';
+    else if (lower.includes('safari')) browser = 'Safari';
+    else if (lower.includes('opera') || lower.includes('opr')) browser = 'Opera';
+
+    let device = 'Desktop';
+    if (/mobile|android|iphone/i.test(ua)) device = 'Mobile';
+    else if (/ipad|tablet/i.test(ua))      device = 'Tablet';
+
+    let os = 'Other';
+    if (lower.includes('windows'))      os = 'Windows';
+    else if (lower.includes('mac os'))  os = 'macOS';
+    else if (lower.includes('linux'))   os = 'Linux';
+    else if (lower.includes('android')) os = 'Android';
+    else if (/iphone|ipad/i.test(ua))  os = 'iOS';
+
+    return { browser, device, os };
+  }
+
+  private parseReferrer(ref: string = ''): string {
+    if (!ref) return 'Direct';
+    if (ref.includes('google')) return 'Google';
+    if (ref.includes('facebook') || ref.includes('fb.com')) return 'Facebook';
+    if (ref.includes('twitter') || ref.includes('x.com')) return 'Twitter/X';
+    if (ref.includes('discord')) return 'Discord';
+    if (ref.includes('youtube')) return 'YouTube';
+    if (ref.includes('reddit')) return 'Reddit';
+    if (ref.includes('instagram')) return 'Instagram';
+    if (ref.includes('tiktok')) return 'TikTok';
+    return 'Other';
+  }
+
+  async trackPageview(path: string, sessionId?: string, userAgent?: string, referrer?: string, language?: string): Promise<void> {
     const today = this.dateKey(new Date());
     const now = Date.now();
     const ttl = 90 * 24 * 3600;
@@ -568,6 +610,27 @@ export class AdminService {
       await this.redis.expire(`analytics:uv:${today}`, ttl);
     }
 
+    // Parse user agent for device/browser/os breakdown
+    const { browser, device, os } = this.parseUA(userAgent);
+    const source = this.parseReferrer(referrer);
+
+    await Promise.all([
+      this.redis.hincrby(`analytics:browsers:${today}`, browser, 1),
+      this.redis.expire(`analytics:browsers:${today}`, ttl),
+      this.redis.hincrby(`analytics:devices:${today}`, device, 1),
+      this.redis.expire(`analytics:devices:${today}`, ttl),
+      this.redis.hincrby(`analytics:os:${today}`, os, 1),
+      this.redis.expire(`analytics:os:${today}`, ttl),
+      this.redis.hincrby(`analytics:referrers:${today}`, source, 1),
+      this.redis.expire(`analytics:referrers:${today}`, ttl),
+    ]);
+
+    // Live visitors hash: sessionId → { path, t, lang }
+    if (sessionId) {
+      await this.redis.hset('analytics:live', sessionId, JSON.stringify({ path, t: now, lang: language || 'unknown' }));
+      await this.redis.expire('analytics:live', 600);
+    }
+
     // Real-time sorted set — member scored by timestamp (ms)
     await this.redis.zadd('analytics:rt', now, `${sessionId || 'anon'}-${now}-${Math.random()}`);
     await this.redis.expire('analytics:rt', 600);
@@ -578,15 +641,26 @@ export class AdminService {
     const daily: { date: string; pageViews: number; sessions: number }[] = [];
     const pageMap: Record<string, number> = {};
 
+    const deviceBreakdown: Record<string, number> = {};
+    const browserBreakdown: Record<string, number> = {};
+    const osBreakdown: Record<string, number> = {};
+    const referrerBreakdown: Record<string, number> = {};
+
     for (let i = 29; i >= 0; i--) {
       const d = new Date(now);
       d.setDate(d.getDate() - i);
       const key = this.dateKey(d);
 
-      const pvData = await this.redis.hgetall(`analytics:pv:${key}`);
-      const pageViews = pvData ? Object.values(pvData).reduce((sum, v) => sum + parseInt(v, 10), 0) : 0;
-      const sessions = await this.redis.pfcount(`analytics:uv:${key}`);
+      const [pvData, sessions, dev, bro, os_, ref_] = await Promise.all([
+        this.redis.hgetall(`analytics:pv:${key}`),
+        this.redis.pfcount(`analytics:uv:${key}`),
+        this.redis.hgetall(`analytics:devices:${key}`),
+        this.redis.hgetall(`analytics:browsers:${key}`),
+        this.redis.hgetall(`analytics:os:${key}`),
+        this.redis.hgetall(`analytics:referrers:${key}`),
+      ]);
 
+      const pageViews = pvData ? Object.values(pvData).reduce((sum, v) => sum + parseInt(v, 10), 0) : 0;
       daily.push({ date: key, pageViews, sessions });
 
       if (pvData) {
@@ -594,6 +668,11 @@ export class AdminService {
           pageMap[p] = (pageMap[p] || 0) + parseInt(count, 10);
         }
       }
+
+      for (const [k, v] of Object.entries(dev  || {})) deviceBreakdown[k]   = (deviceBreakdown[k]   || 0) + parseInt(v, 10);
+      for (const [k, v] of Object.entries(bro  || {})) browserBreakdown[k]  = (browserBreakdown[k]  || 0) + parseInt(v, 10);
+      for (const [k, v] of Object.entries(os_  || {})) osBreakdown[k]       = (osBreakdown[k]       || 0) + parseInt(v, 10);
+      for (const [k, v] of Object.entries(ref_ || {})) referrerBreakdown[k] = (referrerBreakdown[k] || 0) + parseInt(v, 10);
     }
 
     // Today's top pages sorted by hit count
@@ -609,10 +688,29 @@ export class AdminService {
     const realtimeVisitors = await this.redis.zcount('analytics:rt', tenMinAgo, '+inf');
     await this.redis.zremrangebyscore('analytics:rt', 0, tenMinAgo - 1);
 
+    // Live visitors from hash (last 10 min)
+    const cutoff = Date.now() - 10 * 60 * 1000;
+    const liveRaw = await this.redis.hgetall('analytics:live') || {};
+    const liveVisitors = Object.entries(liveRaw)
+      .map(([sid, val]) => {
+        try {
+          const d = JSON.parse(val);
+          return d.t >= cutoff ? { sessionId: sid.slice(0, 8), path: d.path, lastSeen: d.t, lang: d.lang } : null;
+        } catch { return null; }
+      })
+      .filter(Boolean)
+      .sort((a: any, b: any) => b.lastSeen - a.lastSeen)
+      .slice(0, 25);
+
     return {
       daily,
       topPages,
       realtimeVisitors,
+      liveVisitors,
+      deviceBreakdown,
+      browserBreakdown,
+      osBreakdown,
+      referrerBreakdown,
       summary: {
         pageviews7d:      daily.slice(-7).reduce((s, d) => s + d.pageViews, 0),
         pageviews30d:     daily.reduce((s, d) => s + d.pageViews, 0),

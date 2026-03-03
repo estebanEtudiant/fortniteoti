@@ -22,6 +22,7 @@ set(CMAKE_TARGET_DEFINITIONS_RC
   "QT_CORE_LIB"
   "QT_GUI_LIB"
   "QT_NEEDS_QMAIN"
+  "QT_NETWORK_LIB"
   "QT_NO_DEBUG"
   "QT_WIDGETS_LIB"
   "UNICODE"
@@ -44,6 +45,7 @@ set(CMAKE_RC_TARGET_INCLUDE_PATH
   "B:/Qt/6.10.2/mingw_64/mkspecs/win32-g++"
   "B:/Qt/6.10.2/mingw_64/include/QtGui"
   "B:/Qt/6.10.2/mingw_64/include/QtConcurrent"
+  "B:/Qt/6.10.2/mingw_64/include/QtNetwork"
   )
 
 # The set of dependency files which are needed:
@@ -72,6 +74,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "B:/FortniteOptiEbook/FTN-main/client-cpp/src/MiniGraph.cpp" "CMakeFiles/FortniteOptimizer2026.dir/src/MiniGraph.cpp.obj" "gcc" "CMakeFiles/FortniteOptimizer2026.dir/src/MiniGraph.cpp.obj.d"
   "B:/FortniteOptiEbook/FTN-main/client-cpp/src/ModulesPage.cpp" "CMakeFiles/FortniteOptimizer2026.dir/src/ModulesPage.cpp.obj" "gcc" "CMakeFiles/FortniteOptimizer2026.dir/src/ModulesPage.cpp.obj.d"
   "B:/FortniteOptiEbook/FTN-main/client-cpp/src/NetworkOptimizerPage.cpp" "CMakeFiles/FortniteOptimizer2026.dir/src/NetworkOptimizerPage.cpp.obj" "gcc" "CMakeFiles/FortniteOptimizer2026.dir/src/NetworkOptimizerPage.cpp.obj.d"
+  "B:/FortniteOptiEbook/FTN-main/client-cpp/src/NotificationCenter.cpp" "CMakeFiles/FortniteOptimizer2026.dir/src/NotificationCenter.cpp.obj" "gcc" "CMakeFiles/FortniteOptimizer2026.dir/src/NotificationCenter.cpp.obj.d"
   "B:/FortniteOptiEbook/FTN-main/client-cpp/src/SettingsPage.cpp" "CMakeFiles/FortniteOptimizer2026.dir/src/SettingsPage.cpp.obj" "gcc" "CMakeFiles/FortniteOptimizer2026.dir/src/SettingsPage.cpp.obj.d"
   "B:/FortniteOptiEbook/FTN-main/client-cpp/src/SidebarWidget.cpp" "CMakeFiles/FortniteOptimizer2026.dir/src/SidebarWidget.cpp.obj" "gcc" "CMakeFiles/FortniteOptimizer2026.dir/src/SidebarWidget.cpp.obj.d"
   "B:/FortniteOptiEbook/FTN-main/client-cpp/src/SystemMonitorWidget.cpp" "CMakeFiles/FortniteOptimizer2026.dir/src/SystemMonitorWidget.cpp.obj" "gcc" "CMakeFiles/FortniteOptimizer2026.dir/src/SystemMonitorWidget.cpp.obj.d"

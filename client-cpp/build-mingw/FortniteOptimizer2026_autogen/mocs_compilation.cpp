@@ -21,6 +21,7 @@
 #include "6YEA5652QU/moc_MiniGraph.cpp"
 #include "6YEA5652QU/moc_ModulesPage.cpp"
 #include "6YEA5652QU/moc_NetworkOptimizerPage.cpp"
+#include "6YEA5652QU/moc_NotificationCenter.cpp"
 #include "6YEA5652QU/moc_SettingsPage.cpp"
 #include "6YEA5652QU/moc_SidebarWidget.cpp"
 #include "6YEA5652QU/moc_SystemMonitorWidget.cpp"

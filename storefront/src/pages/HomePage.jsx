@@ -98,7 +98,10 @@ export default function HomePage({ customer, screenshotUrl }) {
             </p>
           )}
           <div className="hero-ctas">
-            <button className="cta-primary" onClick={scrollToPrice}>{t('hero.cta.buy')}</button>
+            <button className="cta-primary cta-primary--hero" onClick={scrollToPrice}>
+              {t('hero.cta.buy')}
+              <span className="cta-arrow-anim">→</span>
+            </button>
             <button className="cta-secondary" onClick={scrollToProduct}>{t('hero.cta.see')}</button>
           </div>
         </div>
@@ -325,12 +328,16 @@ export default function HomePage({ customer, screenshotUrl }) {
       {showSticky && minPrice !== null && (
         <div className="sticky-cta">
           <div className="sticky-cta-info">
+            <span className="sticky-cta-badge">Offre Limitée</span>
             <strong>404 Tweaks</strong>
             <span> — {t('sticky.from')} <strong className="sticky-cta-price">{(minPrice / 100).toFixed(2)} €</strong></span>
           </div>
-          <button className="sticky-cta-btn" onClick={scrollToPrice}>
-            {t('sticky.buy')}
-          </button>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <button className="sticky-cta-btn" onClick={scrollToPrice}>
+              {t('sticky.buy')}
+            </button>
+            <span className="sticky-cta-sub">Accès immédiat après paiement</span>
+          </div>
         </div>
       )}
     </>

@@ -154,7 +154,13 @@ class ApiClient {
     fetch(`${this.baseUrl}/admin/track/pageview`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path, sessionId }),
+      body: JSON.stringify({
+        path,
+        sessionId,
+        userAgent: navigator.userAgent,
+        referrer: document.referrer || '',
+        language: navigator.language || '',
+      }),
       keepalive: true,
     }).catch(() => {});
   }

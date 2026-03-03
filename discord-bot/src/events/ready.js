@@ -18,6 +18,14 @@ module.exports = {
       status: 'online',
     });
 
+    // ── Cache initial des invitations (tracking concours) ─────────────────────
+    for (const guild of client.guilds.cache.values()) {
+      guild.invites.fetch().then(invites => {
+        client.inviteCache.set(guild.id, new Map(invites.map(i => [i.code, i.uses])));
+        logger.info(`[INVITES] Cache chargé pour ${guild.name} — ${invites.size} invite(s)`);
+      }).catch(() => {});
+    }
+
     // Démarre les tâches planifiées
     scheduler.start(client);
 

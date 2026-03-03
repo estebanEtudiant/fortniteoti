@@ -2,10 +2,12 @@
 //  TitleBarWidget.cpp — Minimal flat title bar
 // ══════════════════════════════════════════════════════
 #include "TitleBarWidget.h"
+#include "NotificationCenter.h"
 #include "Palette.h"
 
 #include <QPainter>
 #include <QMouseEvent>
+#include <QResizeEvent>
 #include <QHBoxLayout>
 
 static constexpr int BTN_W   = 44;
@@ -25,6 +27,18 @@ TitleBarWidget::TitleBarWidget(QWidget* parent)
     setFixedHeight(40);
     setAttribute(Qt::WA_StyledBackground, true);
     setMouseTracking(true);
+
+    // ── Notification center bell button ───────────────
+    m_notifCenter = new NotificationCenter(this);
+    // Positioned in resizeEvent; initial placement:
+    int nx = width() - NOTIF_RIGHT_MARGIN - NOTIF_SIZE - 4;
+    m_notifCenter->move(nx, (40 - NOTIF_SIZE) / 2);
+    m_notifCenter->raise();
+}
+
+void TitleBarWidget::initNotifications(const QString& apiUrl) {
+    if (m_notifCenter)
+        m_notifCenter->checkServerStatus(apiUrl);
 }
 
 static void drawMinIcon(QPainter& p, const QRect& r) {
@@ -96,6 +110,8 @@ void TitleBarWidget::mousePressEvent(QMouseEvent* e) {
     if (e->button() != Qt::LeftButton) return;
     if (closeRect(width()).contains(e->pos())) { emit closeRequested();    return; }
     if (minRect(width()).contains(e->pos()))   { emit minimizeRequested(); return; }
+    // Do not start dragging if click is on the notification center widget
+    if (m_notifCenter && m_notifCenter->geometry().contains(e->pos())) return;
     m_dragging  = true;
     m_dragStart = e->globalPosition().toPoint() - window()->frameGeometry().topLeft();
     e->accept();
@@ -114,4 +130,13 @@ void TitleBarWidget::mouseReleaseEvent(QMouseEvent*) {
 void TitleBarWidget::mouseDoubleClickEvent(QMouseEvent*) {
     if (window()->isMaximized()) window()->showNormal();
     else window()->showMaximized();
+}
+
+void TitleBarWidget::resizeEvent(QResizeEvent* e) {
+    QWidget::resizeEvent(e);
+    if (m_notifCenter) {
+        // Keep notification center to the left of minimize/close buttons
+        int nx = width() - NOTIF_RIGHT_MARGIN - NOTIF_SIZE - 4;
+        m_notifCenter->move(nx, (40 - NOTIF_SIZE) / 2);
+    }
 }

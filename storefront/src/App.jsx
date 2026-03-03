@@ -25,6 +25,9 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx';
 import ResetPasswordPage from './pages/ResetPasswordPage.jsx';
 import VerifyEmailSentPage from './pages/VerifyEmailSentPage.jsx';
 import VerifyEmailPage from './pages/VerifyEmailPage.jsx';
+import LegalPage from './pages/LegalPage.jsx';
+import PrivacyPage from './pages/PrivacyPage.jsx';
+import StatusPage from './pages/StatusPage.jsx';
 
 export default function App() {
   const route = useRoute();
@@ -33,6 +36,13 @@ export default function App() {
   const scrollProgress = useScrollProgress();
   const [announcementDismissed, setAnnouncementDismissed] = useState(false);
   const [showExitIntent, setShowExitIntent] = useState(false);
+  const showBanner = !!(publicSettings.announcement && !(publicSettings.announcementDismissible !== false && announcementDismissed));
+
+  // Ajoute/retire la classe CSS sur body pour décaler le contenu sous la bannière
+  useEffect(() => {
+    document.body.classList.toggle('has-announcement', showBanner);
+    return () => document.body.classList.remove('has-announcement');
+  }, [showBanner]);
   useScrollAnimations(route);
   usePageTitle(route);
   useExitIntent(() => setShowExitIntent(true));
@@ -87,6 +97,15 @@ export default function App() {
     case '/comment-ca-marche':
       page = <HowItWorksPage />;
       break;
+    case '/legal':
+      page = <LegalPage />;
+      break;
+    case '/privacy':
+      page = <PrivacyPage />;
+      break;
+    case '/status':
+      page = <StatusPage />;
+      break;
     default:
       page = <HomePage customer={customer} screenshotUrl={publicSettings.screenshotUrl} />;
   }
@@ -100,9 +119,15 @@ export default function App() {
         <Header customer={customer} onLogout={logout} discordUrl={publicSettings.discordInviteUrl} />
 
         {/* Announcement banner */}
-        {publicSettings.announcement && !announcementDismissed && (
+        {showBanner && (
           <AnnouncementBanner
             message={publicSettings.announcement}
+            color={publicSettings.announcementColor}
+            icon={publicSettings.announcementIcon}
+            label={publicSettings.announcementLabel}
+            dismissible={publicSettings.announcementDismissible}
+            link={publicSettings.announcementLink}
+            linkText={publicSettings.announcementLinkText}
             onDismiss={() => setAnnouncementDismissed(true)}
           />
         )}

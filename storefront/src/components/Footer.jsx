@@ -16,8 +16,9 @@ export default function Footer({ discordUrl }) {
             </a>
           )}
           <button className="footer-link" onClick={() => navigate('/comment-ca-marche')}>{t('nav.howItWorks')}</button>
-          <button className="footer-link">{t('footer.legal')}</button>
-          <button className="footer-link">{t('footer.privacy')}</button>
+          <button className="footer-link" onClick={() => navigate('/legal')}>{t('footer.legal')}</button>
+          <button className="footer-link" onClick={() => navigate('/privacy')}>{t('footer.privacy')}</button>
+          <button className="footer-link" onClick={() => navigate('/status')}>Status</button>
           <button className="footer-link">{t('footer.support')}</button>
         </div>
       </div>

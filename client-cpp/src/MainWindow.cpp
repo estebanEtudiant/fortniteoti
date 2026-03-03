@@ -85,6 +85,7 @@ void MainWindow::buildUi() {
     mainV->setSpacing(0);
 
     m_titleBar = new TitleBarWidget(this);
+    m_titleBar->initNotifications("http://localhost:3000/api/v1");
     mainV->addWidget(m_titleBar);
 
     m_rootStack = new AnimatedStackedWidget;

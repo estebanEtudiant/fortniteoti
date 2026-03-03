@@ -29,20 +29,24 @@ cls
 echo.
 echo  %OR%  +============================================================+%R%
 echo  %OR%  ^|                                                            ^|%R%
-echo  %OR%  ^|    _  _ __  _  _                                          ^|%R%
-echo  %OR%  ^|   | || |  \| || |                                         ^|%R%
-echo  %OR%  ^|   | >< | () | ||_|                                        ^|%R%
-echo  %OR%  ^|   |_||_|\__/|_|(_)   TWEAKS                              ^|%R%
+echo  %OR%  ^|    _  _    ___    ___                                       ^|%R%
+echo  %OR%  ^|   ^| ^|^| ^|  _ \  ^|  _ \                                      ^|%R%
+echo  %OR%  ^|   ^| ^|^| ^| ^| ^| ^| ^| ^| ^|                                     ^|%R%
+echo  %OR%  ^|   ^| ^|^| ^| ^|_^| ^| ^|_^| ^|                                     ^|%R%
+echo  %OR%  ^|   ^|_^|_^|  \___/   \___/                                      ^|%R%
+echo  %OR%  ^|                                                            ^|%R%
+echo  %OR%  ^|            4  0  4    T W E A K S                           ^|%R%
 echo  %OR%  ^|                                                            ^|%R%
 echo  %OR%  +============================================================+%R%
+
 echo.
 echo  %CY%  +-[ DISCORD EXCLUSIVE ]--------------------------------------+%R%
 echo  %CY%  ^|                                                            ^|%R%
 echo  %CY%  ^|   10 BONUS TWEAKS GRATUITS                                ^|%R%
 echo  %CY%  ^|   Ces tweaks ne sont PAS dans le logiciel 404 Tweaks      ^|%R%
 echo  %CY%  ^|                                                            ^|%R%
-echo  %CY%  ^|   Rejoins : discord.gg/fortniteopt                        ^|%R%
-echo  %CY%  ^|   Logiciel : fortniteopt.com                              ^|%R%
+echo  %CY%  ^|   Rejoins : discord.gg/YacGgRdBAY                        ^|%R%
+echo  %CY%  ^|   Logiciel : https://404tweaks.tech/                             ^|%R%
 echo  %CY%  ^|                                                            ^|%R%
 echo  %CY%  +------------------------------------------------------------+%R%
 echo.
@@ -62,12 +66,13 @@ REM ================================================================
 
 :REG_SET
   set /a TOTAL+=1
+  set "MSG=%~5"
   reg add "%~1" /v "%~2" /t %~3 /d "%~4" /f >nul 2>&1
   if !errorlevel!==0 (
-    echo    %GR%  [OK]  %~5%R%
+    echo    %GR%  [OK]  !MSG!%R%
     set /a OK+=1
   ) else (
-    echo    %GY%  [--]  %~5%R%
+    echo    %GY%  [--]  !MSG!%R%
   )
 exit /b
 
@@ -79,7 +84,7 @@ exit /b
     echo    %GR%  [OK]  Service OFF : %~1%R%
     set /a OK+=1
   ) else (
-    echo    %GY%  [--]  %~1 (deja desactive ou absent)%R%
+    echo    %GY%  [--]  %~1 ^(deja desactive ou absent^)%R%
   )
 exit /b
 
@@ -175,7 +180,7 @@ if not exist "%LOCALAPPDATA%\FortniteGame\Saved\Config\WindowsClient\" (
 )
 powershell -NoProfile -ExecutionPolicy Bypass -Command "$p=$env:LOCALAPPDATA+'\FortniteGame\Saved\Config\WindowsClient\GameUserSettings.ini';if(Test-Path $p){$c=Get-Content $p -Raw;if($c -notmatch 'FrameRateLimit'){Add-Content $p ([char]13+[char]10+'FrameRateLimit=0.000000')};if($c -notmatch 'bShowFPS'){Add-Content $p ([char]13+[char]10+'bShowFPS=True')}}" >nul 2>&1
 if !errorlevel!==0 (
-  echo    %GR%  [OK]  FrameRateLimit = 0.000000 (FPS uncap)%R%
+  echo    %GR%  [OK]  FrameRateLimit = 0.000000 ^(FPS uncap^)%R%
   echo    %GR%  [OK]  bShowFPS = True%R%
   set /a OK+=1
 ) else (
@@ -189,7 +194,7 @@ echo  %GY%  Bande passante max + r.OneFrameThreadLag=0 (input lag reduit)%R%
 echo.
 
 set /a TOTAL+=1
-if not exist "%LOCALAPPDATA%\FortniteGame\Saved\Config\WindowsClient\" (
+if not exist "%LOCALAPPDATA%\FortniteGame\Saved\Config\WindowsClient" (
   echo    %GY%  [--]  Fortnite non detecte - tweak 07 ignore%R%
   goto :SKIP_ENG
 )
@@ -252,7 +257,7 @@ if !OK! GEQ !TOTAL! (
   echo  %GR%  PARFAIT -- Tous les tweaks ont ete appliques !%R%
 ) else (
   set /a SKIPPED=!TOTAL!-!OK!
-  echo  %YE%  !SKIPPED! operation(s) ignoree(s) -- deja en place ou service absent.%R%
+  echo  %YE%  !SKIPPED! operation^(s^) ignoree^(s^) -- deja en place ou service absent.%R%f
 )
 
 echo.
@@ -260,9 +265,9 @@ echo  %OR%  +============================================================+%R%
 echo  %OR%  ^|                                                            ^|%R%
 echo  %OR%  ^|   ENCORE PLUS DE TWEAKS EXCLUSIFS SUR NOTRE DISCORD       ^|%R%
 echo  %OR%  ^|                                                            ^|%R%
-echo  %OR%  ^|       discord.gg/fortniteopt                              ^|%R%
+echo  %OR%  ^|       discord.gg/YacGgRdBAY                              ^|%R%
 echo  %OR%  ^|                                                            ^|%R%
-echo  %OR%  ^|   Logiciel complet sur : fortniteopt.com                  ^|%R%
+echo  %OR%  ^|   Logiciel complet sur : https://404tweaks.tech/                  ^|%R%
 echo  %OR%  ^|                                                            ^|%R%
 echo  %OR%  +============================================================+%R%
 echo.

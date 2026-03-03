@@ -50,6 +50,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/FortniteOptimizer2026.dir/src/ModulesPage.cpp.obj.d"
   "CMakeFiles/FortniteOptimizer2026.dir/src/NetworkOptimizerPage.cpp.obj"
   "CMakeFiles/FortniteOptimizer2026.dir/src/NetworkOptimizerPage.cpp.obj.d"
+  "CMakeFiles/FortniteOptimizer2026.dir/src/NotificationCenter.cpp.obj"
+  "CMakeFiles/FortniteOptimizer2026.dir/src/NotificationCenter.cpp.obj.d"
   "CMakeFiles/FortniteOptimizer2026.dir/src/SettingsPage.cpp.obj"
   "CMakeFiles/FortniteOptimizer2026.dir/src/SettingsPage.cpp.obj.d"
   "CMakeFiles/FortniteOptimizer2026.dir/src/SidebarWidget.cpp.obj"

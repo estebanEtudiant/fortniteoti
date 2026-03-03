@@ -98,6 +98,32 @@ db.exec(`
   );
 `);
 
+// ─── Tables concours invitations ──────────────────────────────────────────────
+db.exec(`
+  CREATE TABLE IF NOT EXISTS contests (
+    id                INTEGER PRIMARY KEY AUTOINCREMENT,
+    guild_id          TEXT    NOT NULL,
+    channel_id        TEXT    NOT NULL,
+    message_id        TEXT    NOT NULL,
+    host_id           TEXT    NOT NULL,
+    plan              TEXT    NOT NULL DEFAULT 'DAYS_30',
+    invites_required  INTEGER NOT NULL DEFAULT 2,
+    ends_at           INTEGER NOT NULL,
+    ended             INTEGER NOT NULL DEFAULT 0,
+    winner_id         TEXT,
+    prize_key         TEXT,
+    created_at        INTEGER NOT NULL DEFAULT (strftime('%s','now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS contest_invites (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    contest_id  INTEGER NOT NULL REFERENCES contests(id) ON DELETE CASCADE,
+    inviter_id  TEXT    NOT NULL,
+    invited_id  TEXT    NOT NULL UNIQUE,
+    invited_at  INTEGER NOT NULL DEFAULT (strftime('%s','now'))
+  );
+`);
+
 logger.info('Base de données SQLite initialisée.');
 
 // ─── Requêtes préparées ───────────────────────────────────────────────────────
@@ -183,6 +209,35 @@ const stmts = {
   getActiveGiveaways: db.prepare('SELECT * FROM giveaways WHERE ended = 0 AND ends_at <= strftime(\'%s\',\'now\')'),
   markGiveawayEnded:  db.prepare('UPDATE giveaways SET ended = 1 WHERE id = ?'),
   getGiveawayByMessage: db.prepare('SELECT * FROM giveaways WHERE message_id = ?'),
+
+  // Concours invitations
+  createContest: db.prepare(`
+    INSERT INTO contests (guild_id, channel_id, message_id, host_id, plan, invites_required, ends_at)
+    VALUES (@guild_id, @channel_id, @message_id, @host_id, @plan, @invites_required, @ends_at)
+  `),
+  getActiveContest:    db.prepare('SELECT * FROM contests WHERE guild_id = ? AND ended = 0 ORDER BY created_at DESC LIMIT 1'),
+  getContestById:      db.prepare('SELECT * FROM contests WHERE id = ?'),
+  endContest:          db.prepare('UPDATE contests SET ended = 1, winner_id = @winner_id, prize_key = @prize_key WHERE id = @id'),
+  updateContestMessage:db.prepare('UPDATE contests SET message_id = ? WHERE id = ?'),
+
+  addContestInvite: db.prepare(`
+    INSERT OR IGNORE INTO contest_invites (contest_id, inviter_id, invited_id)
+    VALUES (@contest_id, @inviter_id, @invited_id)
+  `),
+  getContestInviteCount: db.prepare(`
+    SELECT COUNT(*) as count FROM contest_invites WHERE contest_id = ? AND inviter_id = ?
+  `),
+  getContestLeaderboard: db.prepare(`
+    SELECT inviter_id, COUNT(*) as invites
+    FROM contest_invites WHERE contest_id = ?
+    GROUP BY inviter_id ORDER BY invites DESC
+  `),
+  getContestParticipants: db.prepare(`
+    SELECT inviter_id, COUNT(*) as invites
+    FROM contest_invites WHERE contest_id = ?
+    GROUP BY inviter_id HAVING invites >= ?
+  `),
+  alreadyInvited: db.prepare('SELECT id FROM contest_invites WHERE contest_id = ? AND invited_id = ?'),
 };
 
 module.exports = { db, stmts };

@@ -63,11 +63,90 @@ export default function SettingsPage() {
                 className="w-full text-sm" placeholder="https://..." />
               <p className="text-xs text-gray-500 mt-1">Lien affiché aux clients après achat et sur leur profil.</p>
             </div>
-            <div>
-              <label className="block text-sm text-gray-400 mb-1">Annonce publique (affiché sur le storefront)</label>
-              <textarea value={settings.announcement || ''}
-                onChange={e => setSettings(s => ({ ...s, announcement: e.target.value }))}
-                className="w-full text-sm h-20 resize-none" placeholder="Ex: Maintenance prévue le 01/01..." />
+            {/* ── Annonce ── */}
+            <div className="border border-gray-700 rounded-xl p-4 space-y-4">
+              <p className="text-sm font-semibold text-gray-200">Bannière d'annonce</p>
+
+              {/* Message */}
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Message affiché</label>
+                <textarea value={settings.announcement || ''}
+                  onChange={e => setSettings(s => ({ ...s, announcement: e.target.value }))}
+                  className="w-full text-sm h-16 resize-none" placeholder="Laissez vide pour masquer la bannière…" />
+              </div>
+
+              {/* Label du badge + Icône */}
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <label className="block text-xs text-gray-400 mb-1">Badge (texte)</label>
+                  <input type="text" value={settings.announcementLabel || 'Annonce'}
+                    onChange={e => setSettings(s => ({ ...s, announcementLabel: e.target.value }))}
+                    className="w-full text-sm" placeholder="Annonce" maxLength={16} />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-xs text-gray-400 mb-1">Icône FontAwesome</label>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {['fa-fire','fa-bolt','fa-bell','fa-star','fa-gift','fa-megaphone','fa-tag','fa-circle-info'].map(ic => (
+                      <button key={ic} title={ic}
+                        onClick={() => setSettings(s => ({ ...s, announcementIcon: ic }))}
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs transition-colors ${settings.announcementIcon === ic ? 'bg-cyan-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}>
+                        <i className={`fa-solid ${ic}`} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Couleur */}
+              <div>
+                <label className="block text-xs text-gray-400 mb-1.5">Couleur</label>
+                <div className="flex gap-2 flex-wrap">
+                  {[
+                    { key: 'orange', hex: '#f97316' }, { key: 'blue',   hex: '#3b82f6' },
+                    { key: 'green',  hex: '#22c55e' }, { key: 'red',    hex: '#ef4444' },
+                    { key: 'purple', hex: '#a855f7' }, { key: 'cyan',   hex: '#06b6d4' },
+                    { key: 'pink',   hex: '#ec4899' }, { key: 'yellow', hex: '#eab308' },
+                  ].map(({ key, hex }) => (
+                    <button key={key} title={key}
+                      onClick={() => setSettings(s => ({ ...s, announcementColor: key }))}
+                      className="w-7 h-7 rounded-full transition-transform hover:scale-110"
+                      style={{
+                        backgroundColor: hex,
+                        outline: settings.announcementColor === key ? `3px solid ${hex}` : '3px solid transparent',
+                        outlineOffset: '2px',
+                      }} />
+                  ))}
+                </div>
+              </div>
+
+              {/* Lien CTA */}
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <label className="block text-xs text-gray-400 mb-1">Lien CTA (optionnel)</label>
+                  <input type="url" value={settings.announcementLink || ''}
+                    onChange={e => setSettings(s => ({ ...s, announcementLink: e.target.value }))}
+                    className="w-full text-sm" placeholder="https://..." />
+                </div>
+                <div className="w-40">
+                  <label className="block text-xs text-gray-400 mb-1">Texte du lien</label>
+                  <input type="text" value={settings.announcementLinkText || 'En savoir plus'}
+                    onChange={e => setSettings(s => ({ ...s, announcementLinkText: e.target.value }))}
+                    className="w-full text-sm" placeholder="En savoir plus" maxLength={24} />
+                </div>
+              </div>
+
+              {/* Fermable */}
+              <div className="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                <div>
+                  <p className="text-sm font-medium">Bannière fermable</p>
+                  <p className="text-xs text-gray-500">L'utilisateur peut masquer la bannière</p>
+                </div>
+                <div
+                  onClick={() => setSettings(s => ({ ...s, announcementDismissible: !s.announcementDismissible }))}
+                  className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer ${settings.announcementDismissible !== false ? 'bg-cyan-600' : 'bg-gray-700'}`}>
+                  <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${settings.announcementDismissible !== false ? 'translate-x-6' : 'translate-x-1'}`} />
+                </div>
+              </div>
             </div>
             <div>
               <label className="block text-sm text-gray-400 mb-1">URL d'invitation Discord</label>

@@ -385,6 +385,44 @@ CMakeFiles/FortniteOptimizer2026.dir/src/TitleBarWidget.cpp.obj: \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qbitmap.h \
  B:/Qt/6.10.2/mingw_64/include/QtCore/QPoint \
  B:/Qt/6.10.2/mingw_64/include/QtCore/qpoint.h \
+ B:/FortniteOptiEbook/FTN-main/client-cpp/include/NotificationCenter.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/QToolButton \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qtoolbutton.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qabstractbutton.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qwidget.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/QLabel \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qlabel.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qframe.h \
+ B:/Qt/6.10.2/mingw_64/include/QtGui/qpicture.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qiodevice.h \
+ B:/Qt/6.10.2/mingw_64/include/QtGui/qtextdocument.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qurl.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/QScrollArea \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qscrollarea.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qabstractscrollarea.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/QVBoxLayout \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qboxlayout.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qlayout.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qlayoutitem.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qboxlayout.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qgridlayout.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/QVector \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qvector.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/QTimer \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qtimer.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qbasictimer.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qabstracteventdispatcher.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qeventloop.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qdeadlinetimer.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/QDateTime \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qdatetime.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qcalendar.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qlocale.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/QPropertyAnimation \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qpropertyanimation.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qvariantanimation.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qabstractanimation.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qeasingcurve.h \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/Palette.h \
  B:/Qt/6.10.2/mingw_64/include/QtGui/QColor \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qcolor.h \
@@ -395,12 +433,6 @@ CMakeFiles/FortniteOptimizer2026.dir/src/TitleBarWidget.cpp.obj: \
  B:/Qt/6.10.2/mingw_64/include/QtGui/QMouseEvent \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qevent.h \
  B:/Qt/6.10.2/mingw_64/include/QtCore/qcoreevent.h \
- B:/Qt/6.10.2/mingw_64/include/QtCore/qbasictimer.h \
- B:/Qt/6.10.2/mingw_64/include/QtCore/qabstracteventdispatcher.h \
- B:/Qt/6.10.2/mingw_64/include/QtCore/qeventloop.h \
- B:/Qt/6.10.2/mingw_64/include/QtCore/qdeadlinetimer.h \
- B:/Qt/6.10.2/mingw_64/include/QtCore/qiodevice.h \
- B:/Qt/6.10.2/mingw_64/include/QtCore/qurl.h \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qeventpoint.h \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qvector2d.h \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qvectornd.h \
@@ -424,11 +456,6 @@ CMakeFiles/FortniteOptimizer2026.dir/src/TitleBarWidget.cpp.obj: \
  B:/Qt/6.10.2/mingw_64/include/QtCore/qcoreapplication.h \
  B:/Qt/6.10.2/mingw_64/include/QtCore/qcoreapplication_platform.h \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qinputmethod.h \
- B:/Qt/6.10.2/mingw_64/include/QtCore/qlocale.h \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qguiapplication_platform.h \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/QHBoxLayout \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/qboxlayout.h \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/qlayout.h \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/qlayoutitem.h \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/qboxlayout.h \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/qgridlayout.h
+ B:/Qt/6.10.2/mingw_64/include/QtGui/QResizeEvent \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/QHBoxLayout

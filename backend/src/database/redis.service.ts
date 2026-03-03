@@ -101,6 +101,10 @@ export class RedisService implements OnModuleDestroy {
   }
 
   // ── Analytics helpers ──
+  async hset(key: string, field: string, value: string): Promise<void> {
+    await this.client.hset(key, field, value);
+  }
+
   async hincrby(key: string, field: string, delta: number): Promise<number> {
     return this.client.hincrby(key, field, delta);
   }

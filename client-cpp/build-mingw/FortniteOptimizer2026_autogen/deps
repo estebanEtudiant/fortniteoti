@@ -27,6 +27,7 @@ FortniteOptimizer2026_autogen/timestamp: \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/MiniGraph.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/ModulesPage.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/NetworkOptimizerPage.h \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/include/NotificationCenter.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/Palette.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/SettingsPage.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/SidebarWidget.h \
@@ -68,6 +69,7 @@ FortniteOptimizer2026_autogen/timestamp: \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/MiniGraph.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/ModulesPage.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/NetworkOptimizerPage.cpp \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/src/NotificationCenter.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/SettingsPage.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/SidebarWidget.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/SystemMonitorWidget.cpp \
@@ -85,6 +87,7 @@ FortniteOptimizer2026_autogen/timestamp: \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/main.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/tweaks.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/updater.cpp \
+	B:/Qt/6.10.2/mingw_64/include/QtCore/QDateTime \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/QList \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/QMap \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/QObject \
@@ -127,6 +130,7 @@ FortniteOptimizer2026_autogen/timestamp: \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/qbytearrayalgorithms.h \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/qbytearraylist.h \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/qbytearrayview.h \
+	B:/Qt/6.10.2/mingw_64/include/QtCore/qcalendar.h \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/qchar.h \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/qcheckedint_impl.h \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/qcompare.h \
@@ -144,6 +148,7 @@ FortniteOptimizer2026_autogen/timestamp: \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/qcoreevent.h \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/qdarwinhelpers.h \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/qdatastream.h \
+	B:/Qt/6.10.2/mingw_64/include/QtCore/qdatetime.h \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/qdeadlinetimer.h \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/qdebug.h \
 	B:/Qt/6.10.2/mingw_64/include/QtCore/qeasingcurve.h \
@@ -318,6 +323,7 @@ FortniteOptimizer2026_autogen/timestamp: \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/QScrollArea \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/QSlider \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/QStackedWidget \
+	B:/Qt/6.10.2/mingw_64/include/QtWidgets/QToolButton \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/QVBoxLayout \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/QWidget \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qabstractbutton.h \
@@ -349,6 +355,7 @@ FortniteOptimizer2026_autogen/timestamp: \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qtabbar.h \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qtabwidget.h \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qtextedit.h \
+	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qtoolbutton.h \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qtwidgets-config.h \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qtwidgetsexports.h \
 	B:/Qt/6.10.2/mingw_64/include/QtWidgets/qtwidgetsglobal.h \
@@ -489,6 +496,31 @@ FortniteOptimizer2026_autogen/timestamp: \
 	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6GuiTools/Qt6GuiToolsTargets-relwithdebinfo.cmake \
 	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6GuiTools/Qt6GuiToolsTargets.cmake \
 	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6GuiTools/Qt6GuiToolsVersionlessTargets.cmake \
+	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Network/Qt6NetworkAdditionalTargetInfo.cmake \
+	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Network/Qt6NetworkConfig.cmake \
+	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Network/Qt6NetworkConfigVersion.cmake \
+	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Network/Qt6NetworkConfigVersionImpl.cmake \
+	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Network/Qt6NetworkDependencies.cmake \
+	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Network/Qt6NetworkPlugins.cmake \
+	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Network/Qt6NetworkTargets-relwithdebinfo.cmake \
+	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Network/Qt6NetworkTargets.cmake \
+	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Network/Qt6NetworkVersionlessAliasTargets.cmake \
+	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Network/Qt6QNLMNIPluginAdditionalTargetInfo.cmake \
+	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Network/Qt6QNLMNIPluginConfig.cmake \
+	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Network/Qt6QNLMNIPluginTargets-relwithdebinfo.cmake \
+	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Network/Qt6QNLMNIPluginTargets.cmake \
+	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Network/Qt6QSchannelBackendPluginAdditionalTargetInfo.cmake \
+	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Network/Qt6QSchannelBackendPluginConfig.cmake \
+	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Network/Qt6QSchannelBackendPluginTargets-relwithdebinfo.cmake \
+	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Network/Qt6QSchannelBackendPluginTargets.cmake \
+	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Network/Qt6QTlsBackendCertOnlyPluginAdditionalTargetInfo.cmake \
+	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Network/Qt6QTlsBackendCertOnlyPluginConfig.cmake \
+	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Network/Qt6QTlsBackendCertOnlyPluginTargets-relwithdebinfo.cmake \
+	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Network/Qt6QTlsBackendCertOnlyPluginTargets.cmake \
+	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Network/Qt6QTlsBackendOpenSSLPluginAdditionalTargetInfo.cmake \
+	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Network/Qt6QTlsBackendOpenSSLPluginConfig.cmake \
+	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Network/Qt6QTlsBackendOpenSSLPluginTargets-relwithdebinfo.cmake \
+	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Network/Qt6QTlsBackendOpenSSLPluginTargets.cmake \
 	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Widgets/Qt6QModernWindowsStylePluginAdditionalTargetInfo.cmake \
 	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Widgets/Qt6QModernWindowsStylePluginConfig.cmake \
 	B:/Qt/6.10.2/mingw_64/lib/cmake/Qt6Widgets/Qt6QModernWindowsStylePluginTargets-relwithdebinfo.cmake \
