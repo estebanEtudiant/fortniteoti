@@ -4,7 +4,7 @@ const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, Butt
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('invite')
+        .setName('invites-top')
         .setDescription('Classement des invitations du serveur'),
 
     async execute(interaction) {
