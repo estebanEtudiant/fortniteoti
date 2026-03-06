@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  ChevronLeft, UserCheck, UserX, Mail, XCircle, Trash2, KeyRound,
+  ChevronLeft, UserCheck, UserX, Mail, XCircle, Trash2, KeyRound, Link2,
 } from 'lucide-react';
 import { api } from '../lib/api';
 import Loading from '../components/Loading';
@@ -28,6 +28,10 @@ export default function CustomerDetailPage({ id, navigate }) {
     plan: 'DAYS_30',
     customDays: '',
     maxActivations: '1',
+    sendEmail: true,
+  });
+  const [attachLicenseForm, setAttachLicenseForm] = useState({
+    licenseKey: '',
     sendEmail: true,
   });
 
@@ -104,6 +108,36 @@ export default function CustomerDetailPage({ id, navigate }) {
 
       setActionMsg(key ? `Licence ajoutee: ${key}${emailInfo}` : `Licence ajoutee avec succes${emailInfo}`);
       setLicenseForm(prev => ({ ...prev, customDays: '' }));
+      await load();
+      setTimeout(() => setActionMsg(''), 5000);
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setActionLoading('');
+    }
+  };
+
+  const attachExistingLicenseToCustomer = async (e) => {
+    e.preventDefault();
+    setActionLoading('attach-license');
+    setActionMsg('');
+
+    try {
+      const key = String(attachLicenseForm.licenseKey || '').trim().toUpperCase();
+      if (!key) {
+        alert('Veuillez renseigner une cle de licence');
+        return;
+      }
+
+      const res = await api.attachExistingCustomerLicense(id, {
+        licenseKey: key,
+        sendEmail: attachLicenseForm.sendEmail,
+      });
+
+      const emailInfo = res?.emailSent === false ? ' (email non envoye)' : '';
+      const alreadyInfo = res?.alreadyAssigned ? ' (deja rattachee)' : '';
+      setActionMsg(`Licence rattachee: ${key}${alreadyInfo}${emailInfo}`);
+      setAttachLicenseForm(prev => ({ ...prev, licenseKey: '' }));
       await load();
       setTimeout(() => setActionMsg(''), 5000);
     } catch (err) {
@@ -257,6 +291,46 @@ export default function CustomerDetailPage({ id, navigate }) {
               type="checkbox"
               checked={licenseForm.sendEmail}
               onChange={(e) => setLicenseForm(prev => ({ ...prev, sendEmail: e.target.checked }))}
+              disabled={!!actionLoading}
+            />
+            Envoyer la cle de licence par email
+          </label>
+        </form>
+
+        <form onSubmit={attachExistingLicenseToCustomer} className="mt-5 pt-5 border-t border-gray-800">
+          <h3 className="text-sm font-semibold text-gray-200 mb-3 flex items-center gap-2">
+            <Link2 className="w-4 h-4 text-cyan-400" /> Rattacher une licence existante
+          </h3>
+
+          <div className="grid lg:grid-cols-4 gap-3">
+            <div className="lg:col-span-3">
+              <label className="block text-xs text-gray-400 mb-1">Cle de licence</label>
+              <input
+                type="text"
+                value={attachLicenseForm.licenseKey}
+                onChange={(e) => setAttachLicenseForm(prev => ({ ...prev, licenseKey: e.target.value }))}
+                className="w-full font-mono"
+                placeholder="XXXX-XXXX-XXXX-XXXX"
+                disabled={!!actionLoading}
+              />
+            </div>
+
+            <div className="flex items-end">
+              <button
+                type="submit"
+                disabled={!!actionLoading}
+                className="w-full bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg text-sm font-medium"
+              >
+                {actionLoading === 'attach-license' ? 'Rattachement...' : 'Rattacher la licence'}
+              </button>
+            </div>
+          </div>
+
+          <label className="mt-3 inline-flex items-center gap-2 text-xs text-gray-300">
+            <input
+              type="checkbox"
+              checked={attachLicenseForm.sendEmail}
+              onChange={(e) => setAttachLicenseForm(prev => ({ ...prev, sendEmail: e.target.checked }))}
               disabled={!!actionLoading}
             />
             Envoyer la cle de licence par email

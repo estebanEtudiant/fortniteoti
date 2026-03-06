@@ -82,6 +82,7 @@ class ApiClient {
   sendPasswordReset(id) { return this.post(`/admin/customers/${id}/send-reset`); }
   revokeCustomerLicenses(id) { return this.post(`/admin/customers/${id}/revoke-licenses`); }
   addCustomerLicense(id, data) { return this.post(`/admin/customers/${id}/licenses`, data); }
+  attachExistingCustomerLicense(id, data) { return this.post(`/admin/customers/${id}/licenses/attach`, data); }
   // Ã¢â€â‚¬Ã¢â€â‚¬ Orders Ã¢â€â‚¬Ã¢â€â‚¬
   getOrders(params = {}) {
     const qs = new URLSearchParams(params).toString();
