@@ -3,6 +3,7 @@ B:/FortniteOptiEbook/FTN-main/client-cpp/build-mingw/FortniteOptimizer2026_autog
   B:/FortniteOptiEbook/FTN-main/client-cpp/include/AnimatedStackedWidget.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/QParallelAnimationGroup \
   B:/Qt/6.10.2/mingw_64/include/QtCore/QPropertyAnimation \
+  B:/Qt/6.10.2/mingw_64/include/QtCore/QTimer \
   B:/Qt/6.10.2/mingw_64/include/QtCore/q17memory.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/q20functional.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/q20iterator.h \
@@ -12,6 +13,7 @@ B:/FortniteOptiEbook/FTN-main/client-cpp/build-mingw/FortniteOptimizer2026_autog
   B:/Qt/6.10.2/mingw_64/include/QtCore/q23type_traits.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/q23utility.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qabstractanimation.h \
+  B:/Qt/6.10.2/mingw_64/include/QtCore/qabstracteventdispatcher.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qalgorithms.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qalloc.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qanimationgroup.h \
@@ -23,6 +25,7 @@ B:/FortniteOptiEbook/FTN-main/client-cpp/build-mingw/FortniteOptimizer2026_autog
   B:/Qt/6.10.2/mingw_64/include/QtCore/qatomic.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qatomic_cxx11.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qbasicatomic.h \
+  B:/Qt/6.10.2/mingw_64/include/QtCore/qbasictimer.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qbindingstorage.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qbytearray.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qbytearrayalgorithms.h \
@@ -42,9 +45,11 @@ B:/FortniteOptiEbook/FTN-main/client-cpp/build-mingw/FortniteOptimizer2026_autog
   B:/Qt/6.10.2/mingw_64/include/QtCore/qcontiguouscache.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qdarwinhelpers.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qdatastream.h \
+  B:/Qt/6.10.2/mingw_64/include/QtCore/qdeadlinetimer.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qdebug.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qeasingcurve.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qendian.h \
+  B:/Qt/6.10.2/mingw_64/include/QtCore/qeventloop.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qexceptionhandling.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qflags.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qfloat16.h \
@@ -119,6 +124,7 @@ B:/FortniteOptiEbook/FTN-main/client-cpp/build-mingw/FortniteOptimizer2026_autog
   B:/Qt/6.10.2/mingw_64/include/QtCore/qtenvironmentvariables.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qtextstream.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qtformat_impl.h \
+  B:/Qt/6.10.2/mingw_64/include/QtCore/qtimer.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qtmetamacros.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qtnoop.h \
   B:/Qt/6.10.2/mingw_64/include/QtCore/qtpreprocessorsupport.h \

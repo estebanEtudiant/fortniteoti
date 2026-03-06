@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import api from '../lib/api.js';
 import { navigate } from '../lib/router.js';
+import { useTranslation } from '../lib/i18n.jsx';
 
 export default function VerifyEmailSentPage({ customer }) {
+  const { t } = useTranslation();
   const [resendLoading, setResendLoading] = useState(false);
   const [msg, setMsg] = useState('');
 
@@ -11,7 +13,7 @@ export default function VerifyEmailSentPage({ customer }) {
     setMsg('');
     try {
       await api.resendVerification();
-      setMsg('Email renvoye ! Verifie ta boite mail (et tes spams).');
+      setMsg(t('verifySent.resentSuccess'));
     } catch (err) {
       setMsg(err.message);
     } finally {
@@ -25,23 +27,23 @@ export default function VerifyEmailSentPage({ customer }) {
         <div style={{ fontSize: '3rem', color: 'var(--accent)', marginBottom: '1rem' }}>
           <i className="fa-solid fa-envelope-circle-check"></i>
         </div>
-        <h2 className="auth-title">Verifie ton email !</h2>
+        <h2 className="auth-title">{t('verifySent.title')}</h2>
         <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: '1rem' }}>
-          Un lien de verification a ete envoye a{' '}
-          <strong style={{ color: '#fff' }}>{customer?.email || 'ton adresse email'}</strong>.
+          {t('verifySent.descBefore')}{' '}
+          <strong style={{ color: '#fff' }}>{customer?.email || t('verifySent.fallbackEmail')}</strong>.
         </p>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
-          Clique sur le lien dans l'email pour verifier ton compte et pouvoir acheter.<br/>
-          Pense a verifier tes spams.
+          {t('verifySent.descAction')}<br />
+          {t('verifySent.spamTip')}
         </p>
-        {msg && <div className={msg.includes('renvoye') ? 'form-success' : 'form-error'} style={{ marginBottom: '1rem' }}>{msg}</div>}
+        {msg && <div className={msg.includes('!') ? 'form-success' : 'form-error'} style={{ marginBottom: '1rem' }}>{msg}</div>}
         {customer && (
           <button className="btn-outline" style={{ marginBottom: '0.75rem', width: '100%' }} onClick={handleResend} disabled={resendLoading}>
-            {resendLoading ? 'Envoi...' : 'Renvoyer l\'email de verification'}
+            {resendLoading ? t('verifySent.resending') : t('verifySent.resendButton')}
           </button>
         )}
         <button className="auth-footer-link" onClick={() => navigate('/profile')}>
-          Aller a mon profil
+          {t('verifySent.goProfile')}
         </button>
       </div>
     </div>

@@ -9,7 +9,7 @@ export class MailService {
   private readonly logger = new Logger(MailService.name);
 
   constructor(private config: ConfigService) {
-    this.from = config.get<string>('mail.from', 'FortniteOpti <noreply@fortnite.opti>');
+    this.from = config.get<string>('mail.from', '404Tweaks <noreply@fortnite.opti>');
     this.transporter = nodemailer.createTransport({
       host: config.get<string>('mail.host', 'smtp.gmail.com'),
       port: config.get<number>('mail.port', 587),
@@ -33,7 +33,7 @@ export class MailService {
         <tr>
           <td style="background:#111;padding:32px 40px;border-bottom:1px solid #222;text-align:center;">
             <h1 style="margin:0;color:#00d4ff;font-size:22px;letter-spacing:2px;text-transform:uppercase;">
-              FORTNITE.OPTI
+              404Tweaks
             </h1>
           </td>
         </tr>
@@ -43,7 +43,7 @@ export class MailService {
               Verification de ton adresse email
             </h2>
             <p style="color:#aaa;margin:0 0 24px;line-height:1.7;font-size:15px;">
-              Merci de t'etre inscrit sur FortniteOpti ! Clique sur le bouton ci-dessous pour valider ton adresse email et acceder a l'achat.
+              Merci de t'etre inscrit sur 404Tweaks ! Clique sur le bouton ci-dessous pour valider ton adresse email et acceder a l'achat.
             </p>
             <p style="color:#aaa;margin:0 0 32px;line-height:1.7;font-size:15px;">
               Ce lien est valable <strong style="color:#fff;">24 heures</strong>.
@@ -66,7 +66,7 @@ export class MailService {
         <tr>
           <td style="padding:20px 40px;border-top:1px solid #222;text-align:center;">
             <p style="color:#444;margin:0;font-size:12px;">
-              &copy; 2026 FortniteOpti — Ce message est automatique, ne pas repondre.
+              &copy; 2026 404Tweaks — Ce message est automatique, ne pas repondre.
             </p>
           </td>
         </tr>
@@ -79,7 +79,7 @@ export class MailService {
     await this.transporter.sendMail({
       from: this.from,
       to: email,
-      subject: 'Verifiez votre adresse email — FortniteOpti',
+      subject: 'Verifiez votre adresse email — 404Tweaks',
       html,
     });
 
@@ -100,7 +100,7 @@ export class MailService {
         <tr>
           <td style="background:#111;padding:32px 40px;border-bottom:1px solid #222;text-align:center;">
             <h1 style="margin:0;color:#00d4ff;font-size:22px;letter-spacing:2px;text-transform:uppercase;">
-              FORTNITE.OPTI
+              404Tweaks
             </h1>
           </td>
         </tr>
@@ -137,7 +137,7 @@ export class MailService {
         <tr>
           <td style="padding:20px 40px;border-top:1px solid #222;text-align:center;">
             <p style="color:#444;margin:0;font-size:12px;">
-              &copy; 2026 FortniteOpti — Ce message est automatique, ne pas repondre.
+              &copy; 2026 404Tweaks — Ce message est automatique, ne pas repondre.
             </p>
           </td>
         </tr>
@@ -151,7 +151,7 @@ export class MailService {
     await this.transporter.sendMail({
       from: this.from,
       to: email,
-      subject: 'Reinitialisation de votre mot de passe — FortniteOpti',
+      subject: 'Reinitialisation de votre mot de passe — 404Tweaks',
       html,
     });
 
@@ -172,7 +172,7 @@ export class MailService {
         <tr>
           <td style="background:#111;padding:32px 40px;border-bottom:1px solid #222;text-align:center;">
             <h1 style="margin:0;color:#00d4ff;font-size:22px;letter-spacing:2px;text-transform:uppercase;">
-              FORTNITE.OPTI
+              404Tweaks
             </h1>
           </td>
         </tr>
@@ -184,7 +184,7 @@ export class MailService {
               Paiement confirme ! &#127881;
             </h2>
             <p style="color:#aaa;margin:0 0 28px;line-height:1.7;font-size:15px;">
-              Merci pour ton achat <strong style="color:#fff;">FortniteOpti — ${planName}</strong>.<br>
+              Merci pour ton achat <strong style="color:#fff;">404Tweaks — ${planName}</strong>.<br>
               Voici ta cle de licence personnelle. Conserve-la precieusement.
             </p>
 
@@ -207,7 +207,7 @@ export class MailService {
               <tr>
                 <td style="background:#161616;border:1px solid #222;border-radius:8px;padding:16px 20px;">
                   <p style="color:#aaa;font-size:11px;margin:0 0 12px;text-transform:uppercase;letter-spacing:0.08em;">Inclus avec ton achat</p>
-                  <p style="color:#ddd;margin:4px 0;font-size:14px;">&#10003;&nbsp; Guide PDF complet (100+ pages)</p>
+                  <p style="color:#ddd;margin:4px 0;font-size:14px;">&#10003;&nbsp; Plusieur macros</p>
                   <p style="color:#ddd;margin:4px 0;font-size:14px;">&#10003;&nbsp; Logiciel d'optimisation</p>
                   <p style="color:#ddd;margin:4px 0;font-size:14px;">&#10003;&nbsp; Acces Discord VIP prive</p>
                   <p style="color:#ddd;margin:4px 0;font-size:14px;">&#10003;&nbsp; Mises a jour gratuites</p>
@@ -238,7 +238,7 @@ export class MailService {
         <tr>
           <td style="padding:20px 40px;border-top:1px solid #222;text-align:center;">
             <p style="color:#444;margin:0;font-size:12px;">
-              &copy; 2026 FortniteOpti — Ce message est automatique, ne pas repondre.
+              &copy; 2026 404Tweaks — Ce message est automatique, ne pas repondre.
             </p>
           </td>
         </tr>
@@ -252,7 +252,7 @@ export class MailService {
     await this.transporter.sendMail({
       from: this.from,
       to: email,
-      subject: `Votre cle de licence FortniteOpti — ${planName}`,
+      subject: `Votre cle de licence 404Tweaks — ${planName}`,
       html,
     });
 

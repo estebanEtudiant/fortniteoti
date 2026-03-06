@@ -30,6 +30,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/FortniteOptimizer2026.dir/src/GuidePage.cpp.obj.d"
   "CMakeFiles/FortniteOptimizer2026.dir/src/HoverCard.cpp.obj"
   "CMakeFiles/FortniteOptimizer2026.dir/src/HoverCard.cpp.obj.d"
+  "CMakeFiles/FortniteOptimizer2026.dir/src/I18n.cpp.obj"
+  "CMakeFiles/FortniteOptimizer2026.dir/src/I18n.cpp.obj.d"
   "CMakeFiles/FortniteOptimizer2026.dir/src/InputSender.cpp.obj"
   "CMakeFiles/FortniteOptimizer2026.dir/src/InputSender.cpp.obj.d"
   "CMakeFiles/FortniteOptimizer2026.dir/src/KeyBindButton.cpp.obj"

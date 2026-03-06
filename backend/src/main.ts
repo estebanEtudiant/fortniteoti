@@ -53,7 +53,7 @@ async function bootstrap() {
   // ── Swagger (dev only) ──
   if (!isProduction) {
     const swaggerConfig = new DocumentBuilder()
-      .setTitle('FortniteOptimizer Licensing API')
+      .setTitle('404Tweaks Licensing API')
       .setVersion('1.0')
       .addBearerAuth()
       .build();

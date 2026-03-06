@@ -10,7 +10,7 @@ namespace updater {
 
 // ── Version of this build ──
 // Update this string each time you release a new .exe
-static const char* CURRENT_VERSION = "1.0.0";
+static const char* CURRENT_VERSION = "5.0.7";
 
 struct UpdateInfo {
     bool        available  = false;

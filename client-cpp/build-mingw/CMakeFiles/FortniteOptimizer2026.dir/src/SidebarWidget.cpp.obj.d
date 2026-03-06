@@ -1,8 +1,8 @@
 CMakeFiles/FortniteOptimizer2026.dir/src/SidebarWidget.cpp.obj: \
  B:\FortniteOptiEbook\FTN-main\client-cpp\src\SidebarWidget.cpp \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/SidebarWidget.h \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/QWidget \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/qwidget.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/QLabel \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qlabel.h \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qtwidgetsglobal.h \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qtguiglobal.h \
  B:/Qt/6.10.2/mingw_64/include/QtCore/qglobal.h \
@@ -156,6 +156,8 @@ CMakeFiles/FortniteOptimizer2026.dir/src/SidebarWidget.cpp.obj: \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qtguiexports.h \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qtwidgets-config.h \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qtwidgetsexports.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qframe.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qwidget.h \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qwindowdefs.h \
  B:/Qt/6.10.2/mingw_64/include/QtCore/qobjectdefs.h \
  B:/Qt/6.10.2/mingw_64/include/QtCore/qnamespace.h \
@@ -383,14 +385,18 @@ CMakeFiles/FortniteOptimizer2026.dir/src/SidebarWidget.cpp.obj: \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qsizepolicy.h \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qcursor.h \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qbitmap.h \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/QLabel \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/qlabel.h \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/qframe.h \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/qwidget.h \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qpicture.h \
  B:/Qt/6.10.2/mingw_64/include/QtCore/qiodevice.h \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qtextdocument.h \
  B:/Qt/6.10.2/mingw_64/include/QtCore/qurl.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/QPropertyAnimation \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qpropertyanimation.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qvariantanimation.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qabstractanimation.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qeasingcurve.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/QPushButton \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qpushbutton.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qabstractbutton.h \
  B:/Qt/6.10.2/mingw_64/include/QtCore/QTimer \
  B:/Qt/6.10.2/mingw_64/include/QtCore/qtimer.h \
  B:/Qt/6.10.2/mingw_64/include/QtCore/qbasictimer.h \
@@ -399,14 +405,8 @@ CMakeFiles/FortniteOptimizer2026.dir/src/SidebarWidget.cpp.obj: \
  B:/Qt/6.10.2/mingw_64/include/QtCore/qdeadlinetimer.h \
  B:/Qt/6.10.2/mingw_64/include/QtCore/QVector \
  B:/Qt/6.10.2/mingw_64/include/QtCore/qvector.h \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/QPushButton \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/qpushbutton.h \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/qabstractbutton.h \
- B:/Qt/6.10.2/mingw_64/include/QtCore/QPropertyAnimation \
- B:/Qt/6.10.2/mingw_64/include/QtCore/qpropertyanimation.h \
- B:/Qt/6.10.2/mingw_64/include/QtCore/qvariantanimation.h \
- B:/Qt/6.10.2/mingw_64/include/QtCore/qabstractanimation.h \
- B:/Qt/6.10.2/mingw_64/include/QtCore/qeasingcurve.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/QWidget \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qwidget.h \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/AppController.h \
  B:/Qt/6.10.2/mingw_64/include/QtCore/QObject \
  B:/Qt/6.10.2/mingw_64/include/QtCore/qobject.h \
@@ -421,22 +421,8 @@ CMakeFiles/FortniteOptimizer2026.dir/src/SidebarWidget.cpp.obj: \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/licensing.h \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/tweaks.h \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/updater.h \
+ B:/FortniteOptiEbook/FTN-main/client-cpp/include/I18n.h \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/Palette.h \
- B:/Qt/6.10.2/mingw_64/include/QtGui/QPainter \
- B:/Qt/6.10.2/mingw_64/include/QtGui/qpainter.h \
- B:/Qt/6.10.2/mingw_64/include/QtGui/qtextoption.h \
- B:/Qt/6.10.2/mingw_64/include/QtGui/qpen.h \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/QVBoxLayout \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/qboxlayout.h \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/qlayout.h \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/qlayoutitem.h \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/qboxlayout.h \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/qgridlayout.h \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/QHBoxLayout \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/QFrame \
- B:/Qt/6.10.2/mingw_64/include/QtWidgets/qframe.h \
- B:/Qt/6.10.2/mingw_64/include/QtCore/QEasingCurve \
- B:/Qt/6.10.2/mingw_64/include/QtCore/qeasingcurve.h \
  B:/Qt/6.10.2/mingw_64/include/QtGui/QEnterEvent \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qevent.h \
  B:/Qt/6.10.2/mingw_64/include/QtCore/qcoreevent.h \
@@ -463,4 +449,19 @@ CMakeFiles/FortniteOptimizer2026.dir/src/SidebarWidget.cpp.obj: \
  B:/Qt/6.10.2/mingw_64/include/QtCore/qcoreapplication_platform.h \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qinputmethod.h \
  B:/Qt/6.10.2/mingw_64/include/QtCore/qlocale.h \
- B:/Qt/6.10.2/mingw_64/include/QtGui/qguiapplication_platform.h
+ B:/Qt/6.10.2/mingw_64/include/QtGui/qguiapplication_platform.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/QEasingCurve \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qeasingcurve.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/QFrame \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qframe.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/QHBoxLayout \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qboxlayout.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qlayout.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qlayoutitem.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qboxlayout.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/qgridlayout.h \
+ B:/Qt/6.10.2/mingw_64/include/QtGui/QPainter \
+ B:/Qt/6.10.2/mingw_64/include/QtGui/qpainter.h \
+ B:/Qt/6.10.2/mingw_64/include/QtGui/qtextoption.h \
+ B:/Qt/6.10.2/mingw_64/include/QtGui/qpen.h \
+ B:/Qt/6.10.2/mingw_64/include/QtWidgets/QVBoxLayout

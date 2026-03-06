@@ -64,6 +64,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "B:/FortniteOptiEbook/FTN-main/client-cpp/src/GlowButton.cpp" "CMakeFiles/FortniteOptimizer2026.dir/src/GlowButton.cpp.obj" "gcc" "CMakeFiles/FortniteOptimizer2026.dir/src/GlowButton.cpp.obj.d"
   "B:/FortniteOptiEbook/FTN-main/client-cpp/src/GuidePage.cpp" "CMakeFiles/FortniteOptimizer2026.dir/src/GuidePage.cpp.obj" "gcc" "CMakeFiles/FortniteOptimizer2026.dir/src/GuidePage.cpp.obj.d"
   "B:/FortniteOptiEbook/FTN-main/client-cpp/src/HoverCard.cpp" "CMakeFiles/FortniteOptimizer2026.dir/src/HoverCard.cpp.obj" "gcc" "CMakeFiles/FortniteOptimizer2026.dir/src/HoverCard.cpp.obj.d"
+  "B:/FortniteOptiEbook/FTN-main/client-cpp/src/I18n.cpp" "CMakeFiles/FortniteOptimizer2026.dir/src/I18n.cpp.obj" "gcc" "CMakeFiles/FortniteOptimizer2026.dir/src/I18n.cpp.obj.d"
   "B:/FortniteOptiEbook/FTN-main/client-cpp/src/InputSender.cpp" "CMakeFiles/FortniteOptimizer2026.dir/src/InputSender.cpp.obj" "gcc" "CMakeFiles/FortniteOptimizer2026.dir/src/InputSender.cpp.obj.d"
   "B:/FortniteOptiEbook/FTN-main/client-cpp/src/KeyBindButton.cpp" "CMakeFiles/FortniteOptimizer2026.dir/src/KeyBindButton.cpp.obj" "gcc" "CMakeFiles/FortniteOptimizer2026.dir/src/KeyBindButton.cpp.obj.d"
   "B:/FortniteOptiEbook/FTN-main/client-cpp/src/LicenseScreen.cpp" "CMakeFiles/FortniteOptimizer2026.dir/src/LicenseScreen.cpp.obj" "gcc" "CMakeFiles/FortniteOptimizer2026.dir/src/LicenseScreen.cpp.obj.d"

@@ -379,6 +379,12 @@
 			null
 		],
 		[
+			"B:/FortniteOptiEbook/FTN-main/client-cpp/include/I18n.h",
+			"Mu",
+			"6YEA5652QU/moc_I18n.cpp",
+			null
+		],
+		[
 			"B:/FortniteOptiEbook/FTN-main/client-cpp/include/InputSender.h",
 			"Mu",
 			"6YEA5652QU/moc_InputSender.cpp",
@@ -701,6 +707,7 @@
 			"Mu",
 			null
 		],
+		[ "B:/FortniteOptiEbook/FTN-main/client-cpp/src/I18n.cpp", "Mu", null ],
 		[
 			"B:/FortniteOptiEbook/FTN-main/client-cpp/src/InputSender.cpp",
 			"Mu",

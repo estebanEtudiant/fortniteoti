@@ -1,4 +1,4 @@
-// ── API Client for Dashboard ──
+// Ã¢â€â‚¬Ã¢â€â‚¬ API Client for Dashboard Ã¢â€â‚¬Ã¢â€â‚¬
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 class ApiClient {
@@ -29,7 +29,7 @@ class ApiClient {
     if (res.status === 401 && this.token) {
       this.clearToken();
       window.location.hash = '/';
-      throw new Error('Session expirée, veuillez vous reconnecter');
+      throw new Error('Session expirÃƒÂ©e, veuillez vous reconnecter');
     }
 
     const data = res.status === 204 ? null : await res.json();
@@ -45,18 +45,18 @@ class ApiClient {
   put(path, body) { return this.request('PUT', path, body); }
   del(path) { return this.request('DELETE', path); }
 
-  // ── Auth ──
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Auth Ã¢â€â‚¬Ã¢â€â‚¬
   login(username, password) { return this.post('/admin/login', { username, password }); }
   changeAdminPassword(currentPassword, newPassword) {
     return this.put('/admin/password', { currentPassword, newPassword });
   }
 
-  // ── Stats & Analytics ──
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Stats & Analytics Ã¢â€â‚¬Ã¢â€â‚¬
   getStats() { return this.get('/admin/stats'); }
   getAnalytics() { return this.get('/admin/analytics'); }
   getActivity() { return this.get('/admin/activity'); }
 
-  // ── Licenses ──
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Licenses Ã¢â€â‚¬Ã¢â€â‚¬
   getLicenses(params = {}) {
     const qs = new URLSearchParams(params).toString();
     return this.get(`/admin/licenses${qs ? '?' + qs : ''}`);
@@ -70,7 +70,7 @@ class ApiClient {
   extendLicense(id, days) { return this.put(`/admin/licenses/${id}/extend`, { days }); }
   deleteLicense(id) { return this.del(`/admin/licenses/${id}`); }
 
-  // ── Customers ──
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Customers Ã¢â€â‚¬Ã¢â€â‚¬
   getCustomers(params = {}) {
     const qs = new URLSearchParams(params).toString();
     return this.get(`/admin/customers${qs ? '?' + qs : ''}`);
@@ -81,20 +81,20 @@ class ApiClient {
   deleteCustomer(id) { return this.del(`/admin/customers/${id}`); }
   sendPasswordReset(id) { return this.post(`/admin/customers/${id}/send-reset`); }
   revokeCustomerLicenses(id) { return this.post(`/admin/customers/${id}/revoke-licenses`); }
-
-  // ── Orders ──
+  addCustomerLicense(id, data) { return this.post(`/admin/customers/${id}/licenses`, data); }
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Orders Ã¢â€â‚¬Ã¢â€â‚¬
   getOrders(params = {}) {
     const qs = new URLSearchParams(params).toString();
     return this.get(`/admin/orders${qs ? '?' + qs : ''}`);
   }
 
-  // ── Plans ──
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Plans Ã¢â€â‚¬Ã¢â€â‚¬
   getPlans() { return this.get('/admin/plans'); }
   createPlan(data) { return this.post('/admin/plans', data); }
   updatePlan(plan, data) { return this.put(`/admin/plans/${plan}`, data); }
   deletePlan(plan) { return this.del(`/admin/plans/${plan}`); }
 
-  // ── Settings ──
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Settings Ã¢â€â‚¬Ã¢â€â‚¬
   getSettings() { return this.get('/admin/settings'); }
   updateSettings(data) { return this.put('/admin/settings', data); }
   uploadImage(file) {
@@ -105,25 +105,25 @@ class ApiClient {
       headers: { Authorization: `Bearer ${localStorage.getItem('admin_token')}` },
       body: form,
     }).then(async r => {
-      if (!r.ok) throw new Error((await r.json()).message || 'Upload échoué');
+      if (!r.ok) throw new Error((await r.json()).message || 'Upload ÃƒÂ©chouÃƒÂ©');
       return r.json();
     });
   }
 
-  // ── Blocked IPs ──
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Blocked IPs Ã¢â€â‚¬Ã¢â€â‚¬
   getBlockedIps(params = {}) {
     const qs = new URLSearchParams(params).toString();
     return this.get(`/admin/blocked-ips${qs ? '?' + qs : ''}`);
   }
   unblockIp(id) { return this.del(`/admin/blocked-ips/${id}`); }
 
-  // ── Logs ──
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Logs Ã¢â€â‚¬Ã¢â€â‚¬
   getLogs(params = {}) {
     const qs = new URLSearchParams(params).toString();
     return this.get(`/admin/logs${qs ? '?' + qs : ''}`);
   }
 
-  // ── Software ──
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Software Ã¢â€â‚¬Ã¢â€â‚¬
   getSoftwareStats() { return this.get('/software/stats'); }
   getSoftwareVersions() { return this.get('/software/versions'); }
   deleteSoftwareVersion(version) { return this.del(`/software/${encodeURIComponent(version)}`); }
@@ -136,7 +136,7 @@ class ApiClient {
     if (res.status === 401 && this.token) {
       this.clearToken();
       window.location.hash = '/';
-      throw new Error('Session expirée, veuillez vous reconnecter');
+      throw new Error('Session expirÃƒÂ©e, veuillez vous reconnecter');
     }
     const data = res.status === 204 ? null : await res.json();
     if (!res.ok) {

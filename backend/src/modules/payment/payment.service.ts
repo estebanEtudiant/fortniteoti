@@ -1,4 +1,3 @@
-// ── payment.service.ts ──
 import { Injectable, Logger, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
@@ -9,16 +8,156 @@ import { RedisService } from '../../database/redis.service';
 import { MailService } from '../customer/mail.service';
 import { BotNotifyService } from '../bot/bot-notify.service';
 
-const PLANS_CONFIG_KEY  = 'admin:plans_config';
-const PROMO_CODES_KEY   = 'admin:promo_codes';
-const DEFAULT_PLANS: Record<string, { name: string; price: number; active: boolean; stripePrice: string }> = {
-  DAYS_1:   { name: '1 Jour',   price: 199,  active: false, stripePrice: '' },
-  DAYS_7:   { name: '7 Jours',  price: 499,  active: false, stripePrice: '' },
-  DAYS_14:  { name: '14 Jours', price: 799,  active: false, stripePrice: '' },
-  DAYS_30:  { name: '30 Jours', price: 999,  active: true,  stripePrice: '' },
-  DAYS_90:  { name: '90 Jours', price: 1999, active: true,  stripePrice: '' },
-  DAYS_365: { name: '1 An',     price: 2499, active: true,  stripePrice: '' },
-  LIFETIME: { name: 'Lifetime', price: 2999, active: true,  stripePrice: '' },
+const PLANS_CONFIG_KEY = 'admin:plans_config';
+const PROMO_CODES_KEY = 'admin:promo_codes';
+const LICENSE_PLAN_VALUES = new Set<LicensePlan>(Object.values(LicensePlan));
+
+interface PlanConfig {
+  name: string;
+  price: number;
+  originalPrice: number;
+  active: boolean;
+  popular: boolean;
+  stripePrice: string;
+  description: string;
+  licensePlan: LicensePlan;
+  customDays: number | null;
+  sortOrder: number;
+  badgeText: string;
+  ctaText: string;
+  icon: string;
+  themeColor: string;
+  features: string[];
+  tags: string[];
+}
+
+const DEFAULT_PLANS: Record<string, PlanConfig> = {
+  DAYS_1: {
+    name: '1 Jour',
+    price: 199,
+    originalPrice: 0,
+    active: false,
+    popular: false,
+    stripePrice: '',
+    description: '',
+    licensePlan: LicensePlan.DAYS_1,
+    customDays: null,
+    sortOrder: 10,
+    badgeText: '',
+    ctaText: '',
+    icon: 'fa-calendar-day',
+    themeColor: '#06b6d4',
+    features: [],
+    tags: [],
+  },
+  DAYS_7: {
+    name: '7 Jours',
+    price: 499,
+    originalPrice: 0,
+    active: false,
+    popular: false,
+    stripePrice: '',
+    description: '',
+    licensePlan: LicensePlan.DAYS_7,
+    customDays: null,
+    sortOrder: 20,
+    badgeText: '',
+    ctaText: '',
+    icon: 'fa-calendar-week',
+    themeColor: '#8b5cf6',
+    features: [],
+    tags: [],
+  },
+  DAYS_14: {
+    name: '14 Jours',
+    price: 799,
+    originalPrice: 0,
+    active: false,
+    popular: false,
+    stripePrice: '',
+    description: '',
+    licensePlan: LicensePlan.DAYS_14,
+    customDays: null,
+    sortOrder: 30,
+    badgeText: '',
+    ctaText: '',
+    icon: 'fa-calendar-week',
+    themeColor: '#10b981',
+    features: [],
+    tags: [],
+  },
+  DAYS_30: {
+    name: '30 Jours',
+    price: 999,
+    originalPrice: 0,
+    active: true,
+    popular: false,
+    stripePrice: '',
+    description: 'Ideal pour tester et progresser rapidement sur Fortnite.',
+    licensePlan: LicensePlan.DAYS_30,
+    customDays: null,
+    sortOrder: 40,
+    badgeText: '',
+    ctaText: '',
+    icon: 'fa-calendar',
+    themeColor: '#06b6d4',
+    features: [],
+    tags: [],
+  },
+  DAYS_90: {
+    name: '90 Jours',
+    price: 1999,
+    originalPrice: 0,
+    active: true,
+    popular: true,
+    stripePrice: '',
+    description: 'Le choix des joueurs reguliers. 3 mois d optimisation complete.',
+    licensePlan: LicensePlan.DAYS_90,
+    customDays: null,
+    sortOrder: 50,
+    badgeText: 'Populaire',
+    ctaText: '',
+    icon: 'fa-calendar-days',
+    themeColor: '#8b5cf6',
+    features: [],
+    tags: [],
+  },
+  DAYS_365: {
+    name: '1 An',
+    price: 2499,
+    originalPrice: 0,
+    active: true,
+    popular: false,
+    stripePrice: '',
+    description: 'Acces 1 an a toutes les mises a jour et nouveaux tweaks.',
+    licensePlan: LicensePlan.DAYS_365,
+    customDays: null,
+    sortOrder: 60,
+    badgeText: '',
+    ctaText: '',
+    icon: 'fa-star',
+    themeColor: '#10b981',
+    features: [],
+    tags: [],
+  },
+  LIFETIME: {
+    name: 'Lifetime',
+    price: 2999,
+    originalPrice: 0,
+    active: true,
+    popular: false,
+    stripePrice: '',
+    description: 'Acces illimite a vie - le meilleur rapport qualite/prix.',
+    licensePlan: LicensePlan.LIFETIME,
+    customDays: null,
+    sortOrder: 70,
+    badgeText: '',
+    ctaText: '',
+    icon: 'fa-infinity',
+    themeColor: '#f59e0b',
+    features: [],
+    tags: [],
+  },
 };
 
 @Injectable()
@@ -26,7 +165,6 @@ export class PaymentService {
   private stripe: Stripe;
   private webhookSecret: string;
   private readonly logger = new Logger(PaymentService.name);
-
   private storefrontUrl: string;
 
   constructor(
@@ -46,7 +184,6 @@ export class PaymentService {
     }
   }
 
-  // ── Public: active clients this month ──
   async getPublicStats(): Promise<{ activeThisMonth: number }> {
     const start = new Date();
     start.setDate(1);
@@ -57,28 +194,151 @@ export class PaymentService {
     return { activeThisMonth: count };
   }
 
-  // ── Public: validate a promo code ──
   async validatePromoCode(code: string): Promise<{ type: 'percent' | 'fixed'; amount: number; label: string }> {
     if (!code) throw new BadRequestException('Code requis');
     const raw = await this.redis.get(PROMO_CODES_KEY);
     const codes: Record<string, any> = raw ? JSON.parse(raw) : {};
     const promo = codes[code.toUpperCase()];
-    if (!promo || !promo.active) throw new BadRequestException('Code promo invalide ou expiré');
-    if (promo.maxUses > 0 && promo.uses >= promo.maxUses) throw new BadRequestException('Code promo épuisé');
-    const label = promo.type === 'percent' ? `-${promo.amount}%` : `-${(promo.amount / 100).toFixed(2)} €`;
+    if (!promo || !promo.active) throw new BadRequestException('Code promo invalide ou expire');
+    if (promo.maxUses > 0 && promo.uses >= promo.maxUses) throw new BadRequestException('Code promo epuise');
+    const label = promo.type === 'percent' ? `-${promo.amount}%` : `-${(promo.amount / 100).toFixed(2)} EUR`;
     return { type: promo.type, amount: promo.amount, label };
   }
 
-  // ── Public: returns active plans with prices ──
-  async getActivePlans() {
-    let plans = { ...DEFAULT_PLANS };
+  private sanitizePlanKey(rawKey: string): string {
+    return String(rawKey || '')
+      .trim()
+      .toUpperCase()
+      .replace(/[^A-Z0-9_]/g, '_')
+      .replace(/_+/g, '_');
+  }
+
+  private normalizeTextList(input: unknown): string[] {
+    if (!Array.isArray(input)) return [];
+    return [...new Set(input
+      .map(item => String(item ?? '').trim())
+      .filter(Boolean)
+      .slice(0, 20))];
+  }
+
+  private defaultLicensePlanFromKey(key: string): LicensePlan {
+    const normalized = this.sanitizePlanKey(key);
+    const map: Record<string, LicensePlan> = {
+      DAYS_1: LicensePlan.DAYS_1,
+      DAYS_7: LicensePlan.DAYS_7,
+      DAYS_14: LicensePlan.DAYS_14,
+      DAYS_30: LicensePlan.DAYS_30,
+      DAYS_90: LicensePlan.DAYS_90,
+      DAYS_365: LicensePlan.DAYS_365,
+      LIFETIME: LicensePlan.LIFETIME,
+      '1D': LicensePlan.DAYS_1,
+      '7D': LicensePlan.DAYS_7,
+      '14D': LicensePlan.DAYS_14,
+      '30D': LicensePlan.DAYS_30,
+      '90D': LicensePlan.DAYS_90,
+      '365D': LicensePlan.DAYS_365,
+    };
+    return map[normalized] || LicensePlan.DAYS_30;
+  }
+
+  private normalizePlanConfig(key: string, input: Partial<PlanConfig> = {}, fallback: Partial<PlanConfig> = {}): PlanConfig {
+    const source = { ...fallback, ...input } as Record<string, any>;
+    const requestedLicensePlan = String(source.licensePlan || '').toUpperCase() as LicensePlan;
+    const fallbackLicensePlan = fallback.licensePlan || this.defaultLicensePlanFromKey(key);
+    const parsedCustomDays = Number(source.customDays);
+
+    return {
+      name: String(source.name || key).trim() || key,
+      price: Math.max(0, Math.round(Number(source.price) || 0)),
+      originalPrice: Math.max(0, Math.round(Number(source.originalPrice) || 0)),
+      active: source.active !== undefined ? Boolean(source.active) : true,
+      popular: source.popular !== undefined ? Boolean(source.popular) : false,
+      stripePrice: String(source.stripePrice || '').trim(),
+      description: String(source.description || '').trim(),
+      licensePlan: LICENSE_PLAN_VALUES.has(requestedLicensePlan) ? requestedLicensePlan : fallbackLicensePlan,
+      customDays: Number.isFinite(parsedCustomDays) && parsedCustomDays >= 1 && parsedCustomDays <= 3650
+        ? Math.floor(parsedCustomDays)
+        : null,
+      sortOrder: Math.max(0, Math.floor(Number(source.sortOrder) || fallback.sortOrder || 999)),
+      badgeText: String(source.badgeText || '').trim(),
+      ctaText: String(source.ctaText || '').trim(),
+      icon: String(source.icon || '').trim() || 'fa-key',
+      themeColor: String(source.themeColor || '').trim() || '#06b6d4',
+      features: this.normalizeTextList(source.features),
+      tags: this.normalizeTextList(source.tags),
+    };
+  }
+
+  private sortPlans(plans: Record<string, PlanConfig>): Record<string, PlanConfig> {
+    return Object.fromEntries(
+      Object.entries(plans).sort((a, b) => {
+        const byOrder = a[1].sortOrder - b[1].sortOrder;
+        if (byOrder !== 0) return byOrder;
+        return a[0].localeCompare(b[0]);
+      }),
+    );
+  }
+
+  private async loadPlans(): Promise<Record<string, PlanConfig>> {
     const raw = await this.redis.get(PLANS_CONFIG_KEY);
+    let source: Record<string, any> = DEFAULT_PLANS;
+
     if (raw) {
-      try { plans = { ...plans, ...JSON.parse(raw) }; } catch { /* use defaults */ }
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && Object.keys(parsed).length > 0) {
+          source = parsed;
+        }
+      } catch {
+        source = DEFAULT_PLANS;
+      }
     }
+
+    const normalized: Record<string, PlanConfig> = {};
+    let autoSort = 10;
+
+    for (const [rawKey, value] of Object.entries(source)) {
+      const key = this.sanitizePlanKey(rawKey);
+      if (!key) continue;
+
+      const fallback = DEFAULT_PLANS[key] || {
+        sortOrder: autoSort,
+        licensePlan: this.defaultLicensePlanFromKey(key),
+      };
+      normalized[key] = this.normalizePlanConfig(key, value as Partial<PlanConfig>, fallback);
+      autoSort += 10;
+    }
+
+    return Object.keys(normalized).length > 0
+      ? this.sortPlans(normalized)
+      : this.sortPlans(DEFAULT_PLANS);
+  }
+
+  private resolveLicenseFromPlan(planKey: string, planCfg?: PlanConfig): { plan: LicensePlan; customDays?: number } {
+    const plan = planCfg?.licensePlan || this.defaultLicensePlanFromKey(planKey);
+    const customDays = planCfg?.customDays && planCfg.customDays > 0 ? planCfg.customDays : undefined;
+    return customDays ? { plan, customDays } : { plan };
+  }
+
+  async getActivePlans() {
+    const plans = await this.loadPlans();
     return Object.entries(plans)
       .filter(([, cfg]) => cfg.active)
-      .map(([key, cfg]) => ({ key, name: cfg.name, price: cfg.price, originalPrice: (cfg as any).originalPrice || 0, popular: (cfg as any).popular || false }));
+      .map(([key, cfg]) => ({
+        key,
+        name: cfg.name,
+        price: cfg.price,
+        originalPrice: cfg.originalPrice,
+        popular: cfg.popular,
+        description: cfg.description,
+        badgeText: cfg.badgeText,
+        ctaText: cfg.ctaText,
+        icon: cfg.icon,
+        themeColor: cfg.themeColor,
+        features: cfg.features,
+        tags: cfg.tags,
+        sortOrder: cfg.sortOrder,
+      }));
   }
 
   async confirmPayment(customerId: string, sessionId: string): Promise<{ licenseKey: string }> {
@@ -86,7 +346,6 @@ export class PaymentService {
       throw new BadRequestException('Stripe not configured');
     }
 
-    // Retrieve and verify the Stripe session
     let session: Stripe.Checkout.Session;
     try {
       session = await this.stripe.checkout.sessions.retrieve(sessionId);
@@ -98,7 +357,6 @@ export class PaymentService {
       throw new BadRequestException('Le paiement n\'est pas encore complete');
     }
 
-    // Find the order linked to this session for this customer
     const order = await this.prisma.order.findFirst({
       where: { customerId, stripeSessionId: sessionId },
     });
@@ -107,7 +365,6 @@ export class PaymentService {
       throw new NotFoundException('Commande introuvable');
     }
 
-    // Idempotency: payment already confirmed, return existing key
     if (order.status === OrderStatus.COMPLETED && order.licenseId) {
       const existing = await this.prisma.license.findUnique({ where: { id: order.licenseId } });
       if (existing) {
@@ -115,25 +372,18 @@ export class PaymentService {
       }
     }
 
-    // Get customer email for the license
     const customer = await this.prisma.customer.findUnique({ where: { id: customerId } });
 
-    // Load plan config for the name
-    const planKey = session.metadata?.plan || 'LIFETIME';
-    let allPlans = { ...DEFAULT_PLANS };
-    const rawPlans = await this.redis.get(PLANS_CONFIG_KEY);
-    if (rawPlans) {
-      try { allPlans = { ...allPlans, ...JSON.parse(rawPlans) }; } catch { /* use defaults */ }
-    }
+    const allPlans = await this.loadPlans();
+    const planKey = this.sanitizePlanKey(session.metadata?.plan || 'LIFETIME');
+    const planCfg = allPlans[planKey];
+    const resolvedLicense = this.resolveLicenseFromPlan(planKey, planCfg);
 
-    // Create a fresh unactivated license key
-    const plan = this.mapPlan(planKey);
     const license = await this.licenseService.create({
-      plan,
+      ...resolvedLicense,
       email: customer?.email,
     });
 
-    // Link Stripe customer ID to the license
     if (session.customer) {
       await this.prisma.license.update({
         where: { id: license.id },
@@ -141,7 +391,6 @@ export class PaymentService {
       });
     }
 
-    // Mark order as completed and link the license
     await this.prisma.order.update({
       where: { id: order.id },
       data: {
@@ -152,9 +401,8 @@ export class PaymentService {
       },
     });
 
-    // Send license key by email
     if (customer?.email) {
-      const planName = allPlans[planKey]?.name || planKey;
+      const planName = planCfg?.name || planKey;
       const profileUrl = `${this.storefrontUrl}/profile`;
       try {
         await this.mail.sendLicenseKey(customer.email, license.licenseKey, planName, profileUrl);
@@ -164,8 +412,6 @@ export class PaymentService {
     }
 
     this.logger.log(`License assigned on confirm: ${license.licenseKey} for customer ${customerId}`);
-
-    // Notification Discord bot (non bloquant)
     this.botNotify.notifySale(planKey, order.amount).catch(() => {});
 
     return { licenseKey: license.licenseKey };
@@ -176,15 +422,11 @@ export class PaymentService {
       throw new BadRequestException('Stripe not configured');
     }
 
-    // Load plan config from Redis (or defaults)
-    let allPlans = { ...DEFAULT_PLANS };
-    const raw = await this.redis.get(PLANS_CONFIG_KEY);
-    if (raw) {
-      try { allPlans = { ...allPlans, ...JSON.parse(raw) }; } catch { /* use defaults */ }
-    }
+    const allPlans = await this.loadPlans();
+    const selectedPlanKey = this.sanitizePlanKey(planKey || 'LIFETIME');
+    const planCfg = allPlans[selectedPlanKey];
 
-    const planCfg = allPlans[planKey];
-    if (!planCfg) throw new BadRequestException(`Plan "${planKey}" introuvable`);
+    if (!planCfg) throw new BadRequestException(`Plan "${selectedPlanKey}" introuvable`);
     if (!planCfg.active) throw new BadRequestException(`Le plan "${planCfg.name}" n'est pas disponible`);
 
     const customer = await this.prisma.customer.findUnique({ where: { id: customerId } });
@@ -193,20 +435,18 @@ export class PaymentService {
       throw new ForbiddenException('Veuillez verifier votre adresse email avant d\'effectuer un achat');
     }
 
-    const prismaplan = this.mapPlan(planKey);
+    const resolvedLicense = this.resolveLicenseFromPlan(selectedPlanKey, planCfg);
 
-    // Create a pending order
     const order = await this.prisma.order.create({
       data: {
         customerId,
-        plan: prismaplan,
+        plan: resolvedLicense.plan,
         amount: planCfg.price,
         currency: 'EUR',
         status: OrderStatus.PENDING,
       },
     });
 
-    // Resolve promo code → Stripe coupon ID if provided
     let stripeCouponId: string | undefined;
     if (promoCode) {
       try {
@@ -215,32 +455,37 @@ export class PaymentService {
         const promo = codes[promoCode.toUpperCase()];
         if (promo?.active && promo.stripeId) {
           stripeCouponId = promo.stripeId;
-          // Increment usage counter
           promo.uses = (promo.uses || 0) + 1;
           codes[promoCode.toUpperCase()] = promo;
           await this.redis.set(PROMO_CODES_KEY, JSON.stringify(codes));
         }
-      } catch { /* ignore promo errors */ }
+      } catch {
+        // ignore promo errors
+      }
     }
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode: 'payment',
       payment_method_types: ['card'],
       customer_email: customer.email,
-      line_items: [
-        {
-          price_data: {
-            currency: 'eur',
-            product_data: {
-              name: `404 Tweaks — ${planCfg.name}`,
-              description: '98 optimisations Fortnite, Discord VIP, mises à jour incluses',
+      line_items: planCfg.stripePrice
+        ? [{ price: planCfg.stripePrice, quantity: 1 }]
+        : [{
+            price_data: {
+              currency: 'eur',
+              product_data: {
+                name: `404 Tweaks - ${planCfg.name}`,
+                description: planCfg.description || '98 optimisations Fortnite, Discord VIP, mises a jour incluses',
+              },
+              unit_amount: planCfg.price,
             },
-            unit_amount: planCfg.price,
-          },
-          quantity: 1,
-        },
-      ],
-      metadata: { plan: planKey, customerId, orderId: order.id },
+            quantity: 1,
+          }],
+      metadata: {
+        plan: selectedPlanKey,
+        customerId,
+        orderId: order.id,
+      },
       success_url: `${this.storefrontUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${this.storefrontUrl}/payment`,
     };
@@ -291,23 +536,18 @@ export class PaymentService {
 
   private async handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
     const email = session.customer_email || session.customer_details?.email;
-    const planId = session.metadata?.plan || 'DAYS_30';
+    const planKey = this.sanitizePlanKey(session.metadata?.plan || 'DAYS_30');
     const orderId = session.metadata?.orderId;
 
-    let allPlans = { ...DEFAULT_PLANS };
-    const rawPlans = await this.redis.get(PLANS_CONFIG_KEY);
-    if (rawPlans) {
-      try { allPlans = { ...allPlans, ...JSON.parse(rawPlans) }; } catch { /* use defaults */ }
-    }
-
-    const plan = this.mapPlan(planId);
+    const allPlans = await this.loadPlans();
+    const planCfg = allPlans[planKey];
+    const resolvedLicense = this.resolveLicenseFromPlan(planKey, planCfg);
 
     const license = await this.licenseService.create({
-      plan,
+      ...resolvedLicense,
       email: email || undefined,
     });
 
-    // Link Stripe IDs
     await this.prisma.license.update({
       where: { id: license.id },
       data: {
@@ -316,7 +556,6 @@ export class PaymentService {
       },
     });
 
-    // Complete the pending order and link the license
     if (orderId) {
       await this.prisma.order.update({
         where: { id: orderId },
@@ -331,13 +570,11 @@ export class PaymentService {
 
     this.logger.log(`License created via Stripe: ${license.licenseKey} for ${email}`);
 
-    // Notification Discord bot (non bloquant)
     const amount = typeof session.amount_total === 'number' ? session.amount_total : 0;
-    this.botNotify.notifySale(planId, amount).catch(() => {});
+    this.botNotify.notifySale(planKey, amount).catch(() => {});
 
-    // Send license key by email
     if (email) {
-      const planName = allPlans[planId]?.name || planId;
+      const planName = planCfg?.name || planKey;
       const profileUrl = `${this.storefrontUrl}/profile`;
       try {
         await this.mail.sendLicenseKey(email, license.licenseKey, planName, profileUrl);
@@ -373,25 +610,5 @@ export class PaymentService {
       });
       this.logger.warn(`License suspended: ${license.licenseKey} (payment failed)`);
     }
-  }
-
-  private mapPlan(planId: string): LicensePlan {
-    const map: Record<string, LicensePlan> = {
-      'DAYS_1':   LicensePlan.DAYS_1,
-      'DAYS_7':   LicensePlan.DAYS_7,
-      'DAYS_14':  LicensePlan.DAYS_14,
-      'DAYS_30':  LicensePlan.DAYS_30,
-      'DAYS_90':  LicensePlan.DAYS_90,
-      'DAYS_365': LicensePlan.DAYS_365,
-      'LIFETIME': LicensePlan.LIFETIME,
-      '1d':       LicensePlan.DAYS_1,
-      '7d':       LicensePlan.DAYS_7,
-      '14d':      LicensePlan.DAYS_14,
-      '30d':      LicensePlan.DAYS_30,
-      '90d':      LicensePlan.DAYS_90,
-      '365d':     LicensePlan.DAYS_365,
-      'lifetime': LicensePlan.LIFETIME,
-    };
-    return map[planId] || LicensePlan.DAYS_30;
   }
 }

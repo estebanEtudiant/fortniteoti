@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { navigate } from '../lib/router.js';
+import { useTranslation } from '../lib/i18n.jsx';
 
 export default function RegisterPage({ onRegister }) {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -14,11 +16,11 @@ export default function RegisterPage({ onRegister }) {
     setError('');
 
     if (password !== confirmPassword) {
-      setError('Les mots de passe ne correspondent pas');
+      setError(t('register.error.passwordsMismatch'));
       return;
     }
     if (password.length < 8) {
-      setError('Le mot de passe doit contenir au moins 8 caracteres');
+      setError(t('register.error.passwordLength'));
       return;
     }
 
@@ -36,66 +38,66 @@ export default function RegisterPage({ onRegister }) {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h2 className="auth-title">Creer un Compte</h2>
-        <p className="auth-subtitle">Rejoignez la communaute 404 Tweaks</p>
+        <h2 className="auth-title">{t('register.title')}</h2>
+        <p className="auth-subtitle">{t('register.subtitle')}</p>
         {error && <div className="form-error">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label">Email</label>
+            <label className="form-label">{t('register.emailLabel')}</label>
             <input
               type="email"
               className="form-input"
-              placeholder="votre@email.com"
+              placeholder={t('register.emailPlaceholder')}
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
             />
           </div>
           <div className="form-group">
-            <label className="form-label">Nom d'utilisateur</label>
+            <label className="form-label">{t('register.usernameLabel')}</label>
             <input
               type="text"
               className="form-input"
               placeholder="PlayerOne"
               value={username}
-              onChange={e => setUsername(e.target.value)}
+              onChange={(e) => setUsername(e.target.value)}
               required
               autoComplete="username"
             />
           </div>
           <div className="form-group">
-            <label className="form-label">Mot de passe</label>
+            <label className="form-label">{t('register.passwordLabel')}</label>
             <input
               type="password"
               className="form-input"
-              placeholder="8 caracteres minimum"
+              placeholder={t('register.passwordPlaceholder')}
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
               required
               autoComplete="new-password"
             />
           </div>
           <div className="form-group">
-            <label className="form-label">Confirmer le mot de passe</label>
+            <label className="form-label">{t('register.confirmPasswordLabel')}</label>
             <input
               type="password"
               className="form-input"
-              placeholder="Confirmez votre mot de passe"
+              placeholder={t('register.confirmPasswordPlaceholder')}
               value={confirmPassword}
-              onChange={e => setConfirmPassword(e.target.value)}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               required
               autoComplete="new-password"
             />
           </div>
           <button type="submit" className="auth-btn" disabled={loading}>
-            {loading ? 'Creation...' : 'Creer Mon Compte'}
+            {loading ? t('register.loading') : t('register.button')}
           </button>
         </form>
         <div className="auth-footer">
-          Deja un compte ?{' '}
+          {t('register.hasAccount')}{' '}
           <button className="auth-footer-link" onClick={() => navigate('/login')}>
-            Se connecter
+            {t('register.signIn')}
           </button>
         </div>
       </div>

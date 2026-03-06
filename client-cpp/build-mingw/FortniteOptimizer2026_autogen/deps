@@ -17,6 +17,7 @@ FortniteOptimizer2026_autogen/timestamp: \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/GlowButton.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/GuidePage.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/HoverCard.h \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/include/I18n.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/InputSender.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/KeyBindButton.h \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/include/LicenseScreen.h \
@@ -59,6 +60,7 @@ FortniteOptimizer2026_autogen/timestamp: \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/GlowButton.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/GuidePage.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/HoverCard.cpp \
+	B:/FortniteOptiEbook/FTN-main/client-cpp/src/I18n.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/InputSender.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/KeyBindButton.cpp \
 	B:/FortniteOptiEbook/FTN-main/client-cpp/src/LicenseScreen.cpp \

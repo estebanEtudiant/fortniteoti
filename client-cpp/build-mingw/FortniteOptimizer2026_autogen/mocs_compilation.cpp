@@ -12,6 +12,7 @@
 #include "6YEA5652QU/moc_GlowButton.cpp"
 #include "6YEA5652QU/moc_GuidePage.cpp"
 #include "6YEA5652QU/moc_HoverCard.cpp"
+#include "6YEA5652QU/moc_I18n.cpp"
 #include "6YEA5652QU/moc_KeyBindButton.cpp"
 #include "6YEA5652QU/moc_LicenseScreen.cpp"
 #include "6YEA5652QU/moc_LogsPage.cpp"

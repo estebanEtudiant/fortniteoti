@@ -490,6 +490,30 @@ src/HoverCard.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/HoverCard.cpp.s
 .PHONY : src/HoverCard.cpp.s
 
+src/I18n.obj: src/I18n.cpp.obj
+.PHONY : src/I18n.obj
+
+# target to build an object file
+src/I18n.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/I18n.cpp.obj
+.PHONY : src/I18n.cpp.obj
+
+src/I18n.i: src/I18n.cpp.i
+.PHONY : src/I18n.i
+
+# target to preprocess a source file
+src/I18n.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/I18n.cpp.i
+.PHONY : src/I18n.cpp.i
+
+src/I18n.s: src/I18n.cpp.s
+.PHONY : src/I18n.s
+
+# target to generate assembly for a file
+src/I18n.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\FortniteOptimizer2026.dir\build.make CMakeFiles/FortniteOptimizer2026.dir/src/I18n.cpp.s
+.PHONY : src/I18n.cpp.s
+
 src/InputSender.obj: src/InputSender.cpp.obj
 .PHONY : src/InputSender.obj
 
@@ -1223,6 +1247,9 @@ help:
 	@echo ... src/HoverCard.obj
 	@echo ... src/HoverCard.i
 	@echo ... src/HoverCard.s
+	@echo ... src/I18n.obj
+	@echo ... src/I18n.i
+	@echo ... src/I18n.s
 	@echo ... src/InputSender.obj
 	@echo ... src/InputSender.i
 	@echo ... src/InputSender.s

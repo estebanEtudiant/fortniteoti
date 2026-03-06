@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { I18nProvider } from './lib/i18n.jsx';
+import React, { useEffect, useState } from 'react';
+import { I18nProvider, useTranslation } from './lib/i18n.jsx';
 import { useRoute } from './lib/router.js';
 import { useAuth } from './hooks/useAuth.js';
 import { usePublicSettings } from './hooks/usePublicSettings.js';
@@ -8,52 +8,58 @@ import { useScrollAnimations } from './hooks/useScrollAnimations.js';
 import { usePageTitle } from './hooks/usePageTitle.js';
 import { useExitIntent } from './hooks/useExitIntent.js';
 import { api } from './lib/api.js';
-import Header from './components/Header.jsx';
-import Footer from './components/Footer.jsx';
 import AnnouncementBanner from './components/AnnouncementBanner.jsx';
 import ExitIntentPopup from './components/ExitIntentPopup.jsx';
-import MaintenancePage from './pages/MaintenancePage.jsx';
+import Footer from './components/Footer.jsx';
+import Header from './components/Header.jsx';
+import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx';
 import HomePage from './pages/HomePage.jsx';
 import HowItWorksPage from './pages/HowItWorksPage.jsx';
+import LegalPage from './pages/LegalPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
-import RegisterPage from './pages/RegisterPage.jsx';
-import ProfilePage from './pages/ProfilePage.jsx';
+import MaintenancePage from './pages/MaintenancePage.jsx';
+import PaymentCancelPage from './pages/PaymentCancelPage.jsx';
 import PaymentPage from './pages/PaymentPage.jsx';
 import PaymentSuccessPage from './pages/PaymentSuccessPage.jsx';
-import PaymentCancelPage from './pages/PaymentCancelPage.jsx';
-import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx';
-import ResetPasswordPage from './pages/ResetPasswordPage.jsx';
-import VerifyEmailSentPage from './pages/VerifyEmailSentPage.jsx';
-import VerifyEmailPage from './pages/VerifyEmailPage.jsx';
-import LegalPage from './pages/LegalPage.jsx';
 import PrivacyPage from './pages/PrivacyPage.jsx';
+import ProfilePage from './pages/ProfilePage.jsx';
+import RegisterPage from './pages/RegisterPage.jsx';
+import ResetPasswordPage from './pages/ResetPasswordPage.jsx';
 import StatusPage from './pages/StatusPage.jsx';
+import VerifyEmailPage from './pages/VerifyEmailPage.jsx';
+import VerifyEmailSentPage from './pages/VerifyEmailSentPage.jsx';
 
-export default function App() {
+function AppContent() {
   const route = useRoute();
   const { customer, loading, login, register, logout, refresh } = useAuth();
   const publicSettings = usePublicSettings();
   const scrollProgress = useScrollProgress();
   const [announcementDismissed, setAnnouncementDismissed] = useState(false);
   const [showExitIntent, setShowExitIntent] = useState(false);
-  const showBanner = !!(publicSettings.announcement && !(publicSettings.announcementDismissible !== false && announcementDismissed));
+  const { t } = useTranslation();
 
-  // Ajoute/retire la classe CSS sur body pour décaler le contenu sous la bannière
+  const showBanner = !!(
+    publicSettings.announcement
+    && !(publicSettings.announcementDismissible !== false && announcementDismissed)
+  );
+
   useEffect(() => {
     document.body.classList.toggle('has-announcement', showBanner);
     return () => document.body.classList.remove('has-announcement');
   }, [showBanner]);
+
   useScrollAnimations(route);
   usePageTitle(route);
   useExitIntent(() => setShowExitIntent(true));
 
-  // Track storefront pageviews for admin activity dashboard
-  useEffect(() => { api.trackPageview(route); }, [route]);
+  useEffect(() => {
+    api.trackPageview(route);
+  }, [route]);
 
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem' }}>Chargement...</p>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem' }}>{t('common.loading')}</p>
       </div>
     );
   }
@@ -111,42 +117,44 @@ export default function App() {
   }
 
   return (
+    <>
+      <div className="scroll-progress" style={{ width: `${scrollProgress}%` }} />
+
+      <Header customer={customer} onLogout={logout} discordUrl={publicSettings.discordInviteUrl} />
+
+      {showBanner && (
+        <AnnouncementBanner
+          message={publicSettings.announcement}
+          color={publicSettings.announcementColor}
+          icon={publicSettings.announcementIcon}
+          label={publicSettings.announcementLabel}
+          dismissible={publicSettings.announcementDismissible}
+          link={publicSettings.announcementLink}
+          linkText={publicSettings.announcementLinkText}
+          onDismiss={() => setAnnouncementDismissed(true)}
+        />
+      )}
+
+      <div key={route} className="page-transition">
+        {page}
+      </div>
+
+      <Footer discordUrl={publicSettings.discordInviteUrl} />
+
+      {showExitIntent && (
+        <ExitIntentPopup
+          onClose={() => setShowExitIntent(false)}
+          discordUrl={publicSettings.discordInviteUrl}
+        />
+      )}
+    </>
+  );
+}
+
+export default function App() {
+  return (
     <I18nProvider>
-      <>
-        {/* Scroll progress bar */}
-        <div className="scroll-progress" style={{ width: `${scrollProgress}%` }} />
-
-        <Header customer={customer} onLogout={logout} discordUrl={publicSettings.discordInviteUrl} />
-
-        {/* Announcement banner */}
-        {showBanner && (
-          <AnnouncementBanner
-            message={publicSettings.announcement}
-            color={publicSettings.announcementColor}
-            icon={publicSettings.announcementIcon}
-            label={publicSettings.announcementLabel}
-            dismissible={publicSettings.announcementDismissible}
-            link={publicSettings.announcementLink}
-            linkText={publicSettings.announcementLinkText}
-            onDismiss={() => setAnnouncementDismissed(true)}
-          />
-        )}
-
-        {/* Page with fade-in transition */}
-        <div key={route} className="page-transition">
-          {page}
-        </div>
-
-        <Footer discordUrl={publicSettings.discordInviteUrl} />
-
-        {/* Exit-intent popup */}
-        {showExitIntent && (
-          <ExitIntentPopup
-            onClose={() => setShowExitIntent(false)}
-            discordUrl={publicSettings.discordInviteUrl}
-          />
-        )}
-      </>
+      <AppContent />
     </I18nProvider>
   );
 }

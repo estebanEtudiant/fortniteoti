@@ -385,6 +385,12 @@ CMakeFiles/FortniteOptimizer2026.dir/src/MainWindow.cpp.obj: \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qcursor.h \
  B:/Qt/6.10.2/mingw_64/include/QtGui/qbitmap.h \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qtabwidget.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/QTimer \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qtimer.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qbasictimer.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qabstracteventdispatcher.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qeventloop.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qdeadlinetimer.h \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/AnimatedStackedWidget.h \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/QStackedWidget \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qstackedwidget.h \
@@ -434,12 +440,6 @@ CMakeFiles/FortniteOptimizer2026.dir/src/MainWindow.cpp.obj: \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/QPushButton \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qpushbutton.h \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qabstractbutton.h \
- B:/Qt/6.10.2/mingw_64/include/QtCore/QTimer \
- B:/Qt/6.10.2/mingw_64/include/QtCore/qtimer.h \
- B:/Qt/6.10.2/mingw_64/include/QtCore/qbasictimer.h \
- B:/Qt/6.10.2/mingw_64/include/QtCore/qabstracteventdispatcher.h \
- B:/Qt/6.10.2/mingw_64/include/QtCore/qeventloop.h \
- B:/Qt/6.10.2/mingw_64/include/QtCore/qdeadlinetimer.h \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/QFrame \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qframe.h \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/SidebarWidget.h \
@@ -542,6 +542,7 @@ CMakeFiles/FortniteOptimizer2026.dir/src/MainWindow.cpp.obj: \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/VirtualKeyboard.h \
  B:/Qt/6.10.2/mingw_64/include/QtCore/QRect \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/Palette.h \
+ B:/FortniteOptiEbook/FTN-main/client-cpp/include/I18n.h \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/QApplication \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qapplication.h \
  B:/Qt/6.10.2/mingw_64/include/QtGui/QScreen \

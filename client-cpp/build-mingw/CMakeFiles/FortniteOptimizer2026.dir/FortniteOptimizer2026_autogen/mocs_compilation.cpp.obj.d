@@ -502,6 +502,8 @@ CMakeFiles/FortniteOptimizer2026.dir/FortniteOptimizer2026_autogen/mocs_compilat
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/GuidePage.h \
  B:\FortniteOptiEbook\FTN-main\client-cpp\build-mingw\FortniteOptimizer2026_autogen\6YEA5652QU/moc_HoverCard.cpp \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/HoverCard.h \
+ B:\FortniteOptiEbook\FTN-main\client-cpp\build-mingw\FortniteOptimizer2026_autogen\6YEA5652QU/moc_I18n.cpp \
+ B:/FortniteOptiEbook/FTN-main/client-cpp/include/I18n.h \
  B:\FortniteOptiEbook\FTN-main\client-cpp\build-mingw\FortniteOptimizer2026_autogen\6YEA5652QU/moc_KeyBindButton.cpp \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/KeyBindButton.h \
  B:/Qt/6.10.2/mingw_64/include/QtGui/QKeyEvent \

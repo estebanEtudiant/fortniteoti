@@ -1,25 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import api from '../lib/api.js';
 import { navigate } from '../lib/router.js';
 import { useDownloadUrl } from '../hooks/useDownloadUrl.js';
+import { useTranslation } from '../lib/i18n.jsx';
 
 function CopyLicenseKey({ licKey }) {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
+
   const handle = () => {
     navigator.clipboard.writeText(licKey).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
   };
+
   return (
-    <button className="copy-key-btn" onClick={handle} title="Copier la clé">
+    <button className="copy-key-btn" onClick={handle} title={t('profile.copyKey')}>
       <i className={`fa-solid ${copied ? 'fa-check' : 'fa-copy'}`}></i>
-      {copied ? ' Copié !' : ' Copier'}
+      {copied ? ` ${t('profile.copied')}` : ` ${t('profile.copy')}`}
     </button>
   );
 }
 
-export default function ProfilePage({ customer, onLogout, onRefresh }) {
+export default function ProfilePage({ onLogout, onRefresh }) {
+  const { t, lang } = useTranslation();
   const downloadUrl = useDownloadUrl();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -40,7 +45,7 @@ export default function ProfilePage({ customer, onLogout, onRefresh }) {
 
   useEffect(() => {
     api.getProfile()
-      .then(data => {
+      .then((data) => {
         setProfile(data);
         setDisplayName(data.displayName || '');
         setDiscordId(data.discordId || '');
@@ -55,7 +60,7 @@ export default function ProfilePage({ customer, onLogout, onRefresh }) {
     setError('');
     try {
       await api.updateProfile({ displayName, discordId: discordId || undefined });
-      setMessage('Profil mis a jour');
+      setMessage(t('profile.updated'));
       setEditMode(false);
       const data = await api.getProfile();
       setProfile(data);
@@ -72,7 +77,7 @@ export default function ProfilePage({ customer, onLogout, onRefresh }) {
     setResendMsg('');
     try {
       await api.resendVerification();
-      setResendMsg('Email de verification renvoye !');
+      setResendMsg(t('profile.verifyResent'));
     } catch (err) {
       setResendMsg(err.message);
     } finally {
@@ -86,7 +91,7 @@ export default function ProfilePage({ customer, onLogout, onRefresh }) {
     setPwError('');
     try {
       await api.changePassword(currentPw, newPw);
-      setPwMessage('Mot de passe modifie avec succes');
+      setPwMessage(t('profile.passwordUpdated'));
       setCurrentPw('');
       setNewPw('');
       setShowPassword(false);
@@ -98,7 +103,7 @@ export default function ProfilePage({ customer, onLogout, onRefresh }) {
   if (loading) {
     return (
       <div className="auth-page">
-        <p style={{ color: 'var(--text-secondary)' }}>Chargement...</p>
+        <p style={{ color: 'var(--text-secondary)' }}>{t('common.loading')}</p>
       </div>
     );
   }
@@ -115,7 +120,7 @@ export default function ProfilePage({ customer, onLogout, onRefresh }) {
           <h1 className="profile-name">{profile.displayName || profile.username}</h1>
           <p className="profile-email">{profile.email}</p>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-            Membre depuis {new Date(profile.createdAt).toLocaleDateString('fr-FR')}
+            {t('profile.memberSince')} {new Date(profile.createdAt).toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-US')}
           </p>
         </div>
       </div>
@@ -123,20 +128,20 @@ export default function ProfilePage({ customer, onLogout, onRefresh }) {
       <div className="profile-section">
         <h3 className="profile-section-title">
           <i className="fa-solid fa-key" style={{ marginRight: 8 }}></i>
-          Mes Licences
+          {t('profile.licensesTitle')}
         </h3>
         {profile.licenses && profile.licenses.length > 0 ? (
-          profile.licenses.map(lic => (
+          profile.licenses.map((lic) => (
             <div className="license-card" key={lic.id}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
                 <div className="license-key" style={{ flex: 1, minWidth: 0, marginBottom: 0 }}>{lic.licenseKey}</div>
                 <CopyLicenseKey licKey={lic.licenseKey} />
               </div>
               <div className="license-meta">
-                <span>Plan: <strong>{lic.plan}</strong></span>
+                <span>{t('profile.plan')}: <strong>{lic.plan}</strong></span>
                 <span className={`license-status ${lic.status.toLowerCase()}`}>{lic.status}</span>
                 {lic.expiresAt && (
-                  <span>Expire: {new Date(lic.expiresAt).toLocaleDateString('fr-FR')}</span>
+                  <span>{t('profile.expires')}: {new Date(lic.expiresAt).toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-US')}</span>
                 )}
               </div>
               {lic.status === 'ACTIVE' && (
@@ -148,7 +153,7 @@ export default function ProfilePage({ customer, onLogout, onRefresh }) {
                   style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.75rem', padding: '0.6rem 1.2rem', fontSize: '0.9rem', textDecoration: 'none' }}
                 >
                   <i className="fa-solid fa-download"></i>
-                  Telecharger le logiciel
+                  {t('profile.downloadSoftware')}
                 </a>
               )}
             </div>
@@ -156,10 +161,10 @@ export default function ProfilePage({ customer, onLogout, onRefresh }) {
         ) : (
           <div className="empty-state">
             <i className="fa-solid fa-box-open" style={{ fontSize: '2rem', marginBottom: '1rem', display: 'block', color: '#333' }}></i>
-            Aucune licence pour le moment.
-            <br/>
+            {t('profile.noLicense')}
+            <br />
             <button className="cta-primary" style={{ marginTop: '1rem', padding: '0.8rem 2rem', fontSize: '1rem' }} onClick={() => navigate('/payment')}>
-              Acheter le Logiciel
+              {t('profile.buySoftware')}
             </button>
           </div>
         )}
@@ -168,15 +173,15 @@ export default function ProfilePage({ customer, onLogout, onRefresh }) {
       <div className="profile-section">
         <h3 className="profile-section-title">
           <i className="fa-solid fa-receipt" style={{ marginRight: 8 }}></i>
-          Historique des Commandes
+          {t('profile.ordersTitle')}
         </h3>
         {profile.orders && profile.orders.length > 0 ? (
-          profile.orders.map(order => (
+          profile.orders.map((order) => (
             <div className="order-row" key={order.id}>
               <div>
                 <span className="order-plan">{order.plan}</span>
                 <span style={{ color: 'var(--text-secondary)', marginLeft: '1rem', fontSize: '0.9rem' }}>
-                  {new Date(order.createdAt).toLocaleDateString('fr-FR')}
+                  {new Date(order.createdAt).toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-US')}
                 </span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -188,14 +193,14 @@ export default function ProfilePage({ customer, onLogout, onRefresh }) {
             </div>
           ))
         ) : (
-          <div className="empty-state">Aucune commande pour le moment.</div>
+          <div className="empty-state">{t('profile.noOrders')}</div>
         )}
       </div>
 
       <div className="profile-section">
         <h3 className="profile-section-title">
           <i className="fa-solid fa-pen" style={{ marginRight: 8 }}></i>
-          Informations du Profil
+          {t('profile.infoTitle')}
         </h3>
         {message && <div className="form-success">{message}</div>}
         {error && <div className="form-error">{error}</div>}
@@ -203,30 +208,30 @@ export default function ProfilePage({ customer, onLogout, onRefresh }) {
           <>
             <div className="profile-form-row">
               <div className="form-group">
-                <label className="form-label">Nom d'affichage</label>
-                <input type="text" className="form-input" value={displayName} onChange={e => setDisplayName(e.target.value)} />
+                <label className="form-label">{t('profile.displayName')}</label>
+                <input type="text" className="form-input" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
               </div>
               <div className="form-group">
                 <label className="form-label">Discord ID</label>
-                <input type="text" className="form-input" placeholder="Username#1234" value={discordId} onChange={e => setDiscordId(e.target.value)} />
+                <input type="text" className="form-input" placeholder="Username#1234" value={discordId} onChange={(e) => setDiscordId(e.target.value)} />
               </div>
             </div>
             <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
               <button className="cta-primary" style={{ padding: '0.8rem 2rem', fontSize: '0.95rem' }} onClick={handleSave} disabled={saving}>
-                {saving ? 'Sauvegarde...' : 'Sauvegarder'}
+                {saving ? t('profile.saving') : t('profile.save')}
               </button>
-              <button className="btn-outline" onClick={() => setEditMode(false)}>Annuler</button>
+              <button className="btn-outline" onClick={() => setEditMode(false)}>{t('common.cancel')}</button>
             </div>
           </>
         ) : (
           <>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
               <div>
-                <span className="form-label">Nom d'utilisateur</span>
+                <span className="form-label">{t('profile.username')}</span>
                 <p>{profile.username}</p>
               </div>
               <div>
-                <span className="form-label">Nom d'affichage</span>
+                <span className="form-label">{t('profile.displayName')}</span>
                 <p>{profile.displayName || '-'}</p>
               </div>
               <div>
@@ -235,19 +240,19 @@ export default function ProfilePage({ customer, onLogout, onRefresh }) {
                   {profile.email}
                   {profile.emailVerified ? (
                     <span style={{ fontSize: '0.75rem', color: '#48bb78', background: 'rgba(72,187,120,0.15)', borderRadius: 4, padding: '1px 6px' }}>
-                      <i className="fa-solid fa-circle-check" style={{ marginRight: 4 }}></i>Verifie
+                      <i className="fa-solid fa-circle-check" style={{ marginRight: 4 }}></i>{t('profile.verified')}
                     </span>
                   ) : (
                     <span style={{ fontSize: '0.75rem', color: '#f6ad55', background: 'rgba(246,173,85,0.15)', borderRadius: 4, padding: '1px 6px' }}>
-                      <i className="fa-solid fa-circle-exclamation" style={{ marginRight: 4 }}></i>Non verifie
+                      <i className="fa-solid fa-circle-exclamation" style={{ marginRight: 4 }}></i>{t('profile.notVerified')}
                     </span>
                   )}
                 </p>
                 {!profile.emailVerified && (
                   <div style={{ marginTop: '0.4rem' }}>
-                    {resendMsg && <p style={{ fontSize: '0.8rem', color: resendMsg.includes('renvoye') ? '#48bb78' : '#e53e3e', marginBottom: '0.3rem' }}>{resendMsg}</p>}
+                    {resendMsg && <p style={{ fontSize: '0.8rem', color: resendMsg.includes('!') ? '#48bb78' : '#e53e3e', marginBottom: '0.3rem' }}>{resendMsg}</p>}
                     <button className="btn-outline" style={{ fontSize: '0.8rem', padding: '0.35rem 0.75rem' }} onClick={handleResendVerification} disabled={resendLoading}>
-                      {resendLoading ? 'Envoi...' : 'Renvoyer l\'email de verification'}
+                      {resendLoading ? t('verifySent.resending') : t('profile.resendVerification')}
                     </button>
                   </div>
                 )}
@@ -257,7 +262,7 @@ export default function ProfilePage({ customer, onLogout, onRefresh }) {
                 <p>{profile.discordId || '-'}</p>
               </div>
             </div>
-            <button className="btn-outline" onClick={() => setEditMode(true)}>Modifier le profil</button>
+            <button className="btn-outline" onClick={() => setEditMode(true)}>{t('profile.editProfile')}</button>
           </>
         )}
       </div>
@@ -265,7 +270,7 @@ export default function ProfilePage({ customer, onLogout, onRefresh }) {
       <div className="profile-section">
         <h3 className="profile-section-title">
           <i className="fa-solid fa-lock" style={{ marginRight: 8 }}></i>
-          Securite
+          {t('profile.security')}
         </h3>
         {pwMessage && <div className="form-success">{pwMessage}</div>}
         {pwError && <div className="form-error">{pwError}</div>}
@@ -273,29 +278,29 @@ export default function ProfilePage({ customer, onLogout, onRefresh }) {
           <form onSubmit={handlePasswordChange}>
             <div className="profile-form-row">
               <div className="form-group">
-                <label className="form-label">Mot de passe actuel</label>
-                <input type="password" className="form-input" value={currentPw} onChange={e => setCurrentPw(e.target.value)} required autoComplete="current-password" />
+                <label className="form-label">{t('profile.currentPassword')}</label>
+                <input type="password" className="form-input" value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} required autoComplete="current-password" />
               </div>
               <div className="form-group">
-                <label className="form-label">Nouveau mot de passe</label>
-                <input type="password" className="form-input" value={newPw} onChange={e => setNewPw(e.target.value)} required minLength={8} autoComplete="new-password" />
+                <label className="form-label">{t('profile.newPassword')}</label>
+                <input type="password" className="form-input" value={newPw} onChange={(e) => setNewPw(e.target.value)} required minLength={8} autoComplete="new-password" />
               </div>
             </div>
             <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
               <button type="submit" className="cta-primary" style={{ padding: '0.8rem 2rem', fontSize: '0.95rem' }}>
-                Changer le mot de passe
+                {t('profile.changePassword')}
               </button>
-              <button type="button" className="btn-outline" onClick={() => setShowPassword(false)}>Annuler</button>
+              <button type="button" className="btn-outline" onClick={() => setShowPassword(false)}>{t('common.cancel')}</button>
             </div>
           </form>
         ) : (
-          <button className="btn-outline" onClick={() => setShowPassword(true)}>Changer le mot de passe</button>
+          <button className="btn-outline" onClick={() => setShowPassword(true)}>{t('profile.changePassword')}</button>
         )}
 
         <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-subtle)' }}>
           <button className="btn-danger" onClick={onLogout}>
             <i className="fa-solid fa-right-from-bracket" style={{ marginRight: 8 }}></i>
-            Se deconnecter
+            {t('profile.logout')}
           </button>
         </div>
       </div>

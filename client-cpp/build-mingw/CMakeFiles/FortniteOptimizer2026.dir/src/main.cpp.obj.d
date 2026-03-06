@@ -583,6 +583,8 @@ CMakeFiles/FortniteOptimizer2026.dir/src/main.cpp.obj: \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/QMainWindow \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qmainwindow.h \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qtabwidget.h \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/QTimer \
+ B:/Qt/6.10.2/mingw_64/include/QtCore/qtimer.h \
  B:/FortniteOptiEbook/FTN-main/client-cpp/include/AnimatedStackedWidget.h \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/QStackedWidget \
  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qstackedwidget.h \

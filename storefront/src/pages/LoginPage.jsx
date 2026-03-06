@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { navigate } from '../lib/router.js';
+import { useTranslation } from '../lib/i18n.jsx';
 
 export default function LoginPage({ onLogin }) {
+  const { t } = useTranslation();
+
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -22,52 +25,61 @@ export default function LoginPage({ onLogin }) {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <h2 className="auth-title">Connexion</h2>
-        <p className="auth-subtitle">Accedez a votre espace client</p>
-        {error && <div className="form-error">{error}</div>}
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label className="form-label">Email ou nom d'utilisateur</label>
-            <input
-              type="text"
-              className="form-input"
-              placeholder="votre@email.com"
-              value={login}
-              onChange={e => setLogin(e.target.value)}
-              required
-              autoComplete="username"
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Mot de passe</label>
-            <input
-              type="password"
-              className="form-input"
-              placeholder="Votre mot de passe"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-              autoComplete="current-password"
-            />
-          </div>
-          <button type="submit" className="auth-btn" disabled={loading}>
-            {loading ? 'Connexion...' : 'Se Connecter'}
-          </button>
-        </form>
-        <div className="auth-footer" style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+      <div className="auth-page">
+        <div className="auth-card">
+          <h2 className="auth-title">{t('login.title')}</h2>
+          <p className="auth-subtitle">{t('login.subtitle')}</p>
+
+          {error && <div className="form-error">{error}</div>}
+
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label className="form-label">{t('login.emailLabel')}</label>
+              <input
+                  type="text"
+                  className="form-input"
+                  placeholder={t('login.emailPlaceholder')}
+                  value={login}
+                  onChange={e => setLogin(e.target.value)}
+                  required
+                  autoComplete="username"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">{t('login.passwordLabel')}</label>
+              <input
+                  type="password"
+                  className="form-input"
+                  placeholder={t('login.passwordPlaceholder')}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+                  autoComplete="current-password"
+              />
+            </div>
+
+            <button type="submit" className="auth-btn" disabled={loading}>
+              {loading ? t('login.loading') : t('login.button')}
+            </button>
+          </form>
+
+          <div
+              className="auth-footer"
+              style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}
+          >
           <span>
-            Pas encore de compte ?{' '}
+            {t('login.noAccount')}{' '}
             <button className="auth-footer-link" onClick={() => navigate('/register')}>
-              Creer un compte
+              {t('login.createAccount')}
             </button>
           </span>
-          <button className="auth-footer-link" onClick={() => navigate('/forgot-password')}>
-            Mot de passe oublie ?
-          </button>
+
+            <button className="auth-footer-link" onClick={() => navigate('/forgot-password')}>
+              {t('login.forgotPassword')}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
   );
 }

@@ -9,8 +9,23 @@ import ReviewsCarousel from '../components/ReviewsCarousel.jsx';
 import BeforeAfterSlider from '../components/BeforeAfterSlider.jsx';
 
 const planIcons = { DAYS_30: 'fa-calendar', DAYS_90: 'fa-calendar-days', DAYS_365: 'fa-star', LIFETIME: 'fa-infinity' };
+const DEFAULT_PLAN_FEATURE_KEYS = ['pricing.feat1', 'pricing.feat2', 'pricing.feat3', 'pricing.feat4', 'pricing.feat5'];
+const DEFAULT_PLAN_TAGS = ['Double Edit', 'Drag Edit', 'Shotgun Pullout', 'Auto Build', 'Pick Up', 'Single Edit', 'Instant Build', 'Item Pullout', 'Wall Retake', 'Prefire'];
 
-const MACROS = ['Double Edit','Drag Edit','Shotgun Pullout','Auto Build','Pick Up','Single Edit','Instant Build','Item Pullout','Wall Retake','Prefire'];
+const normalizeTextList = (value) => {
+  if (!Array.isArray(value)) return [];
+  return [...new Set(value.map(v => String(v || '').trim()).filter(Boolean))];
+};
+
+const resolvePlanIcon = (plan) => {
+  const raw = String(plan?.icon || '').trim();
+  if (!raw) return planIcons[plan.key] || 'fa-key';
+  if (raw.includes('fa-')) {
+    const token = raw.split(/\s+/).filter((part) => part.startsWith('fa-')).pop();
+    return token || (planIcons[plan.key] || 'fa-key');
+  }
+  return raw;
+};
 
 function SoftwareCarousel({ images, onZoom }) {
   const [idx, setIdx] = useState(0);
@@ -65,7 +80,10 @@ export default function HomePage({ customer, screenshotUrl, screenshotUrls }) {
   }, [lightbox]);
 
   useEffect(() => {
-    api.getPlans().then(setPlans).catch(() => {});
+    api.getPlans().then((data) => {
+      const sorted = [...(Array.isArray(data) ? data : [])].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+      setPlans(sorted);
+    }).catch(() => {});
     api.getReviews().then(data => { if (Array.isArray(data) && data.length > 0) setReviews(data); }).catch(() => {});
     api.getPublicStats().then(data => { if (data?.activeThisMonth) setActiveClients(data.activeThisMonth); }).catch(() => {});
   }, []);
@@ -113,7 +131,7 @@ export default function HomePage({ customer, screenshotUrl, screenshotUrls }) {
           {activeClients && (
             <div className="social-counter">
               <span className="social-counter-dot" />
-              <strong style={{ color: 'var(--neon-green)' }}>{activeClients.toLocaleString('fr-FR')}</strong>
+              <strong style={{ color: 'var(--neon-green)' }}>{activeClients.toLocaleString()}</strong>
               <span> {t('hero.activeClients')}</span>
             </div>
           )}
@@ -212,11 +230,11 @@ export default function HomePage({ customer, screenshotUrl, screenshotUrls }) {
       {/* Lightbox — rendu via portal hors de page-transition */}
       {lightbox && createPortal(
         <div className="lightbox-overlay" onClick={() => setLightbox(null)} role="dialog" aria-modal="true">
-          <button className="lightbox-close" onClick={() => setLightbox(null)} aria-label="Fermer">✕</button>
+          <button className="lightbox-close" onClick={() => setLightbox(null)} aria-label={t('common.close')}>x</button>
           <img
             key={lightbox.idx}
             src={lightbox.images[lightbox.idx]}
-            alt="404 Tweaks — plein écran"
+            alt={t('home.lightboxAlt')}
             style={{ cursor: lightbox.images.length > 1 ? 'pointer' : 'default' }}
             onClick={e => {
               e.stopPropagation();
@@ -270,8 +288,8 @@ export default function HomePage({ customer, screenshotUrl, screenshotUrls }) {
         <div className="perf-grid">
           {[
             { label: t('perf.fps'),        before: '144 FPS',             after: '240+ FPS',          pctBad: 44, pctGood: 95 },
-            { label: 'Input Delay',        before: '35 ms',               after: '12 ms',             pctBad: 70, pctGood: 24 },
-            { label: 'Stutter',            before: t('perf.stutter.before'), after: t('perf.stutter.after'), pctBad: 60, pctGood: 3 },
+            { label: t('perf.inputDelay'), before: '35 ms', after: '12 ms', pctBad: 70, pctGood: 24 },
+            { label: t('perf.stutter'),    before: t('perf.stutter.before'), after: t('perf.stutter.after'), pctBad: 60, pctGood: 3 },
           ].map((row, i) => (
             <div className="perf-row animate-on-scroll" key={i}>
               <div className="perf-header">
@@ -333,51 +351,87 @@ export default function HomePage({ customer, screenshotUrl, screenshotUrls }) {
         <div className="pricing-grid">
           {plans.length === 0 ? (
             <p style={{ color: 'var(--text-secondary)', textAlign: 'center' }}>{t('pricing.loading')}</p>
-          ) : plans.map((plan, idx) => (
-            <div
-              className={`plan-card animate-on-scroll${plan.popular ? ' plan-card--popular' : ''}`}
-              key={plan.key}
-              style={{ animationDelay: `${idx * 0.08}s` }}
-            >
-              <div className="plan-card-glow" aria-hidden="true" />
-              {plan.popular && (
-                <div className="plan-popular-badge">
-                  <i className="fa-solid fa-bolt-lightning"></i> {t('pricing.popular')}
-                </div>
-              )}
-              <div className="plan-icon">
-                <i className={`fa-solid ${planIcons[plan.key] || 'fa-key'}`}></i>
-              </div>
-              <p className="plan-name">{plan.name}</p>
-              <div className="plan-price-block">
-                {plan.originalPrice > 0 && (
-                  <span className="plan-price-old">{(plan.originalPrice / 100).toFixed(2)} €</span>
-                )}
-                <span className="plan-price-main">{(plan.price / 100).toFixed(2)}<span className="plan-price-currency"> €</span></span>
-                {plan.originalPrice > 0 && (
-                  <span className="plan-discount-badge">-{Math.round((1 - plan.price / plan.originalPrice) * 100)}%</span>
-                )}
-              </div>
-              <div className="plan-divider" />
-              <ul className="plan-features">
-                <li><i className="fa-solid fa-check"></i> {t('pricing.feat1')}</li>
-                <li><i className="fa-solid fa-check"></i> {t('pricing.feat2')}</li>
-                <li><i className="fa-solid fa-check"></i> {t('pricing.feat3')}</li>
-                <li><i className="fa-solid fa-check"></i> {t('pricing.feat4')}</li>
-                <li><i className="fa-solid fa-gamepad"></i> {t('pricing.feat5')}</li>
-              </ul>
-              <div className="plan-macros">
-                {MACROS.map(m => <span key={m} className="plan-macro-tag">{m}</span>)}
-              </div>
-              <button
-                className={`plan-cta${plan.popular ? ' plan-cta--popular' : ''}`}
-                onClick={() => handlePurchase(plan.key)}
+          ) : plans.map((plan, idx) => {
+            const features = normalizeTextList(plan.features);
+            const tags = normalizeTextList(plan.tags);
+            const cardFeatures = features.length > 0 ? features : DEFAULT_PLAN_FEATURE_KEYS.map((key) => t(key));
+            const cardTags = tags.length > 0 ? tags : DEFAULT_PLAN_TAGS;
+            const icon = resolvePlanIcon(plan);
+            const popularLabel = plan.badgeText || t('pricing.popular');
+            const ctaLabel = plan.ctaText || (customer ? t('pricing.buy') : t('pricing.register'));
+
+            return (
+              <div
+                className={`plan-card animate-on-scroll${plan.popular ? ' plan-card--popular' : ''}`}
+                key={plan.key}
+                style={{
+                  animationDelay: `${idx * 0.08}s`,
+                  borderColor: !plan.popular && plan.themeColor ? `${plan.themeColor}55` : undefined,
+                }}
               >
-                {customer ? t('pricing.buy') : t('pricing.register')}
-                <i className="fa-solid fa-arrow-right plan-cta-arrow"></i>
-              </button>
-            </div>
-          ))}
+                <div
+                  className="plan-card-glow"
+                  aria-hidden="true"
+                  style={plan.themeColor ? { background: `radial-gradient(circle, ${plan.themeColor}22 0%, transparent 70%)` } : undefined}
+                />
+                {plan.popular && (
+                  <div className="plan-popular-badge">
+                    <i className="fa-solid fa-bolt-lightning"></i> {popularLabel}
+                  </div>
+                )}
+                <div
+                  className="plan-icon"
+                  style={plan.themeColor ? {
+                    color: plan.themeColor,
+                    borderColor: `${plan.themeColor}55`,
+                    background: `${plan.themeColor}22`,
+                  } : undefined}
+                >
+                  <i className={`fa-solid ${icon}`}></i>
+                </div>
+                <p className="plan-name">{plan.name}</p>
+                {plan.description && (
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.82rem', lineHeight: 1.5, marginBottom: '0.75rem' }}>
+                    {plan.description}
+                  </p>
+                )}
+                <div className="plan-price-block">
+                  {plan.originalPrice > 0 && (
+                    <span className="plan-price-old">{(plan.originalPrice / 100).toFixed(2)} EUR</span>
+                  )}
+                  <span className="plan-price-main">{(plan.price / 100).toFixed(2)}<span className="plan-price-currency"> EUR</span></span>
+                  {plan.originalPrice > 0 && (
+                    <span className="plan-discount-badge">-{Math.round((1 - plan.price / plan.originalPrice) * 100)}%</span>
+                  )}
+                </div>
+                <div className="plan-divider" />
+                <ul className="plan-features">
+                  {cardFeatures.map((feature, featureIdx) => (
+                    <li key={`${plan.key}-feature-${featureIdx}`}>
+                      <i className="fa-solid fa-check"></i> {feature}
+                    </li>
+                  ))}
+                </ul>
+                {cardTags.length > 0 && (
+                  <div className="plan-macros">
+                    {cardTags.map((tag, tagIdx) => <span key={`${plan.key}-tag-${tagIdx}`} className="plan-macro-tag">{tag}</span>)}
+                  </div>
+                )}
+                <button
+                  className={`plan-cta${plan.popular ? ' plan-cta--popular' : ''}`}
+                  onClick={() => handlePurchase(plan.key)}
+                  style={!plan.popular && plan.themeColor ? {
+                    color: plan.themeColor,
+                    borderColor: `${plan.themeColor}55`,
+                    background: `${plan.themeColor}1f`,
+                  } : undefined}
+                >
+                  {ctaLabel}
+                  <i className="fa-solid fa-arrow-right plan-cta-arrow"></i>
+                </button>
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -397,7 +451,7 @@ export default function HomePage({ customer, screenshotUrl, screenshotUrls }) {
       {showSticky && minPrice !== null && (
         <div className="sticky-cta">
           <div className="sticky-cta-info">
-            <span className="sticky-cta-badge">Offre Limitée</span>
+            <span className="sticky-cta-badge">{t('sticky.limitedOffer')}</span>
             <strong>404 Tweaks</strong>
             <span> — {t('sticky.from')} <strong className="sticky-cta-price">{(minPrice / 100).toFixed(2)} €</strong></span>
           </div>
@@ -405,10 +459,13 @@ export default function HomePage({ customer, screenshotUrl, screenshotUrls }) {
             <button className="sticky-cta-btn" onClick={scrollToPrice}>
               {t('sticky.buy')}
             </button>
-            <span className="sticky-cta-sub">Accès immédiat après paiement</span>
+            <span className="sticky-cta-sub">{t('sticky.instantAfterPayment')}</span>
           </div>
         </div>
       )}
     </>
   );
 }
+
+
+

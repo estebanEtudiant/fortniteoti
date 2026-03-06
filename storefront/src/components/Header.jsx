@@ -3,13 +3,14 @@ import { navigate } from '../lib/router.js';
 import { useTranslation } from '../lib/i18n.jsx';
 
 function LangSwitcher() {
-  const { lang, setLang } = useTranslation();
+  const { lang, setLang, t } = useTranslation();
   const next = lang === 'fr' ? 'en' : 'fr';
+
   return (
     <button
       className="lang-toggle"
       onClick={() => setLang(next)}
-      title={next === 'en' ? 'Switch to English' : 'Passer en français'}
+      title={next === 'en' ? t('lang.switchToEnglish') : t('lang.switchToFrench')}
     >
       <span className={lang === 'fr' ? 'lang-toggle-active' : 'lang-toggle-dim'}>FR</span>
       <span className="lang-toggle-sep">|</span>
@@ -22,7 +23,10 @@ export default function Header({ customer, onLogout, discordUrl }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const { t } = useTranslation();
 
-  const handleNav = (path) => { setMenuOpen(false); navigate(path); };
+  const handleNav = (path) => {
+    setMenuOpen(false);
+    navigate(path);
+  };
 
   return (
     <header>
@@ -31,7 +35,6 @@ export default function Header({ customer, onLogout, discordUrl }) {
           <img src="/logo.svg" alt="404 Tweaks" height="38" style={{ display: 'block' }} />
         </div>
 
-        {/* Desktop nav */}
         <div className="header-nav">
           <LangSwitcher />
           <button className="header-link" onClick={() => navigate('/comment-ca-marche')}>
@@ -58,11 +61,10 @@ export default function Header({ customer, onLogout, discordUrl }) {
           )}
         </div>
 
-        {/* Hamburger — mobile only */}
         <button
           className={`hamburger-btn${menuOpen ? ' hamburger-btn--open' : ''}`}
-          onClick={() => setMenuOpen(o => !o)}
-          aria-label="Menu"
+          onClick={() => setMenuOpen((o) => !o)}
+          aria-label={t('common.menu')}
         >
           <span className="hamburger-bar" />
           <span className="hamburger-bar" />
@@ -70,10 +72,11 @@ export default function Header({ customer, onLogout, discordUrl }) {
         </button>
       </div>
 
-      {/* Mobile drawer */}
       {menuOpen && (
         <div className="mobile-menu">
-          <button className="mobile-nav-link" onClick={() => handleNav('/comment-ca-marche')}>{t('nav.howItWorks')}</button>
+          <button className="mobile-nav-link" onClick={() => handleNav('/comment-ca-marche')}>
+            {t('nav.howItWorks')}
+          </button>
           {discordUrl && (
             <a href={discordUrl} target="_blank" rel="noopener noreferrer" className="mobile-nav-link" onClick={() => setMenuOpen(false)}>
               <i className="fa-brands fa-discord" style={{ marginRight: 6 }}></i>Discord

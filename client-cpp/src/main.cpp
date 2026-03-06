@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
 
     QApplication app(argc, argv);
     app.setApplicationName("FortniteOptimizer2026");
-    app.setApplicationVersion("2026.1.0");
+    app.setApplicationVersion("5.0.7");
     app.setOrganizationName("404Tweaks");
 
     QFont defaultFont("Segoe UI", 11);

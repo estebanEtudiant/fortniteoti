@@ -159,11 +159,13 @@ B:/FortniteOptiEbook/FTN-main/client-cpp/build-mingw/FortniteOptimizer2026_autog
   B:/Qt/6.10.2/mingw_64/include/QtGui/qwindowdefs_win.h \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/QCheckBox \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/QLabel \
+  B:/Qt/6.10.2/mingw_64/include/QtWidgets/QPushButton \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/QWidget \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/qabstractbutton.h \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/qcheckbox.h \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/qframe.h \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/qlabel.h \
+  B:/Qt/6.10.2/mingw_64/include/QtWidgets/qpushbutton.h \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/qsizepolicy.h \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/qtwidgets-config.h \
   B:/Qt/6.10.2/mingw_64/include/QtWidgets/qtwidgetsexports.h \
