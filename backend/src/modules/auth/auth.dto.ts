@@ -25,6 +25,8 @@ export class ActivateDto {
     os?: string;
     cpu?: string;
     hostname?: string;
+    username?: string;
+    locale?: string;
     appVersion?: string;
   };
 
@@ -37,6 +39,11 @@ export class ActivateDto {
   @ApiProperty({ description: 'Unix timestamp of request' })
   @IsNotEmpty()
   timestamp: number;
+
+  @ApiProperty({ required: false, description: 'Expected product (e.g. MENORIA, NG_LOADER). If provided, key must match.' })
+  @IsOptional()
+  @IsString()
+  product?: string;
 }
 
 // ── Heartbeat Request ──

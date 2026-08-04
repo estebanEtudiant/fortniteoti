@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import api from '../lib/api.js';
 import { navigate, getSearchParam } from '../lib/router.js';
-import { useDownloadUrl } from '../hooks/useDownloadUrl.js';
 import { useTranslation } from '../lib/i18n.jsx';
 
 export default function PaymentSuccessPage() {
   const { t } = useTranslation();
-  const downloadUrl = useDownloadUrl();
+  const [downloading, setDownloading] = useState(false);
   const [licenseKey, setLicenseKey] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -25,6 +24,11 @@ export default function PaymentSuccessPage() {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    try { await api.downloadFtnSoftware(); } catch (e) { alert(e.message); } finally { setDownloading(false); }
+  };
 
   const handleCopy = () => {
     navigator.clipboard.writeText(licenseKey).then(() => {
@@ -95,16 +99,15 @@ export default function PaymentSuccessPage() {
               </div>
             </div>
 
-            <a
-              href={downloadUrl}
-              target="_blank"
-              rel="noreferrer"
+            <button
+              onClick={handleDownload}
+              disabled={downloading}
               className="cta-primary"
-              style={{ width: '100%', padding: '0.9rem', fontSize: '1rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', textDecoration: 'none' }}
+              style={{ width: '100%', padding: '0.9rem', fontSize: '1rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', border: 'none', cursor: downloading ? 'wait' : 'pointer' }}
             >
-              <i className="fa-solid fa-download"></i>
-              {t('paymentSuccess.downloadSoftware')}
-            </a>
+              <i className={`fa-solid ${downloading ? 'fa-spinner fa-spin' : 'fa-download'}`}></i>
+              {downloading ? '...' : t('paymentSuccess.downloadSoftware')}
+            </button>
             <button
               className="btn-outline"
               style={{ width: '100%', padding: '0.9rem', fontSize: '1rem', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}

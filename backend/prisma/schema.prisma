@@ -16,6 +16,7 @@ datasource db {
 
 enum LicensePlan {
   DAYS_1
+  DAYS_3
   DAYS_7
   DAYS_14
   DAYS_30
@@ -46,6 +47,9 @@ enum ActivationStatus {
   RATE_LIMITED
 }
 
+// Product is a free-form string: built-in loaders (FTN_OPTIMIZER, NG_LOADER, …)
+// plus one distinct product per shop game (SHOP_<GAMESLUG>, e.g. SHOP_FORTNITE).
+
 // ── Models ──
 
 model Admin {
@@ -55,6 +59,10 @@ model Admin {
   role         AdminRole @default(ADMIN)
   createdAt    DateTime  @default(now()) @map("created_at")
   lastLogin    DateTime? @map("last_login")
+
+  // 2FA (TOTP)
+  totpSecret   String?   @map("totp_secret") @db.VarChar(255)
+  totpEnabled  Boolean   @default(false) @map("totp_enabled")
 
   @@map("admins")
 }
@@ -89,18 +97,32 @@ model License {
   maxActivations  Int           @default(1) @map("max_activations")
   lastIp          String?       @map("last_ip") @db.VarChar(45)
 
+  // Product
+  product         String        @default("FTN_OPTIMIZER")
+
   // Metadata
   metadata        Json?
+
+  // Reseller
+  resellerId      String?       @map("reseller_id")
+  batchId         String?       @map("batch_id")
+  activatedHwid   String?       @map("activated_hwid") @db.VarChar(64)
+  activatedAt     DateTime?     @map("activated_at")
 
   // Relations
   activations     Activation[]
   logs            ActivationLog[]
   refreshTokens   RefreshToken[]
+  reseller        Reseller?     @relation(fields: [resellerId], references: [id])
+  batch           KeyBatch?     @relation(fields: [batchId], references: [id])
 
   @@index([licenseKey])
   @@index([hwid])
   @@index([status])
   @@index([expiresAt])
+  @@index([product])
+  @@index([resellerId])
+  @@index([batchId])
   @@map("licenses")
 }
 
@@ -169,25 +191,38 @@ model BlockedIp {
 // ── Customer (Storefront Users) ──
 
 model Customer {
-  id           String    @id @default(uuid()) @db.Uuid
-  email        String    @unique @db.VarChar(255)
-  username     String    @unique @db.VarChar(50)
-  passwordHash String    @map("password_hash") @db.VarChar(255)
-  displayName  String?   @map("display_name") @db.VarChar(100)
-  avatarUrl    String?   @map("avatar_url") @db.VarChar(500)
-  discordId    String?   @map("discord_id") @db.VarChar(50)
+  id              String    @id @default(uuid()) @db.Uuid
+  email           String    @unique @db.VarChar(255)
+  username        String    @unique @db.VarChar(50)
+  passwordHash    String    @map("password_hash") @db.VarChar(255)
+  displayName     String?   @map("display_name") @db.VarChar(100)
+  avatarUrl       String?   @map("avatar_url") @db.VarChar(500)
+
+  // Source: 'ftn' | 'ng'
+  source          String    @default("ftn") @db.VarChar(10)
+
+  // Discord
+  discordId       String?   @map("discord_id") @db.VarChar(50)
+  discordUsername String?   @map("discord_username") @db.VarChar(100)
+  discordAvatar   String?   @map("discord_avatar") @db.VarChar(500)
 
   // Status
-  emailVerified Boolean  @default(false) @map("email_verified")
-  banned        Boolean  @default(false)
+  emailVerified   Boolean   @default(false) @map("email_verified")
+  banned          Boolean   @default(false)
+
+  // Affiliate
+  referredByAffiliateId String? @map("referred_by_affiliate_id")
 
   // Dates
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
-  lastLogin    DateTime? @map("last_login")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  lastLogin       DateTime? @map("last_login")
 
   // Relations
-  orders       Order[]
+  orders          Order[]
+  pokemonOrders   PokemonOrder[]
+  affiliate       Affiliate?
+  reseller        Reseller?
 
   @@index([email])
   @@index([username])
@@ -207,6 +242,9 @@ model Order {
   stripeSessionId String?     @map("stripe_session_id") @db.VarChar(255)
   stripePaymentId String?     @map("stripe_payment_id") @db.VarChar(255)
 
+  // Panier (boutique 404 GG) : [{ game, gameName, plan, planName, qty, licensePlan, customDays, unit }]
+  items           Json?
+
   // Dates
   createdAt       DateTime    @default(now()) @map("created_at")
   completedAt     DateTime?   @map("completed_at")
@@ -225,5 +263,507 @@ enum OrderStatus {
   COMPLETED
   FAILED
   REFUNDED
+}
+
+// ── Shop content (managed from the admin dashboard) ──
+
+enum GameStatus {
+  NEW
+  UPDATED
+  UPDATING
+}
+
+model Game {
+  id          String     @id @default(uuid()) @db.Uuid
+  slug        String     @unique @db.VarChar(60)
+  name        String     @db.VarChar(120)
+  chip        String     @db.VarChar(60)
+  logo        String     @db.VarChar(60)
+  image       String     @default("") @db.VarChar(500)
+  images      String[]   @default([])
+  status      GameStatus @default(UPDATED)
+  sinceFr     String     @default("") @map("since_fr") @db.VarChar(60)
+  sinceEn     String     @default("") @map("since_en") @db.VarChar(60)
+  rating      Float      @default(5)
+  members     Int        @default(0)
+  tipsCount   Int        @default(0) @map("tips_count")
+  hue         Int        @default(26)
+  taglineFr   String     @default("") @map("tagline_fr")
+  taglineEn   String     @default("") @map("tagline_en")
+  includesFr  String[]   @map("includes_fr")
+  includesEn  String[]   @map("includes_en")
+  // sections: liste de catégories éditables [{ titleFr, titleEn, itemsFr[], itemsEn[] }]
+  sections    Json?
+  order       Int        @default(0)
+  visible     Boolean    @default(true)
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  @@map("games")
+}
+
+model ShopSetting {
+  id        Int      @id @default(1)
+  heroImage String   @default("") @map("hero_image") @db.VarChar(500)
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("shop_settings")
+}
+
+// ── Cheat Files (binary bundles managed by admin dashboard) ──
+
+model SoftwareBinary {
+  id          String   @id @default(cuid())
+  productId   String   @map("product_id") @db.VarChar(50)
+  kind        String   @db.VarChar(20) // "driver" | "reader" | "byovd"
+  sha256      String   @db.VarChar(64)
+  size        Int
+  filename    String   @db.VarChar(255)
+  storagePath String   @map("storage_path") @db.VarChar(500)
+  uploadedAt  DateTime @default(now()) @map("uploaded_at")
+  uploadedBy  String?  @map("uploaded_by") @db.VarChar(100)
+
+  @@index([productId, kind, uploadedAt])
+  @@map("software_binaries")
+}
+
+model SoftwareVersion {
+  id           String   @id @default(cuid())
+  productId    String   @map("product_id") @db.VarChar(50)
+  version      String   @db.VarChar(50)
+  notes        String?
+  bundlePath   String   @map("bundle_path") @db.VarChar(500)
+  bundleSha256 String   @map("bundle_sha256") @db.VarChar(64)
+  bundleSize   Int      @map("bundle_size")
+  driverId     String   @map("driver_id")
+  readerId     String   @map("reader_id")
+  byovdId      String   @map("byovd_id")
+  isActive     Boolean  @default(false) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  createdBy    String?  @map("created_by") @db.VarChar(100)
+
+  @@index([productId, createdAt])
+  @@index([productId, isActive])
+  @@map("software_versions")
+}
+
+model ShopPlan {
+  id        String   @id @default(uuid()) @db.Uuid
+  slug      String   @unique @db.VarChar(60)
+  nameFr    String   @map("name_fr") @db.VarChar(120)
+  nameEn    String   @map("name_en") @db.VarChar(120)
+  price     Float    @default(0)
+  perFr     String   @default("") @map("per_fr") @db.VarChar(60)
+  perEn     String   @default("") @map("per_en") @db.VarChar(60)
+  featured  Boolean  @default(false)
+  perksFr   String[] @map("perks_fr")
+  perksEn   String[] @map("perks_en")
+  order     Int      @default(0)
+  visible   Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("shop_plans")
+}
+
+// ── Kill Switch ──
+
+model Kill {
+  id          String    @id @default(cuid())
+  productId   String    @map("product_id") @db.VarChar(50)
+  scope       String    @db.VarChar(20) // "all" | "hwid" | "user" | "version"
+  target      String?   @db.VarChar(255)
+  reason      String
+  activatedAt DateTime  @default(now()) @map("activated_at")
+  activatedBy String    @map("activated_by") @db.VarChar(100)
+  expiresAt   DateTime? @map("expires_at")
+  revokedAt   DateTime? @map("revoked_at")
+  revokedBy   String?   @map("revoked_by") @db.VarChar(100)
+
+  @@index([productId, scope, target])
+  @@index([productId, revokedAt, expiresAt])
+  @@map("kills")
+}
+
+// ── Telemetry ──
+
+model TelemetryEvent {
+  id         String   @id @default(cuid())
+  productId  String   @map("product_id") @db.VarChar(50)
+  event      String   @db.VarChar(30)
+  os         String   @default("") @db.VarChar(100)
+  hwidShort  String   @default("") @map("hwid_short") @db.VarChar(12)
+  userId     String?  @map("user_id") @db.VarChar(100)
+  errorText  String?  @map("error_text")
+  durationMs Int?     @map("duration_ms")
+  ts         DateTime @default(now())
+
+  @@index([productId, event, ts])
+  @@index([productId, hwidShort])
+  @@index([userId, ts])
+  @@map("telemetry_events")
+}
+
+// ── Crash dumps (minidumps uploaded by the loader after a BSOD) ──
+
+model CrashDump {
+  id        String   @id @default(cuid())
+  hwid      String   @db.VarChar(64)
+  os        String   @default("") @db.VarChar(100)
+  filename  String   @db.VarChar(255)
+  sha1      String   @db.VarChar(40)
+  bytes     Int
+  path      String   @db.VarChar(500)
+  userId    String?  @map("user_id") @db.VarChar(100)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([hwid, sha1])
+  @@index([hwid, createdAt])
+  @@map("crash_dumps")
+}
+
+// ── Loader logs uploaded alongside crash dumps (or standalone) ──
+
+model TelemetryLog {
+  id        String   @id @default(cuid())
+  hwid      String   @db.VarChar(64)
+  os        String   @default("") @db.VarChar(100)
+  kind      String   @db.VarChar(40)
+  bytes     Int
+  path      String   @db.VarChar(500)
+  userId    String?  @map("user_id") @db.VarChar(100)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([hwid, createdAt])
+  @@map("telemetry_logs")
+}
+
+// ── Request Logs (4xx/5xx only) ──
+
+model RequestLog {
+  id         String   @id @default(cuid())
+  method     String   @db.VarChar(10)
+  endpoint   String   @db.VarChar(255)
+  status     Int
+  userId     String?  @map("user_id") @db.VarChar(100)
+  ip         String   @db.VarChar(45)
+  durationMs Int      @map("duration_ms")
+  ts         DateTime @default(now())
+
+  @@index([endpoint, status, ts])
+  @@index([userId, ts])
+  @@index([ts])
+  @@map("request_logs")
+}
+
+// ── Boutique Pokémon (kits de rénovation de cartes — produit physique) ──
+
+enum PokemonOrderStatus {
+  PENDING     // créée, en attente de paiement
+  PAID        // payée, à préparer
+  PROCESSING  // en cours de préparation
+  SHIPPED     // expédiée
+  DELIVERED   // livrée
+  CANCELLED
+  REFUNDED
+}
+
+model PokemonProduct {
+  id             String   @id @default(uuid()) @db.Uuid
+  slug           String   @unique @db.VarChar(60)
+  nameFr         String   @map("name_fr") @db.VarChar(120)
+  nameEn         String   @map("name_en") @db.VarChar(120)
+  descriptionFr  String   @default("") @map("description_fr")
+  descriptionEn  String   @default("") @map("description_en")
+  price          Int      // prix en centimes
+  compareAtPrice Int?     @map("compare_at_price") // prix barré, optionnel
+  images         String[] @default([])
+  includesFr     String[] @map("includes_fr") // contenu du kit (liste à puces)
+  includesEn     String[] @map("includes_en")
+  stock          Int      @default(0)
+  sku            String   @default("") @db.VarChar(60)
+  featured       Boolean  @default(false)
+  order          Int      @default(0)
+  visible        Boolean  @default(true)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@map("pokemon_products")
+}
+
+model PokemonOrder {
+  id                 String             @id @default(uuid()) @db.Uuid
+  customerId         String             @map("customer_id") @db.Uuid
+  // [{ productId, slug, nameFr, qty, unitCents }]
+  items              Json
+  amount             Int                // total en centimes (produits + livraison)
+  shippingCents      Int                @default(0) @map("shipping_cents")
+  currency           String             @default("EUR") @db.VarChar(3)
+  status             PokemonOrderStatus @default(PENDING)
+
+  // Adresse de livraison
+  shippingName       String             @default("") @map("shipping_name") @db.VarChar(200)
+  shippingLine1      String             @default("") @map("shipping_line1") @db.VarChar(255)
+  shippingLine2      String             @default("") @map("shipping_line2") @db.VarChar(255)
+  shippingCity       String             @default("") @map("shipping_city") @db.VarChar(120)
+  shippingPostalCode String             @default("") @map("shipping_postal_code") @db.VarChar(20)
+  shippingCountry    String             @default("") @map("shipping_country") @db.VarChar(2)
+  shippingPhone      String?            @map("shipping_phone") @db.VarChar(30)
+
+  // Suivi expédition (saisi manuellement par l'admin)
+  carrier            String?            @db.VarChar(60)
+  trackingNumber     String?            @map("tracking_number") @db.VarChar(120)
+  trackingUrl        String?            @map("tracking_url") @db.VarChar(500)
+  shippedAt          DateTime?          @map("shipped_at")
+  deliveredAt        DateTime?          @map("delivered_at")
+
+  // Stripe
+  stripeSessionId    String?            @map("stripe_session_id") @db.VarChar(255)
+  stripePaymentId    String?            @map("stripe_payment_id") @db.VarChar(255)
+
+  createdAt          DateTime           @default(now()) @map("created_at")
+  completedAt        DateTime?          @map("completed_at")
+
+  customer           Customer           @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+  @@index([status])
+  @@index([stripeSessionId])
+  @@map("pokemon_orders")
+}
+
+model PokemonSetting {
+  id                           Int      @id @default(1)
+  heroImage                    String   @default("") @map("hero_image") @db.VarChar(500)
+  // 0 = livraison gratuite désactivée
+  freeShippingThresholdCents   Int      @default(0) @map("free_shipping_threshold_cents")
+  flatShippingCents            Int      @default(0) @map("flat_shipping_cents")
+  allowedCountries             String[] @default(["FR", "BE", "CH", "LU"]) @map("allowed_countries")
+  updatedAt                    DateTime @updatedAt @map("updated_at")
+
+  @@map("pokemon_settings")
+}
+
+// ── Affiliate System ──
+
+model Affiliate {
+  id               String   @id @default(cuid())
+  customerId       String   @unique @map("customer_id") @db.Uuid
+  customer         Customer @relation(fields: [customerId], references: [id])
+  code             String   @unique @db.VarChar(30)
+  status           String   @default("active") @db.VarChar(20)
+  tier             String   @default("bronze") @db.VarChar(20)
+  commissionRate   Float    @default(0.20) @map("commission_rate")
+  totalEarnedCents Int      @default(0) @map("total_earned_cents")
+  totalPaidCents   Int      @default(0) @map("total_paid_cents")
+  pendingCents     Int      @default(0) @map("pending_cents")
+  clickCount            Int       @default(0) @map("click_count")
+  conversionCount       Int       @default(0) @map("conversion_count")
+  belowThresholdSince   DateTime? @map("below_threshold_since")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  clicks       ReferralClick[]
+  conversions  ReferralConversion[]
+  payouts      AffiliatePayout[]
+
+  @@index([code])
+  @@index([status])
+  @@map("affiliates")
+}
+
+model ReferralClick {
+  id          String    @id @default(cuid())
+  affiliateId String    @map("affiliate_id")
+  affiliate   Affiliate @relation(fields: [affiliateId], references: [id])
+  visitorHash String    @map("visitor_hash") @db.VarChar(64)
+  landingPath String    @map("landing_path") @db.VarChar(255)
+  referer     String?   @db.VarChar(500)
+  country     String?   @db.VarChar(2)
+  ts          DateTime  @default(now())
+
+  @@index([affiliateId, ts])
+  @@index([visitorHash, ts])
+  @@map("referral_clicks")
+}
+
+model ReferralConversion {
+  id                    String    @id @default(cuid())
+  affiliateId           String    @map("affiliate_id")
+  affiliate             Affiliate @relation(fields: [affiliateId], references: [id])
+  referredCustomerId    String    @map("referred_customer_id") @db.Uuid
+  orderId               String?   @map("order_id") @db.Uuid
+  renewalIndex          Int       @default(0) @map("renewal_index")
+  amountCents           Int       @map("amount_cents")
+  currency              String    @default("EUR") @db.VarChar(3)
+  commissionCents       Int       @map("commission_cents")
+  commissionRate        Float     @map("commission_rate")
+  status                String    @default("pending") @db.VarChar(20)
+  approvedAt            DateTime? @map("approved_at")
+  rejectedAt            DateTime? @map("rejected_at")
+  rejectionReason       String?   @map("rejection_reason")
+  refundedAt            DateTime? @map("refunded_at")
+  fraudFlags            Json?     @map("fraud_flags")
+  createdAt             DateTime  @default(now()) @map("created_at")
+
+  @@index([affiliateId, status, createdAt])
+  @@index([referredCustomerId])
+  @@map("referral_conversions")
+}
+
+model AffiliatePayout {
+  id            String    @id @default(cuid())
+  affiliateId   String    @map("affiliate_id")
+  affiliate     Affiliate @relation(fields: [affiliateId], references: [id])
+  amountCents   Int       @map("amount_cents")
+  currency      String    @default("EUR") @db.VarChar(3)
+  method        String    @db.VarChar(30)
+  destination   String    @db.VarChar(255)
+  status        String    @default("requested") @db.VarChar(20)
+  txHash        String?   @map("tx_hash") @db.VarChar(255)
+  requestedAt   DateTime  @default(now()) @map("requested_at")
+  approvedAt    DateTime? @map("approved_at")
+  paidAt        DateTime? @map("paid_at")
+  failureReason String?   @map("failure_reason")
+  adminNotes    String?   @map("admin_notes")
+
+  @@index([affiliateId, status])
+  @@index([status, requestedAt])
+  @@map("affiliate_payouts")
+}
+
+// ── Reseller System ──
+
+model ResellerTier {
+  id            String  @id @default(cuid())
+  name          String  @unique @db.VarChar(20)
+  discount      Float
+  minBatchKeys  Int     @map("min_batch_keys")
+  requiresKyc   Boolean @default(false) @map("requires_kyc")
+  requiresShopUrl Boolean @default(false) @map("requires_shop_url")
+  allowsNet30   Boolean @default(false) @map("allows_net30")
+  minSpentCents Int     @default(0) @map("min_spent_cents")
+  order         Int     @default(0)
+
+  resellers     Reseller[]
+
+  @@map("reseller_tiers")
+}
+
+model Reseller {
+  id                  String    @id @default(cuid())
+  customerId          String    @unique @map("customer_id") @db.Uuid
+  customer            Customer  @relation(fields: [customerId], references: [id])
+  tierId              String    @map("tier_id")
+  tier                ResellerTier @relation(fields: [tierId], references: [id])
+  status              String    @default("pending") @db.VarChar(20) // pending, active, suspended
+  companyName         String?   @map("company_name") @db.VarChar(200)
+  shopUrl             String?   @map("shop_url") @db.VarChar(500)
+  country             String?   @db.VarChar(80)
+  activity            String?   @db.VarChar(1000)
+  telegram            String?   @db.VarChar(100)
+  monthlyVolume       String?   @map("monthly_volume") @db.VarChar(50)
+  customPrefix        String?   @map("custom_prefix") @db.VarChar(10)
+  discountOverride    Float?    @map("discount_override")
+  walletCents         Int       @default(0) @map("wallet_cents")
+  totalSpentCents     Int       @default(0) @map("total_spent_cents")
+  totalKeysGenerated  Int       @default(0) @map("total_keys_generated")
+  totalKeysActivated  Int       @default(0) @map("total_keys_activated")
+  kycDocPath          String?   @map("kyc_doc_path") @db.VarChar(500)
+  kycVerified         Boolean   @default(false) @map("kyc_verified")
+  termsVersion        String?   @map("terms_version") @db.VarChar(20)
+  termsAcceptedAt     DateTime? @map("terms_accepted_at")
+  belowThresholdSince DateTime? @map("below_threshold_since")
+  suspendReason       String?   @map("suspend_reason")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  batches       KeyBatch[]
+  topups        WalletTopup[]
+  licenses      License[]
+
+  @@index([status])
+  @@index([customerId])
+  @@map("resellers")
+}
+
+model KeyBatch {
+  id            String    @id @default(cuid())
+  resellerId    String    @map("reseller_id")
+  reseller      Reseller  @relation(fields: [resellerId], references: [id])
+  productId     String    @map("product_id") @db.VarChar(50)
+  plan          LicensePlan
+  keyCount      Int       @map("key_count")
+  unitPriceCents Int      @map("unit_price_cents")
+  totalCents    Int       @map("total_cents")
+  discountRate  Float     @map("discount_rate")
+  activatedCount Int      @default(0) @map("activated_count")
+  revokedAt     DateTime? @map("revoked_at")
+  revokedReason String?   @map("revoked_reason")
+  expiresAt     DateTime  @map("expires_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  licenses      License[]
+
+  @@index([resellerId, createdAt])
+  @@index([expiresAt])
+  @@map("key_batches")
+}
+
+model WalletTopup {
+  id              String    @id @default(cuid())
+  resellerId      String    @map("reseller_id")
+  reseller        Reseller  @relation(fields: [resellerId], references: [id])
+  amountCents     Int       @map("amount_cents")
+  method          String    @db.VarChar(30) // stripe, crypto, manual
+  stripeSessionId String?   @map("stripe_session_id") @db.VarChar(255)
+  stripePaymentId String?   @map("stripe_payment_id") @db.VarChar(255)
+  status          String    @default("pending") @db.VarChar(20) // pending, completed, refunded, chargebacked
+  createdAt       DateTime  @default(now()) @map("created_at")
+  completedAt     DateTime? @map("completed_at")
+
+  @@index([resellerId, createdAt])
+  @@index([stripeSessionId])
+  @@index([status])
+  @@map("wallet_topups")
+}
+
+// ── Kernel Symbol Resolution ──
+
+model KernelSymbolCache {
+  id                 String    @id @default(cuid())
+  pdbGuid            String    @map("pdb_guid") @db.VarChar(32)
+  age                Int
+  pdbName            String    @map("pdb_name") @db.VarChar(60)
+  build              String    @db.VarChar(30)
+  symbols            Json
+  extractedAt        DateTime  @default(now()) @map("extracted_at")
+  hitCount           Int       @default(0) @map("hit_count")
+  lastHit            DateTime  @default(now()) @map("last_hit")
+  validated          Boolean   @default(false)
+  validatedAt        DateTime? @map("validated_at")
+  validatedBy        String?   @map("validated_by") @db.VarChar(100)
+  notSupportedReason String    @default("Cette version de Windows n'a pas encore ete validee.") @map("not_supported_reason")
+  bsodReports        Int       @default(0) @map("bsod_reports")
+  lastBsodAt         DateTime? @map("last_bsod_at")
+
+  @@unique([pdbGuid, age])
+  @@index([build])
+  @@map("kernel_symbol_cache")
+}
+
+model KernelSymbolExtraction {
+  id           String    @id @default(cuid())
+  pdbGuid      String    @map("pdb_guid") @db.VarChar(32)
+  age          Int
+  pdbName      String    @map("pdb_name") @db.VarChar(60)
+  status       String    @default("queued") @db.VarChar(20)
+  error        String?
+  startedAt    DateTime? @map("started_at")
+  finishedAt   DateTime? @map("finished_at")
+  attemptCount Int       @default(0) @map("attempt_count")
+
+  @@unique([pdbGuid, age])
+  @@map("kernel_symbol_extractions")
 }
 

@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsInt, Min, Max } from 'class-validator';
+import { IsString, IsNotEmpty, IsInt, Min, Max, IsOptional } from 'class-validator';
 
 export class GenerateKeyDto {
   @IsString()
@@ -9,4 +9,8 @@ export class GenerateKeyDto {
   @Min(1)
   @Max(10)
   count: number = 1;
+
+  @IsOptional()
+  @IsString()
+  product?: string;
 }

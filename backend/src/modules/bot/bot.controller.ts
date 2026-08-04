@@ -4,6 +4,7 @@ import { BotAuthGuard } from './bot-auth.guard';
 import { VerifyLicenseDto } from './dto/verify-license.dto';
 import { GenerateKeyDto } from './dto/generate-key.dto';
 import { SubmitReviewDto } from './dto/submit-review.dto';
+import { UpdateCommunityStatsDto } from './dto/update-community-stats.dto';
 
 @Controller('bot')
 @UseGuards(BotAuthGuard)
@@ -34,7 +35,7 @@ export class BotController {
    */
   @Post('generate')
   generateKeys(@Body() dto: GenerateKeyDto) {
-    return this.botService.generateKeys(dto.plan, dto.count);
+    return this.botService.generateKeys(dto.plan, dto.count, dto.product);
   }
 
   /**
@@ -71,5 +72,14 @@ export class BotController {
   @Get('config')
   getBotConfig() {
     return this.botService.getBotConfig();
+  }
+
+  /**
+   * POST /api/v1/bot/community-stats
+   * Le bot pousse ici le nombre de membres live et le dernier arrivé (lu par le site public).
+   */
+  @Post('community-stats')
+  updateCommunityStats(@Body() dto: UpdateCommunityStatsDto) {
+    return this.botService.updateCommunityStats(dto);
   }
 }

@@ -1,9 +1,10 @@
 'use strict';
 
 const { ActivityType } = require('discord.js');
-const scheduler     = require('../services/scheduler');
-const statusMonitor = require('../services/statusMonitor');
-const logger        = require('../services/logger');
+const scheduler       = require('../services/scheduler');
+const statusMonitor   = require('../services/statusMonitor');
+const communityStats  = require('../services/communityStats');
+const logger          = require('../services/logger');
 
 module.exports = {
   name: 'ready',
@@ -14,7 +15,7 @@ module.exports = {
     logger.info(`Présent sur ${client.guilds.cache.size} serveur(s).`);
 
     client.user.setPresence({
-      activities: [{ name: '/help • FortniteOpti', type: ActivityType.Watching }],
+      activities: [{ name: '/help pour avoir de l\'aide', type: ActivityType.Watching }],
       status: 'online',
     });
 
@@ -31,5 +32,8 @@ module.exports = {
 
     // Démarre le monitor de statut
     statusMonitor.start(client);
+
+    // Démarre la synchronisation des stats de communauté (site public)
+    communityStats.start(client);
   },
 };

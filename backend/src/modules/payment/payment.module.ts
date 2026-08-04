@@ -6,12 +6,17 @@ import { PaymentService } from './payment.service';
 import { LicenseModule } from '../license/license.module';
 import { CustomerAuthGuard } from '../../common/guards/auth.guard';
 import { MailService } from '../customer/mail.service';
+import { DiscordRoleService } from '../customer/discord-role.service';
 import { BotModule } from '../bot/bot.module';
+import { AffiliateModule } from '../affiliate/affiliate.module';
+import { ResellerModule } from '../reseller/reseller.module';
 
 @Module({
   imports: [
     LicenseModule,
     BotModule,
+    AffiliateModule,
+    ResellerModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
@@ -20,6 +25,6 @@ import { BotModule } from '../bot/bot.module';
     }),
   ],
   controllers: [PaymentController],
-  providers: [PaymentService, CustomerAuthGuard, MailService],
+  providers: [PaymentService, CustomerAuthGuard, MailService, DiscordRoleService],
 })
 export class PaymentModule {}

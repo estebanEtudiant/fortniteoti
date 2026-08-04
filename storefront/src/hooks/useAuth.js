@@ -29,10 +29,10 @@ export function useAuth() {
     return data;
   }, []);
 
-  const logout = useCallback(() => {
+  const logout = useCallback((redirectPath = '/') => {
     api.logout();
     setCustomer(null);
-    navigate('/');
+    navigate(redirectPath);
   }, []);
 
   const refresh = useCallback(async () => {

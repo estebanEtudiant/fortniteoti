@@ -49,4 +49,42 @@ export class BotNotifyService {
       this.logger.warn(`BotNotify.notifySale failed: ${(err as Error).message}`);
     }
   }
+
+  /**
+   * Publie une annonce de mise à jour dans le salon Discord configuré.
+   */
+  async notifyUpdate(payload: {
+    channelId: string;
+    color?: string;
+    authorName?: string;
+    authorIconUrl?: string;
+    authorUrl?: string;
+    title?: string;
+    url?: string;
+    message?: string;
+    fields?: { name: string; value: string; inline?: boolean }[];
+    thumbnailUrl?: string;
+    imageUrl?: string;
+    footerText?: string;
+    footerIconUrl?: string;
+    showTimestamp?: boolean;
+    mentionEveryone?: boolean;
+  }): Promise<void> {
+    if (!this.secret) throw new Error('BOT_API_SECRET non configuré.');
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 5000);
+
+    try {
+      const res = await fetch(`${this.webhookUrl}/webhook/update`, {
+        method:  'POST',
+        headers: { 'x-bot-secret': this.secret, 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload),
+        signal:  controller.signal,
+      });
+      if (!res.ok) throw new Error(`bot webhook a répondu ${res.status}`);
+    } finally {
+      clearTimeout(timer);
+    }
+  }
 }

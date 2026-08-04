@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../lib/api.js';
 import { navigate } from '../lib/router.js';
-import { useDownloadUrl } from '../hooks/useDownloadUrl.js';
 import { useTranslation } from '../lib/i18n.jsx';
 
 function CopyLicenseKey({ licKey }) {
@@ -25,7 +24,7 @@ function CopyLicenseKey({ licKey }) {
 
 export default function ProfilePage({ onLogout, onRefresh }) {
   const { t, lang } = useTranslation();
-  const downloadUrl = useDownloadUrl();
+  const [downloading, setDownloading] = useState(false);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
@@ -53,6 +52,11 @@ export default function ProfilePage({ onLogout, onRefresh }) {
       .catch(() => navigate('/login'))
       .finally(() => setLoading(false));
   }, []);
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    try { await api.downloadFtnSoftware(); } catch (e) { alert(e.message); } finally { setDownloading(false); }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -130,8 +134,8 @@ export default function ProfilePage({ onLogout, onRefresh }) {
           <i className="fa-solid fa-key" style={{ marginRight: 8 }}></i>
           {t('profile.licensesTitle')}
         </h3>
-        {profile.licenses && profile.licenses.length > 0 ? (
-          profile.licenses.map((lic) => (
+        {profile.licenses && profile.licenses.filter(l => l.product === 'FTN_OPTIMIZER').length > 0 ? (
+          profile.licenses.filter(l => l.product === 'FTN_OPTIMIZER').map((lic) => (
             <div className="license-card" key={lic.id}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
                 <div className="license-key" style={{ flex: 1, minWidth: 0, marginBottom: 0 }}>{lic.licenseKey}</div>
@@ -145,16 +149,15 @@ export default function ProfilePage({ onLogout, onRefresh }) {
                 )}
               </div>
               {lic.status === 'ACTIVE' && (
-                <a
-                  href={downloadUrl}
-                  target="_blank"
-                  rel="noreferrer"
+                <button
+                  onClick={handleDownload}
+                  disabled={downloading}
                   className="cta-primary"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.75rem', padding: '0.6rem 1.2rem', fontSize: '0.9rem', textDecoration: 'none' }}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.75rem', padding: '0.6rem 1.2rem', fontSize: '0.9rem', border: 'none', cursor: downloading ? 'wait' : 'pointer' }}
                 >
-                  <i className="fa-solid fa-download"></i>
-                  {t('profile.downloadSoftware')}
-                </a>
+                  <i className={`fa-solid ${downloading ? 'fa-spinner fa-spin' : 'fa-download'}`}></i>
+                  {downloading ? '...' : t('profile.downloadSoftware')}
+                </button>
               )}
             </div>
           ))

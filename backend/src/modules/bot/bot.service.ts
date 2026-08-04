@@ -84,15 +84,17 @@ export class BotService {
   /**
    * Génère count clés de licence pour le plan donné.
    */
-  async generateKeys(plan: string, count: number) {
+  async generateKeys(plan: string, count: number, product?: string) {
     const licensePlan = LicensePlan[plan as keyof typeof LicensePlan];
     if (!licensePlan) {
       return { success: false, reason: `Plan inconnu : ${plan}` };
     }
 
+    const resolvedProduct = product === 'NG_LOADER' ? 'NG_LOADER' : 'FTN_OPTIMIZER';
+
     const keys: string[] = [];
     for (let i = 0; i < count; i++) {
-      const license = await this.licenseService.create({ plan: licensePlan });
+      const license = await this.licenseService.create({ plan: licensePlan, product: resolvedProduct });
       keys.push(license.licenseKey);
     }
 
@@ -157,6 +159,34 @@ export class BotService {
     const raw = await this.redis.get('bot:config');
     if (!raw) return {};
     try { return JSON.parse(raw); } catch { return {}; }
+  }
+
+  private readonly COMMUNITY_STATS_KEY = 'community:stats';
+
+  /** Reçoit les stats de communauté live (nombre de membres, dernier arrivé) poussées par le bot Discord. */
+  async updateCommunityStats(payload: {
+    totalMembers: number;
+    onlineMembers?: number;
+    newestMemberUsername?: string;
+    newestMemberAvatarUrl?: string;
+  }) {
+    const stats = {
+      totalMembers:          payload.totalMembers,
+      onlineMembers:         payload.onlineMembers ?? null,
+      newestMemberUsername:  payload.newestMemberUsername ?? null,
+      newestMemberAvatarUrl: payload.newestMemberAvatarUrl ?? null,
+      updatedAt:             new Date().toISOString(),
+    };
+    await this.redis.set(this.COMMUNITY_STATS_KEY, JSON.stringify(stats));
+    return { success: true };
+  }
+
+  /** Retourne les dernières stats de communauté reçues du bot (consommé par le site public). */
+  async getCommunityStats() {
+    const raw = await this.redis.get(this.COMMUNITY_STATS_KEY);
+    const empty = { totalMembers: 0, onlineMembers: null, newestMemberUsername: null, newestMemberAvatarUrl: null, updatedAt: null };
+    if (!raw) return empty;
+    try { return JSON.parse(raw); } catch { return empty; }
   }
 
   /** Active ou désactive le mode maintenance (clé Redis admin:settings). */

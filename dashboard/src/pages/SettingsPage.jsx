@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Globe, Shield } from 'lucide-react';
+import { Globe, Shield, ShieldCheck, ShieldOff, KeyRound, Copy, Check, Smartphone } from 'lucide-react';
 import { api } from '../lib/api';
 import Loading from '../components/Loading';
 
@@ -225,6 +225,154 @@ export default function SettingsPage() {
           </button>
         </form>
       </div>
+
+      {/* Two-Factor Authentication */}
+      <TwoFactorSection />
+    </div>
+  );
+}
+
+// ── Two-Factor Authentication (TOTP) ──
+function TwoFactorSection() {
+  const [enabled, setEnabled] = useState(null);   // null = loading
+  const [mode, setMode] = useState('idle');       // 'idle' | 'setup' | 'disable'
+  const [setupData, setSetupData] = useState(null); // { secret, qr }
+  const [code, setCode] = useState('');
+  const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    api.get2faStatus().then(r => setEnabled(r.enabled)).catch(() => setEnabled(false));
+  }, []);
+
+  const reset = () => { setMode('idle'); setSetupData(null); setCode(''); setPassword(''); setError(''); };
+
+  const startSetup = async () => {
+    setBusy(true); setError('');
+    try {
+      const data = await api.setup2fa();
+      setSetupData(data);
+      setMode('setup');
+    } catch (err) { setError(err.message); }
+    finally { setBusy(false); }
+  };
+
+  const confirmEnable = async (e) => {
+    e.preventDefault(); setBusy(true); setError('');
+    try {
+      await api.enable2fa(code);
+      setEnabled(true);
+      reset();
+    } catch (err) { setError(err.message); }
+    finally { setBusy(false); }
+  };
+
+  const confirmDisable = async (e) => {
+    e.preventDefault(); setBusy(true); setError('');
+    try {
+      await api.disable2fa(password, code);
+      setEnabled(false);
+      reset();
+    } catch (err) { setError(err.message); }
+    finally { setBusy(false); }
+  };
+
+  const copySecret = () => {
+    if (!setupData?.secret) return;
+    navigator.clipboard?.writeText(setupData.secret);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+
+  return (
+    <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 max-w-xl mt-6">
+      <h2 className="text-lg font-semibold mb-1 flex items-center gap-2">
+        <KeyRound className="w-5 h-5 text-cyan-400" /> Double authentification (2FA)
+      </h2>
+      <p className="text-sm text-gray-500 mb-4">
+        Ajoute un code à usage unique généré par une app (Google Authenticator, Authy…) en plus du mot de passe.
+      </p>
+
+      {error && <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm rounded-lg px-3 py-2 mb-4">{error}</div>}
+
+      {enabled === null ? (
+        <p className="text-gray-500 text-sm">Chargement…</p>
+      ) : enabled ? (
+        <>
+          <div className="flex items-center gap-2 text-green-400 text-sm mb-4">
+            <ShieldCheck className="w-5 h-5" /> La 2FA est <span className="font-semibold">activée</span> sur ce compte.
+          </div>
+          {mode !== 'disable' ? (
+            <button onClick={() => { setMode('disable'); setError(''); }}
+              className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-800 hover:bg-gray-700 text-red-400 flex items-center gap-2">
+              <ShieldOff className="w-4 h-4" /> Désactiver la 2FA
+            </button>
+          ) : (
+            <form onSubmit={confirmDisable} className="space-y-3 border-t border-gray-800 pt-4">
+              <p className="text-sm text-gray-400">Confirme avec ton mot de passe et un code actuel pour désactiver.</p>
+              <input type="password" value={password} onChange={e => setPassword(e.target.value)}
+                className="w-full text-sm" placeholder="Mot de passe" required />
+              <input type="text" inputMode="numeric" maxLength={6} value={code}
+                onChange={e => setCode(e.target.value.replace(/\D/g, ''))}
+                className="w-full text-sm tracking-[0.4em] text-center font-mono" placeholder="Code 2FA" required />
+              <div className="flex gap-2">
+                <button type="submit" disabled={busy}
+                  className="px-4 py-2 rounded-lg text-sm font-medium bg-red-600 hover:bg-red-500 text-white disabled:bg-gray-700">
+                  {busy ? '…' : 'Confirmer la désactivation'}
+                </button>
+                <button type="button" onClick={reset} className="px-4 py-2 rounded-lg text-sm text-gray-400 hover:text-white bg-gray-800">
+                  Annuler
+                </button>
+              </div>
+            </form>
+          )}
+        </>
+      ) : mode !== 'setup' ? (
+        <>
+          <div className="flex items-center gap-2 text-gray-400 text-sm mb-4">
+            <ShieldOff className="w-5 h-5 text-amber-400" /> La 2FA est <span className="font-semibold text-amber-400">désactivée</span>.
+          </div>
+          <button onClick={startSetup} disabled={busy}
+            className="px-4 py-2 rounded-lg text-sm font-medium bg-cyan-600 hover:bg-cyan-500 text-white disabled:bg-gray-700 flex items-center gap-2">
+            <Smartphone className="w-4 h-4" /> {busy ? '…' : 'Activer la 2FA'}
+          </button>
+        </>
+      ) : (
+        <form onSubmit={confirmEnable} className="space-y-4 border-t border-gray-800 pt-4">
+          <ol className="text-sm text-gray-400 space-y-1 list-decimal list-inside">
+            <li>Scanne ce QR code avec ton app d'authentification.</li>
+            <li>Saisis le code à 6 chiffres affiché pour confirmer.</li>
+          </ol>
+          {setupData?.qr && (
+            <div className="flex justify-center">
+              <img src={setupData.qr} alt="QR 2FA" className="w-48 h-48 rounded-lg bg-white p-2" />
+            </div>
+          )}
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Ou saisis cette clé manuellement :</label>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 text-xs font-mono bg-gray-950 border border-gray-800 rounded px-2 py-1.5 break-all">{setupData?.secret}</code>
+              <button type="button" onClick={copySecret} className="text-gray-400 hover:text-white p-1.5 bg-gray-800 rounded">
+                {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+          <input type="text" inputMode="numeric" maxLength={6} value={code} autoFocus
+            onChange={e => setCode(e.target.value.replace(/\D/g, ''))}
+            className="w-full text-lg tracking-[0.5em] text-center font-mono" placeholder="••••••" required />
+          <div className="flex gap-2">
+            <button type="submit" disabled={busy || code.length !== 6}
+              className="px-4 py-2 rounded-lg text-sm font-medium bg-cyan-600 hover:bg-cyan-500 text-white disabled:bg-gray-700">
+              {busy ? '…' : 'Activer'}
+            </button>
+            <button type="button" onClick={reset} className="px-4 py-2 rounded-lg text-sm text-gray-400 hover:text-white bg-gray-800">
+              Annuler
+            </button>
+          </div>
+        </form>
+      )}
     </div>
   );
 }

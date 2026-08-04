@@ -12,6 +12,7 @@ export interface CreateLicenseDto {
   discordId?: string;
   maxActivations?: number;
   metadata?: Record<string, any>;
+  product?: string;
 }
 
 export interface GenerateBatchDto {
@@ -19,12 +20,14 @@ export interface GenerateBatchDto {
   customDays?: number;
   count: number;
   prefix?: string;
+  product?: string;
 }
 
 export interface LicenseFilters {
   status?: LicenseStatus;
   plan?: LicensePlan;
-  search?: string;        // Search by key, email, HWID
+  product?: string;
+  search?: string;
   page?: number;
   limit?: number;
 }
@@ -49,6 +52,7 @@ export class LicenseService {
         maxActivations: dto.maxActivations || 1,
         expiresAt,
         metadata: dto.metadata,
+        product: dto.product ?? 'FTN_OPTIMIZER',
       },
     });
 
@@ -76,6 +80,7 @@ export class LicenseService {
           licenseKey,
           plan: dto.plan,
           expiresAt,
+          product: dto.product ?? 'FTN_OPTIMIZER',
         },
       });
       keys.push(licenseKey);
@@ -87,12 +92,13 @@ export class LicenseService {
 
   // ── List licenses with filters ──
   async findAll(filters: LicenseFilters) {
-    const { status, plan, search, page = 1, limit = 50 } = filters;
+    const { status, plan, product, search, page = 1, limit = 50 } = filters;
     const skip = (page - 1) * limit;
 
     const where: any = {};
     if (status) where.status = status;
     if (plan) where.plan = plan;
+    if (product) where.product = product;
     if (search) {
       where.OR = [
         { licenseKey: { contains: search, mode: 'insensitive' } },
@@ -111,6 +117,7 @@ export class LicenseService {
           id: true,
           licenseKey: true,
           plan: true,
+          product: true,
           status: true,
           hwid: true,
           email: true,
@@ -257,6 +264,43 @@ export class LicenseService {
     return updated;
   }
 
+  // ── Bulk extend licenses ──
+  async bulkExtend(days: number, filters: { product?: string; status?: LicenseStatus; plan?: LicensePlan }): Promise<{ affected: number }> {
+    const where: any = {};
+    if (filters.product) where.product = filters.product;
+    if (filters.status) where.status = filters.status;
+    if (filters.plan) where.plan = filters.plan;
+    if (!filters.status) where.status = LicenseStatus.ACTIVE;
+
+    const licenses = await this.prisma.license.findMany({ where, select: { id: true, expiresAt: true } });
+    if (!licenses.length) return { affected: 0 };
+
+    const now = new Date();
+    let affected = 0;
+    for (const lic of licenses) {
+      const baseDate = lic.expiresAt && lic.expiresAt > now ? lic.expiresAt : now;
+      const newExpiry = new Date(baseDate);
+      newExpiry.setDate(newExpiry.getDate() + days);
+
+      await this.prisma.license.update({
+        where: { id: lic.id },
+        data: { expiresAt: newExpiry, status: LicenseStatus.ACTIVE },
+      });
+
+      await this.prisma.activationLog.create({
+        data: {
+          licenseId: lic.id,
+          action: 'license:bulk-extended',
+          details: { addedDays: days, newExpiry: newExpiry.toISOString() },
+        },
+      });
+      affected++;
+    }
+
+    this.logger.log(`Bulk extended ${affected} licenses by ${days} day(s) [product=${filters.product || 'all'}, status=${filters.status || 'ACTIVE'}]`);
+    return { affected };
+  }
+
   // ── Delete license ──
   async delete(id: string): Promise<void> {
     await this.prisma.license.delete({ where: { id } });
@@ -319,6 +363,7 @@ export class LicenseService {
     }
     switch (plan) {
       case LicensePlan.DAYS_1:   return new Date(now.setDate(now.getDate() + 1));
+      case LicensePlan.DAYS_3:   return new Date(now.setDate(now.getDate() + 3));
       case LicensePlan.DAYS_7:   return new Date(now.setDate(now.getDate() + 7));
       case LicensePlan.DAYS_14:  return new Date(now.setDate(now.getDate() + 14));
       case LicensePlan.DAYS_30:  return new Date(now.setDate(now.getDate() + 30));

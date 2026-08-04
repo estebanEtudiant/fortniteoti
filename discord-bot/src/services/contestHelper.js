@@ -4,6 +4,7 @@ const { stmts } = require('./database');
 const Colors    = require('../config/colors');
 
 const PLAN_LABELS = {
+  DAYS_7:   '7 Jours',
   DAYS_30:  '30 Jours',
   DAYS_90:  '90 Jours',
   DAYS_365: '1 An',
@@ -53,7 +54,7 @@ function buildContestEmbed(contest) {
   if (ended && contest.winner_id) {
     fields.push({
       name: '🎉 Gagnant',
-      value: `<@${contest.winner_id}> — La clé lui a été envoyée en DM !`,
+      value: `<@${contest.winner_id}> — Un ticket a été ouvert pour lui remettre sa récompense.`,
     });
   }
 
@@ -64,16 +65,17 @@ function buildContestEmbed(contest) {
       ? `Le concours est terminé. Merci à tous les participants !`
       : [
           `> Invite **${contest.invites_required} amis** sur ce serveur pour participer au tirage au sort !`,
-          `> Le gagnant remporte une clé de licence **${planLbl}** pour **404 Tweaks**.`,
+          `> Le gagnant remporte une clé de licence **${planLbl}** pour **404 Client**.`,
           '',
           '**Comment participer ?**',
           '1. Crée une invitation Discord pour ce serveur',
           `2. Envoie-la à tes amis — chaque ami qui rejoint compte !`,
           `3. Atteins **${contest.invites_required} invitation(s)** pour être qualifié`,
-          '4. Un gagnant est tiré au sort parmi les qualifiés à la fin du concours',
+          '4. Plus tu invites, plus tu as de chances — chaque invitation = 1 ticket supplémentaire !',
+          '5. Un gagnant est tiré au sort parmi les qualifiés à la fin du concours',
         ].join('\n'),
     fields,
-    footer: { text: '404 Tweaks • Concours' },
+    footer: { text: '404 Client • Concours' },
     timestamp: new Date().toISOString(),
   };
 }

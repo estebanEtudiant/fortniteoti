@@ -1,21 +1,43 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Search, ChevronLeft, ChevronRight, Plus, Download, Ban, Trash2,
+  Calendar, Clock, Filter,
 } from 'lucide-react';
 import { api } from '../lib/api';
 import Loading from '../components/Loading';
 import StatusBadge from '../components/StatusBadge';
+import ProductBadge from '../components/ProductBadge';
 import { formatPlan, formatDate } from '../lib/utils';
+
+const PRODUCTS = [
+  { key: '', label: 'Tous produits' },
+  { key: 'FTN_OPTIMIZER', label: 'FTN Optimizer' },
+  { key: 'FORTNITE_CLIENT', label: 'Fortnite Client' },
+  { key: 'NG_LOADER', label: 'NG Loader' },
+  { key: 'MENORIA', label: 'Menoria' },
+  { key: 'VELTHAR_LOADER', label: 'Velthar' },
+];
 
 export default function LicensesPage({ navigate }) {
   const [data, setData] = useState(null);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
   const [plan, setPlan] = useState('');
+  const [product, setProduct] = useState('');
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(new Set());
   const [bulkLoading, setBulkLoading] = useState('');
+
+  // Bulk extend modal
+  const [showBulkExtend, setShowBulkExtend] = useState(false);
+  const [bulkDays, setBulkDays] = useState(1);
+  const [bulkProduct, setBulkProduct] = useState('');
+  const [bulkStatus, setBulkStatus] = useState('ACTIVE');
+  const [bulkResult, setBulkResult] = useState(null);
+  const [bulkExtendLoading, setBulkExtendLoading] = useState(false);
+  // Preview count
+  const [previewCount, setPreviewCount] = useState(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -23,17 +45,28 @@ export default function LicensesPage({ navigate }) {
     if (search) params.search = search;
     if (status) params.status = status;
     if (plan) params.plan = plan;
+    if (product) params.product = product;
     api.getLicenses(params).then(setData).catch(console.error).finally(() => setLoading(false));
-  }, [page, search, status, plan]);
+  }, [page, search, status, plan, product]);
 
   useEffect(() => { load(); }, [load]);
   const doSearch = (e) => { e.preventDefault(); setPage(1); load(); };
 
+  // Preview: count matching licenses when bulk modal filters change
+  useEffect(() => {
+    if (!showBulkExtend) return;
+    setPreviewCount(null);
+    const params = { limit: 1 };
+    if (bulkProduct) params.product = bulkProduct;
+    if (bulkStatus) params.status = bulkStatus;
+    api.getLicenses(params).then(r => setPreviewCount(r.pagination?.total ?? 0)).catch(() => setPreviewCount(null));
+  }, [showBulkExtend, bulkProduct, bulkStatus]);
+
   const exportCsv = () => {
     if (!data?.data?.length) return;
-    const header = 'Clé,Plan,Statut,Email,HWID,Expire,Dernier HB';
+    const header = 'Clé,Produit,Plan,Statut,Email,HWID,Expire,Dernier HB';
     const rows = data.data.map(l =>
-      `${l.licenseKey},${l.plan},${l.status},${l.email || ''},${l.hwid || ''},${l.expiresAt || 'Lifetime'},${l.lastHeartbeat || ''}`
+      `${l.licenseKey},${l.product || ''},${l.plan},${l.status},${l.email || ''},${l.hwid || ''},${l.expiresAt || 'Lifetime'},${l.lastHeartbeat || ''}`
     );
     const csv = [header, ...rows].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -73,6 +106,36 @@ export default function LicensesPage({ navigate }) {
     load();
   };
 
+  const bulkExtendSelected = async () => {
+    const days = parseInt(prompt(`Nombre de jours à ajouter aux ${selected.size} licence(s) sélectionnée(s) :`, '1'));
+    if (!days || days < 1) return;
+    setBulkLoading('extend');
+    await Promise.all([...selected].map(id => api.extendLicense(id, days).catch(() => {})));
+    setBulkLoading('');
+    setSelected(new Set());
+    load();
+  };
+
+  const doBulkExtend = async () => {
+    if (!bulkDays || bulkDays < 1) return;
+    const label = bulkProduct ? PRODUCTS.find(p => p.key === bulkProduct)?.label || bulkProduct : 'tous les produits';
+    if (!confirm(`Ajouter ${bulkDays} jour(s) à toutes les licences ${bulkStatus || 'ACTIVE'} de "${label}" ?\n\n${previewCount ?? '?'} licence(s) seront affectées.`)) return;
+    setBulkExtendLoading(true);
+    setBulkResult(null);
+    try {
+      const body = { days: bulkDays };
+      if (bulkProduct) body.product = bulkProduct;
+      if (bulkStatus) body.status = bulkStatus;
+      const res = await api.bulkExtendLicenses(body);
+      setBulkResult({ ok: true, affected: res.affected });
+      load();
+    } catch (err) {
+      setBulkResult({ ok: false, msg: err.message });
+    } finally {
+      setBulkExtendLoading(false);
+    }
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -80,6 +143,10 @@ export default function LicensesPage({ navigate }) {
           {data && <span className="ml-2 text-base text-gray-500 font-normal">({data.pagination.total})</span>}
         </h1>
         <div className="flex gap-2">
+          <button onClick={() => { setBulkResult(null); setBulkProduct(''); setBulkStatus('ACTIVE'); setBulkDays(1); setShowBulkExtend(true); }}
+            className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm">
+            <Clock className="w-4 h-4" /> Bulk Extend
+          </button>
           <button onClick={exportCsv}
             className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm">
             <Download className="w-4 h-4" /> CSV
@@ -97,6 +164,9 @@ export default function LicensesPage({ navigate }) {
           <input type="text" value={search} onChange={e => setSearch(e.target.value)}
             className="w-full pl-10" placeholder="Clé, email, HWID..." />
         </div>
+        <select value={product} onChange={e => { setProduct(e.target.value); setPage(1); }} className="w-44">
+          {PRODUCTS.map(p => <option key={p.key} value={p.key}>{p.label}</option>)}
+        </select>
         <select value={status} onChange={e => { setStatus(e.target.value); setPage(1); }} className="w-40">
           <option value="">Tous statuts</option>
           <option value="ACTIVE">Active</option>
@@ -106,6 +176,10 @@ export default function LicensesPage({ navigate }) {
         </select>
         <select value={plan} onChange={e => { setPlan(e.target.value); setPage(1); }} className="w-36">
           <option value="">Tous plans</option>
+          <option value="DAYS_1">1 jour</option>
+          <option value="DAYS_3">3 jours</option>
+          <option value="DAYS_7">7 jours</option>
+          <option value="DAYS_14">14 jours</option>
           <option value="DAYS_30">30 jours</option>
           <option value="DAYS_90">90 jours</option>
           <option value="DAYS_365">1 an</option>
@@ -119,18 +193,16 @@ export default function LicensesPage({ navigate }) {
         <>
           <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-sm min-w-[600px]">
+              <table className="w-full text-sm min-w-[700px]">
                 <thead>
                   <tr className="border-b border-gray-800 text-gray-400 text-left">
                     <th className="px-4 py-3 w-10">
-                      <input
-                        type="checkbox"
+                      <input type="checkbox"
                         checked={!!data?.data?.length && selected.size === data.data.length}
-                        onChange={toggleAll}
-                        className="cursor-pointer accent-cyan-500"
-                      />
+                        onChange={toggleAll} className="cursor-pointer accent-cyan-500" />
                     </th>
                     <th className="px-4 py-3">Clé</th>
+                    <th className="px-4 py-3">Produit</th>
                     <th className="px-4 py-3">Plan</th>
                     <th className="px-4 py-3">Statut</th>
                     <th className="px-4 py-3">HWID</th>
@@ -143,14 +215,11 @@ export default function LicensesPage({ navigate }) {
                     <tr key={lic.id} onClick={() => navigate(`/licenses/${lic.id}`)}
                       className="border-b border-gray-800/50 hover:bg-gray-800/50 cursor-pointer">
                       <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
-                        <input
-                          type="checkbox"
-                          checked={selected.has(lic.id)}
-                          onChange={() => toggleSelect(lic.id)}
-                          className="cursor-pointer accent-cyan-500"
-                        />
+                        <input type="checkbox" checked={selected.has(lic.id)}
+                          onChange={() => toggleSelect(lic.id)} className="cursor-pointer accent-cyan-500" />
                       </td>
                       <td className="px-4 py-3 font-mono text-xs text-cyan-400">{lic.licenseKey}</td>
+                      <td className="px-4 py-3"><ProductBadge product={lic.product} /></td>
                       <td className="px-4 py-3">{formatPlan(lic.plan)}</td>
                       <td className="px-4 py-3"><StatusBadge status={lic.status} /></td>
                       <td className="px-4 py-3 font-mono text-xs text-gray-500">{lic.hwid ? lic.hwid.substring(0, 12) + '...' : '—'}</td>
@@ -179,6 +248,10 @@ export default function LicensesPage({ navigate }) {
           {selected.size > 0 && (
             <div className="fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-gray-900 border border-gray-700 rounded-xl px-5 py-3 shadow-2xl z-50">
               <span className="text-sm text-gray-400">{selected.size} sélectionné(s)</span>
+              <button onClick={bulkExtendSelected} disabled={!!bulkLoading}
+                className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+                <Calendar className="w-4 h-4" /> {bulkLoading === 'extend' ? '...' : 'Étendre'}
+              </button>
               <button onClick={bulkBan} disabled={!!bulkLoading}
                 className="bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2">
                 <Ban className="w-4 h-4" /> {bulkLoading === 'ban' ? '...' : 'Bannir'}
@@ -191,6 +264,68 @@ export default function LicensesPage({ navigate }) {
             </div>
           )}
         </>
+      )}
+
+      {/* Bulk Extend Modal */}
+      {showBulkExtend && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => setShowBulkExtend(false)}>
+          <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-md p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <h2 className="text-xl font-bold mb-1 flex items-center gap-2">
+              <Clock className="w-5 h-5 text-indigo-400" /> Bulk Extend
+            </h2>
+            <p className="text-gray-500 text-sm mb-5">Ajouter des jours à toutes les licences correspondant aux filtres.</p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Produit</label>
+                <select value={bulkProduct} onChange={e => setBulkProduct(e.target.value)} className="w-full">
+                  {PRODUCTS.map(p => <option key={p.key} value={p.key}>{p.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Statut</label>
+                <select value={bulkStatus} onChange={e => setBulkStatus(e.target.value)} className="w-full">
+                  <option value="">Tous</option>
+                  <option value="ACTIVE">Active</option>
+                  <option value="EXPIRED">Expirée</option>
+                  <option value="SUSPENDED">Suspendue</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Jours à ajouter</label>
+                <input type="number" value={bulkDays} onChange={e => setBulkDays(parseInt(e.target.value) || 0)}
+                  min="1" max="3650" className="w-full" />
+              </div>
+
+              {previewCount !== null && (
+                <div className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-sm">
+                  <span className="text-gray-400">Licences correspondantes : </span>
+                  <span className="font-bold text-white">{previewCount}</span>
+                </div>
+              )}
+
+              {bulkResult && (
+                <div className={`rounded-lg px-4 py-3 text-sm ${bulkResult.ok ? 'bg-green-500/10 border border-green-500/30 text-green-400' : 'bg-red-500/10 border border-red-500/30 text-red-400'}`}>
+                  {bulkResult.ok
+                    ? `${bulkResult.affected} licence(s) étendue(s) de ${bulkDays} jour(s)`
+                    : `Erreur : ${bulkResult.msg}`}
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-2">
+                <button onClick={() => setShowBulkExtend(false)}
+                  className="flex-1 bg-gray-800 hover:bg-gray-700 text-white py-2.5 rounded-lg text-sm">
+                  Annuler
+                </button>
+                <button onClick={doBulkExtend} disabled={bulkExtendLoading || !bulkDays || bulkDays < 1}
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  {bulkExtendLoading ? 'En cours...' : `Étendre +${bulkDays}j`}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

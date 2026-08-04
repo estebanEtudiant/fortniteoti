@@ -10,6 +10,7 @@ import { RedisService } from '../../database/redis.service';
 import { hashHwid, hashToken, generateSecureToken, safeCompare } from '../../common/utils/crypto.utils';
 import { ActivateDto, HeartbeatDto, RefreshTokenDto, ActivationResponse, HeartbeatResponse } from './auth.dto';
 import { JwtPayload } from '../../common/guards/auth.guard';
+import { ResellerService } from '../reseller/reseller.service';
 
 @Injectable()
 export class AuthService {
@@ -23,6 +24,7 @@ export class AuthService {
     private redis: RedisService,
     private jwt: JwtService,
     private config: ConfigService,
+    private resellerService: ResellerService,
   ) {
     this.hwidSalt = config.get<string>('hwid.salt', '');
     this.bruteForceMax = config.get<number>('rateLimit.bruteForceMax', 10);
@@ -58,7 +60,13 @@ export class AuthService {
       throw new UnauthorizedException('Invalid license key');
     }
 
-    // ── 4. Check license status ──
+    // ── 4. Check product match (if client declares expected product) ──
+    if (dto.product && license.product !== dto.product) {
+      await this.logActivation(license.id, ActivationStatus.BANNED, ip, dto, userAgent);
+      throw new ForbiddenException('mauvais produit pour cette cle');
+    }
+
+    // ── 5. Check license status ──
     if (license.status === LicenseStatus.BANNED) {
       await this.logActivation(license.id, ActivationStatus.BANNED, ip, dto, userAgent);
       throw new ForbiddenException('License has been banned');
@@ -111,6 +119,11 @@ export class AuthService {
           lastHeartbeat: new Date(),
         },
       });
+    }
+
+    // ── 6b. Reseller anti-fraud: block reseller from activating their own keys ──
+    if (license.resellerId) {
+      await this.resellerService.checkResellerActivation(license.resellerId, serverHwid);
     }
 
     // ── 7. Generate tokens ──
@@ -270,7 +283,7 @@ export class AuthService {
         validUntil: effectiveExpiry.toISOString(),
       },
       {
-        secret: this.config.get<string>('jwt.secret'),
+        secret: this.config.get<string>('offlineTokenKey'),
         expiresIn: expiresInSeconds,
       },
     );

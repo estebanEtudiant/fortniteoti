@@ -5,7 +5,7 @@ const Colors     = require('../../config/colors');
 const { stmts }  = require('../../services/database');
 const licenseApi = require('../../services/licenseApi');
 
-const PLAN_LABELS = { DAYS_1: '1 jour', DAYS_7: '7 jours', DAYS_14: '14 jours' };
+const PLAN_LABELS = { DAYS_1: '1 jour', DAYS_3: '3 jours', DAYS_7: '7 jours', DAYS_14: '14 jours' };
 
 module.exports = {
   data: new SlashCommandBuilder()

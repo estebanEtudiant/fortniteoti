@@ -1,32 +1,18 @@
 'use strict';
 
-/**
- * Status Monitor — vérifie toutes les N secondes l'état des services
- * et met à jour un embed Discord fixe dans le salon #status.
- *
- * Services surveillés :
- *   - API Backend (NestJS)
- *   - Base de données PostgreSQL  (via /health/detailed)
- *   - Cache Redis                 (via /health/detailed)
- *   - Storefront (React)
- *   - Stripe                      (via /health/detailed)
- */
-
 const config = require('../config/config');
 const { stmts } = require('./database');
 const logger = require('./logger');
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-/**
- * Fait un GET HTTP avec timeout, retourne { ok, latencyMs, body? }.
- */
 async function httpGet(url, timeoutMs = 5000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   const t0 = Date.now();
   try {
-    const res = await fetch(url, { signal: controller.signal });
+    const headers = url.includes('/health/detailed')
+      ? { 'x-bot-secret': config.api.secret }
+      : undefined;
+    const res = await fetch(url, { signal: controller.signal, headers });
     const latencyMs = Date.now() - t0;
     let body = null;
     try { body = await res.json(); } catch { /* pas du JSON */ }
@@ -38,14 +24,12 @@ async function httpGet(url, timeoutMs = 5000) {
   }
 }
 
-// ─── Construire l'embed ───────────────────────────────────────────────────────
-
 function statusLine(label, status, detail = '') {
-  const icon = status === 'ok'             ? '🟢'
-             : status === 'degraded'       ? '🟡'
-             : status === 'configured'     ? '🟡'
+  const icon = status === 'ok'             ? '\u{1F7E2}'
+             : status === 'degraded'       ? '\u{1F7E1}'
+             : status === 'configured'     ? '\u{1F7E1}'
              : status === 'not_configured' ? '⚫'
-             : '🔴';
+             : '\u{1F534}';
 
   const text = status === 'ok'             ? 'En ligne'
              : status === 'degraded'       ? 'Dégradé'
@@ -58,24 +42,19 @@ function statusLine(label, status, detail = '') {
 }
 
 function buildEmbed(results) {
-  const allOk = Object.values(results).every(r => r.status === 'ok' || r.status === 'configured');
+  const allOk = Object.values(results).every(r => r.status === 'ok');
   const hasError = Object.values(results).some(r => r.status === 'error');
 
-  const color = hasError ? 0xED4245  // rouge
-              : allOk   ? 0x57F287  // vert
-              : 0xFEE75C;            // jaune (dégradé)
+  const color = hasError ? 0xED4245 : allOk ? 0x57F287 : 0xFEE75C;
 
-  const overallText = hasError ? '🔴 Incident en cours'
-                    : allOk   ? '🟢 Tous les systèmes sont opérationnels'
-                    : '🟡 Dégradé';
+  const overallText = hasError ? '\u{1F534} Incident en cours'
+                    : allOk   ? '\u{1F7E2} Tous les systèmes sont opérationnels'
+                    : '\u{1F7E1} Dégradé';
 
   const serviceRows = [
-    ['API Backend',     results.api],
-    ['Base de données', results.database],
-    ['Cache Redis',     results.redis],
-    ['Site web',        results.storefront],
-    ...(results.download ? [['Téléchargement de 404 Tweaks', results.download]] : []),
-    ['Stripe',          results.stripe],
+    ['API Backend',              results.api],
+    ['Site web',                 results.storefront],
+    ['Téléchargement de 404 Tweaks', results.download],
   ];
 
   const lines = serviceRows
@@ -87,84 +66,124 @@ function buildEmbed(results) {
 
   return {
     color,
-    title: '📡 Statut des services — 404 Tweaks',
-    description: `**${overallText}**\n\u200B`,
+    title: '\u{1F4E1} Statut des services — 404 Tweaks',
+    description: `**${overallText}**`,
     fields: [
       { name: 'Services', value: lines },
+      { name: 'Prochaine vérification', value: `<t:${nextUpdate}:R>`, inline: true },
     ],
-    footer: { text: `Prochaine vérification <t:${nextUpdate}:R>` },
     timestamp: new Date().toISOString(),
   };
 }
 
-// ─── Vérification ─────────────────────────────────────────────────────────────
+function buildNgEmbed(results) {
+  const allOk = Object.values(results).every(r => r.status === 'ok');
+  const hasError = Object.values(results).some(r => r.status === 'error');
+
+  const color = hasError ? 0xED4245 : allOk ? 0x57F287 : 0xFEE75C;
+
+  const overallText = hasError ? '\u{1F534} Incident en cours'
+                    : allOk   ? '\u{1F7E2} Tous les systèmes sont opérationnels'
+                    : '\u{1F7E1} Dégradé';
+
+  const serviceRows = [
+    ['API Backend',    results.api],
+    ['404 Client',     results.storefront],
+    ['Téléchargement', results.download],
+  ];
+
+  const lines = serviceRows
+    .map(([label, r]) => r ? statusLine(label, r.status, r.latencyMs ? `${r.latencyMs} ms` : '') : null)
+    .filter(Boolean)
+    .join('\n');
+
+  const nextUpdate = Math.floor((Date.now() + config.monitor.intervalMs) / 1000);
+
+  return {
+    color,
+    title: '\u{1F4E1} Statut des services — 404 Client',
+    description: `**${overallText}**`,
+    fields: [
+      { name: 'Services', value: lines },
+      { name: 'Prochaine vérification', value: `<t:${nextUpdate}:R>`, inline: true },
+    ],
+    timestamp: new Date().toISOString(),
+  };
+}
 
 async function runCheck(client) {
-  const row = stmts.getStatusMessage.get();
-  if (!row) return; // Aucun embed configuré
-
-  const results = {};
-
-  // 1. API Backend + DB + Redis + Stripe (via /health/detailed)
+  // ─── Vérification commune (API + services) ───────────────────────────────
   const health = await httpGet(`${config.api.baseUrl}/health/detailed`, 6000);
-  if (health.ok && health.body?.services) {
-    results.api      = { status: 'ok',         latencyMs: health.latencyMs };
-    results.database = health.body.services.database || { status: 'error' };
-    results.redis    = health.body.services.redis    || { status: 'error' };
-    results.stripe   = health.body.services.stripe   || { status: 'not_configured' };
-  } else {
-    // Backend entièrement offline
-    results.api      = { status: 'error', latencyMs: health.latencyMs };
-    results.database = { status: 'error' };
-    results.redis    = { status: 'error' };
-    results.stripe   = { status: 'error' };
-  }
 
-  // 2. Storefront
-  const sf = await httpGet(config.monitor.storefrontUrl, 5000);
-  results.storefront = { status: sf.ok ? 'ok' : 'error', latencyMs: sf.latencyMs };
+  const apiResult = health.ok && health.body?.services
+    ? { status: 'ok', latencyMs: health.latencyMs }
+    : { status: 'error', latencyMs: health.latencyMs };
 
-  // 3. Lien de téléchargement (si configuré)
-  if (config.monitor.downloadUrl) {
-    const dl = await httpGet(config.monitor.downloadUrl, 8000);
-    // Une réponse 200-499 = le serveur répond (même 404 = hébergeur en ligne)
-    // 5xx ou timeout = vraiment offline
-    const dlOk = dl.ok || (dl.latencyMs < 8000 && dl.latencyMs > 0);
-    results.download = { status: dlOk ? 'ok' : 'error', latencyMs: dl.latencyMs };
-  }
+  // ─── FTN ─────────────────────────────────────────────────────────────────
+  const ftnRow = stmts.getStatusMessage.get();
+  if (ftnRow) {
+    try {
+      const results = {};
+      results.api = apiResult;
 
-  // 3. Mettre à jour l'embed
-  try {
-    const guild   = client.guilds.cache.get(row.guild_id);
-    if (!guild) return;
+      const sf = await httpGet(config.monitor.storefrontUrl, 5000);
+      results.storefront = { status: sf.ok ? 'ok' : 'error', latencyMs: sf.latencyMs };
 
-    const channel = guild.channels.cache.get(row.channel_id);
-    if (!channel) return;
+      if (config.monitor.downloadUrl) {
+        const dl = await httpGet(config.monitor.downloadUrl, 8000);
+        const dlOk = dl.ok || (dl.latencyMs < 8000 && dl.latencyMs > 0);
+        results.download = { status: dlOk ? 'ok' : 'error', latencyMs: dl.latencyMs };
+      }
 
-    const message = await channel.messages.fetch(row.message_id).catch(() => null);
-    if (!message) {
-      // Message supprimé — on réinitialise
-      stmts.deleteStatusMessage.run();
-      logger.warn('statusMonitor: message de statut introuvable, réinitialisez avec /setstatus.');
-      return;
+      const guild = client.guilds.cache.get(ftnRow.guild_id);
+      const channel = guild?.channels.cache.get(ftnRow.channel_id);
+      if (channel) {
+        const message = await channel.messages.fetch(ftnRow.message_id).catch(() => null);
+        if (!message) {
+          stmts.deleteStatusMessage.run();
+          logger.warn('statusMonitor FTN: message introuvable, réinitialisez avec /setstatus.');
+        } else {
+          await message.edit({ embeds: [buildEmbed(results)] });
+        }
+      }
+    } catch (err) {
+      logger.error('statusMonitor.runCheck FTN:', err);
     }
+  }
 
-    await message.edit({ embeds: [buildEmbed(results)] });
+  // ─── NG ──────────────────────────────────────────────────────────────────
+  const ngRow = stmts.getNgStatusMessage.get();
+  if (ngRow) {
+    try {
+      const results = {};
+      results.api = apiResult;
 
-    const statuses = Object.entries(results)
-      .map(([k, v]) => `${k}:${v.status}`)
-      .join(' | ');
-    logger.debug(`[STATUS] ${statuses}`);
-  } catch (err) {
-    logger.error('statusMonitor.runCheck:', err);
+      const sf = await httpGet(config.ng.storefrontUrl, 5000);
+      results.storefront = { status: sf.ok ? 'ok' : 'error', latencyMs: sf.latencyMs };
+
+      if (config.monitor.downloadUrl) {
+        const dl = await httpGet(config.monitor.downloadUrl, 8000);
+        const dlOk = dl.ok || (dl.latencyMs < 8000 && dl.latencyMs > 0);
+        results.download = { status: dlOk ? 'ok' : 'error', latencyMs: dl.latencyMs };
+      }
+
+      const guild = client.guilds.cache.get(ngRow.guild_id);
+      const channel = guild?.channels.cache.get(ngRow.channel_id);
+      if (channel) {
+        const message = await channel.messages.fetch(ngRow.message_id).catch(() => null);
+        if (!message) {
+          stmts.deleteNgStatusMessage.run();
+          logger.warn('statusMonitor NG: message introuvable, réinitialisez avec /ngsetstatus.');
+        } else {
+          await message.edit({ embeds: [buildNgEmbed(results)] });
+        }
+      }
+    } catch (err) {
+      logger.error('statusMonitor.runCheck NG:', err);
+    }
   }
 }
 
-// ─── Export ───────────────────────────────────────────────────────────────────
-
-/**
- * Construit et retourne l'embed initial (pour /setstatus).
- */
 function buildInitialEmbed() {
   const initial = {
     api:        { status: 'degraded' },
@@ -173,21 +192,24 @@ function buildInitialEmbed() {
     storefront: { status: 'degraded' },
     stripe:     { status: 'degraded' },
   };
-  if (config.monitor.downloadUrl) {
-    initial.download = { status: 'degraded' };
-  }
+  if (config.monitor.downloadUrl) initial.download = { status: 'degraded' };
   return buildEmbed(initial);
 }
 
-/**
- * Démarre le monitor périodique.
- */
+function buildInitialNgEmbed() {
+  const initial = {
+    api:        { status: 'degraded' },
+    storefront: { status: 'degraded' },
+    download:   { status: 'degraded' },
+  };
+  return buildNgEmbed(initial);
+}
+
 function start(client) {
   const intervalMs = config.monitor.intervalMs;
   setInterval(() => runCheck(client), intervalMs);
-  // Première vérification dans 5s (laisse le bot finir de démarrer)
   setTimeout(() => runCheck(client), 5000);
   logger.info(`Status monitor démarré (intervalle: ${intervalMs / 1000}s).`);
 }
 
-module.exports = { start, buildInitialEmbed, runCheck };
+module.exports = { start, buildInitialEmbed, buildInitialNgEmbed, runCheck };

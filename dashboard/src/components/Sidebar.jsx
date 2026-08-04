@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Shield, BarChart3, Activity, Key, Users, ShoppingCart, Package,
   Plus, Upload, Image, MessageSquare, Tag, AlertTriangle, Clock,
-  Settings, LogOut, Globe, Menu, X,
+  Settings, LogOut, Globe, Menu, X, Server, Gamepad2, Skull, TrendingUp, UserCheck, Store, Cpu, Box, Sparkles, Bug,
 } from 'lucide-react';
 
 export default function Sidebar({ path, navigate, onLogout }) {
@@ -18,12 +18,21 @@ export default function Sidebar({ path, navigate, onLogout }) {
     { icon: Key,           label: 'Licences',        p: '/licenses' },
     { icon: Users,         label: 'Utilisateurs',    p: '/customers' },
     { icon: ShoppingCart,  label: 'Commandes',       p: '/orders' },
-    { icon: Package,       label: 'Plans',           p: '/plans' },
+    { icon: Package,       label: 'Plans',           p: '/plans-hub' },
     { icon: Plus,          label: 'Générer',         p: '/generate' },
-    { icon: Upload,        label: 'Logiciel',        p: '/software' },
-    { icon: Image,         label: 'Images boutique', p: '/images' },
+    { icon: Upload,        label: 'Upload',          p: '/upload' },
+    { icon: Gamepad2,      label: 'Shop',            p: '/shop-content' },
+    { icon: Sparkles,      label: 'Pokémon',         p: '/pokemon' },
+    { icon: Server,        label: 'Serveurs',         p: '/servers' },
     { icon: MessageSquare, label: 'Bot Discord',     p: '/bot' },
+    { icon: Box,           label: 'Minecraft',       p: '/minecraft' },
     { icon: Tag,           label: 'Codes Promo',     p: '/promo-codes' },
+    { icon: UserCheck,     label: 'Affiliés',        p: '/affiliates' },
+    { icon: Store,         label: 'Resellers',       p: '/resellers' },
+    { icon: TrendingUp,    label: 'Metrics',          p: '/metrics' },
+    { icon: Cpu,           label: 'Kernel Symbols',   p: '/kernel-symbols' },
+    { icon: Bug,           label: 'Crash Reports',    p: '/crash-dumps' },
+    { icon: Skull,         label: 'Kill Switch',      p: '/kill-switch' },
     { icon: AlertTriangle, label: 'IPs Bloquées',    p: '/blocked-ips' },
     { icon: Clock,         label: 'Logs',            p: '/logs' },
     { icon: Settings,      label: 'Paramètres',      p: '/settings' },

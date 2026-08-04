@@ -98,21 +98,67 @@ export default function LicenseDetailPage({ id, navigate }) {
         </div>
       </div>
 
-      {lic.activations?.length > 0 && (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-6">
-          <h2 className="text-lg font-semibold mb-4">Historique des Activations</h2>
-          <div className="space-y-2 max-h-80 overflow-auto">
-            {lic.activations.map(a => (
-              <div key={a.id} className="flex items-center gap-3 text-sm bg-gray-800/50 rounded-lg p-3">
-                <StatusBadge status={a.status} small />
-                <span className="font-mono text-xs text-gray-400">{a.ipAddress}</span>
-                <span className="font-mono text-xs text-gray-500">{a.hwid?.substring(0, 12)}...</span>
-                <span className="ml-auto text-xs text-gray-500">{formatDate(a.createdAt)}</span>
+      {lic.activations?.length > 0 && (() => {
+        // Detect shared key: group by distinct (username, hostname) pairs
+        const identities = [];
+        const seen = new Set();
+        lic.activations.forEach(a => {
+          const mi = a.machineInfo || {};
+          const key = `${mi.username || ''}|${mi.hostname || ''}`;
+          if ((mi.username || mi.hostname) && !seen.has(key)) {
+            seen.add(key);
+            identities.push({ username: mi.username, hostname: mi.hostname, ip: a.ipAddress });
+          }
+        });
+
+        return (
+          <>
+            {identities.length > 1 && (
+              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-4">
+                <p className="text-red-400 font-semibold text-sm mb-2">
+                  ⚠ Clé potentiellement partagée — {identities.length} identités distinctes détectées
+                </p>
+                <div className="space-y-1">
+                  {identities.map((id, i) => (
+                    <div key={i} className="flex gap-4 text-xs font-mono text-red-300">
+                      <span className="text-red-400">{id.username || '—'}</span>
+                      <span className="text-gray-400">@{id.hostname || '—'}</span>
+                      <span className="text-gray-500">{id.ip}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
+            )}
+
+            <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 mb-6">
+              <h2 className="text-lg font-semibold mb-4">Historique des Activations</h2>
+              <div className="space-y-2 max-h-80 overflow-auto">
+                {lic.activations.map(a => {
+                  const mi = a.machineInfo || {};
+                  return (
+                    <div key={a.id} className="bg-gray-800/50 rounded-lg p-3 text-xs space-y-1.5">
+                      <div className="flex items-center gap-3">
+                        <StatusBadge status={a.status} small />
+                        <span className="font-mono text-gray-400">{a.ipAddress}</span>
+                        <span className="font-mono text-gray-500">{a.hwid?.substring(0, 12)}...</span>
+                        <span className="ml-auto text-gray-500">{formatDate(a.createdAt)}</span>
+                      </div>
+                      {(mi.username || mi.hostname || mi.os || mi.locale) && (
+                        <div className="flex flex-wrap gap-x-4 gap-y-0.5 pl-1 text-gray-500">
+                          {mi.username && <span><span className="text-gray-400">user</span> {mi.username}</span>}
+                          {mi.hostname && <span><span className="text-gray-400">host</span> {mi.hostname}</span>}
+                          {mi.os      && <span><span className="text-gray-400">os</span> {mi.os}</span>}
+                          {mi.locale  && <span><span className="text-gray-400">locale</span> {mi.locale}</span>}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </>
+        );
+      })()}
 
       {lic.logs?.length > 0 && (
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">

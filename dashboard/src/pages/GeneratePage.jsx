@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronRight, Copy, Check } from 'lucide-react';
 import { api } from '../lib/api';
 
@@ -64,8 +64,25 @@ const GENERATE_PLANS = [
   { key: 'LIFETIME', name: 'Lifetime',  emoji: planEmoji('LIFETIME'), sub: planLabel('LIFETIME') },
 ];
 
+const STATIC_PRODUCTS = [
+  { key: 'FTN_OPTIMIZER', label: 'FTN Optimizer', emoji: '⚡', sub: 'Logiciel FortniteOpti' },
+  { key: 'FORTNITE_CLIENT', label: 'Fortnite Client', emoji: '🎯', sub: 'Cheat loader (driver/reader/byovd)' },
+];
+
 export default function GeneratePage() {
   const [plan, setPlan] = useState('DAYS_30');
+  const [product, setProduct] = useState('FTN_OPTIMIZER');
+  const [products, setProducts] = useState(STATIC_PRODUCTS);
+
+  useEffect(() => {
+    api.getServers().then(servers => {
+      const seen = new Set();
+      const serverProducts = (servers || [])
+        .filter(s => s.active && s.product && !seen.has(s.product) && seen.add(s.product))
+        .map(s => ({ key: s.product, label: s.name, emoji: '🎮', sub: s.description || s.product }));
+      setProducts([...STATIC_PRODUCTS, ...serverProducts]);
+    }).catch(() => {});
+  }, []);
   const [count, setCount] = useState(1);
   const [email, setEmail] = useState('');
   const [keys, setKeys] = useState([]);
@@ -77,10 +94,10 @@ export default function GeneratePage() {
     setLoading(true); setKeys([]);
     try {
       if (mode === 'batch') {
-        const data = await api.generateBatch({ plan, count: parseInt(count) || 1 });
+        const data = await api.generateBatch({ plan, count: parseInt(count) || 1, product });
         setKeys(data.keys);
       } else {
-        const data = await api.createLicense({ plan, email: email || undefined });
+        const data = await api.createLicense({ plan, email: email || undefined, product });
         setKeys([data.licenseKey]);
       }
     } catch (err) { alert(err.message); }
@@ -109,6 +126,21 @@ export default function GeneratePage() {
         </div>
 
         <div className="space-y-4">
+          <div>
+            <label className="block text-sm text-gray-400 mb-1.5">Produit</label>
+            <div className="grid grid-cols-2 gap-2">
+              {products.map(p => (
+                <button key={p.key} type="button" onClick={() => setProduct(p.key)}
+                  className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border text-left transition-colors ${product === p.key ? 'bg-cyan-600/20 border-cyan-500 text-white' : 'bg-gray-800 border-gray-700 text-gray-400 hover:border-gray-500'}`}>
+                  <span className="text-lg">{p.emoji}</span>
+                  <div>
+                    <div className="text-sm font-medium">{p.label}</div>
+                    <div className="text-xs opacity-60">{p.sub}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
           <div>
             <label className="block text-sm text-gray-400 mb-1.5">Plan</label>
             <PlanDropdown options={GENERATE_PLANS} value={plan} onChange={setPlan} />

@@ -71,9 +71,9 @@ async function getLicenseStatus(discordId) {
  * Génère une ou plusieurs clés de licence via le backend.
  * @returns {{ success: boolean, keys?: string[], reason?: string }}
  */
-async function generateKeys(plan, count = 1) {
+async function generateKeys(plan, count = 1, product = 'FTN_OPTIMIZER') {
   try {
-    const { data } = await client.post('/bot/generate', { plan, count });
+    const { data } = await client.post('/bot/generate', { plan, count, product });
     return data;
   } catch (err) {
     const status = err.response?.status;
@@ -139,4 +139,18 @@ async function getBotConfig() {
   }
 }
 
-module.exports = { verifyLicense, getLicenseStatus, generateKeys, getDashboard, setMaintenance, submitReview, getBotConfig };
+/**
+ * Pousse les stats de communauté live (nb de membres, dernier arrivé) — lues par le site public.
+ */
+async function updateCommunityStats({ totalMembers, onlineMembers, newestMemberUsername, newestMemberAvatarUrl }) {
+  try {
+    await client.post('/bot/community-stats', { totalMembers, onlineMembers, newestMemberUsername, newestMemberAvatarUrl });
+  } catch (err) {
+    logger.error('licenseApi.updateCommunityStats error:', err.message);
+  }
+}
+
+module.exports = {
+  verifyLicense, getLicenseStatus, generateKeys, getDashboard, setMaintenance,
+  submitReview, getBotConfig, updateCommunityStats,
+};

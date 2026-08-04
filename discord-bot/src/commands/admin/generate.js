@@ -36,15 +36,25 @@ module.exports = {
        .setMaxValue(10)
        .setRequired(false)
     )
+    .addStringOption(o =>
+      o.setName('produit')
+       .setDescription('Produit de la licence (défaut : FTN Optimizer)')
+       .setRequired(false)
+       .addChoices(
+         { name: '⚡ FTN Optimizer', value: 'FTN_OPTIMIZER' },
+         { name: '☕ NG Loader',     value: 'NG_LOADER' },
+       )
+    )
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
 
   async execute(interaction) {
     await interaction.deferReply({ ephemeral: true });
 
-    const plan  = interaction.options.getString('plan');
-    const count = interaction.options.getInteger('quantité') ?? 1;
+    const plan    = interaction.options.getString('plan');
+    const count   = interaction.options.getInteger('quantité') ?? 1;
+    const product = interaction.options.getString('produit') ?? 'FTN_OPTIMIZER';
 
-    const result = await licenseApi.generateKeys(plan, count);
+    const result = await licenseApi.generateKeys(plan, count, product);
 
     if (!result.success) {
       return interaction.editReply({
@@ -55,15 +65,16 @@ module.exports = {
       });
     }
 
-    const planLabel = PLAN_LABELS[plan] || plan;
-    const keyLines  = result.keys.map((k, i) => `\`${i + 1}.\` \`${k}\``).join('\n');
+    const planLabel    = PLAN_LABELS[plan] || plan;
+    const productLabel = product === 'NG_LOADER' ? '☕ NG Loader' : '⚡ FTN Optimizer';
+    const keyLines     = result.keys.map((k, i) => `\`${i + 1}.\` \`${k}\``).join('\n');
 
-    logger.info(`[GENERATE] ${count}x ${plan} généré(s) par ${interaction.user.tag}`);
+    logger.info(`[GENERATE] ${count}x ${plan} [${product}] généré(s) par ${interaction.user.tag}`);
 
     return interaction.editReply({
       embeds: [{
         color:       Colors.GOLD,
-        title:       `🔑 ${count} clé(s) générée(s) — Plan ${planLabel}`,
+        title:       `🔑 ${count} clé(s) générée(s) — ${planLabel} • ${productLabel}`,
         description: keyLines,
         footer:      { text: '⚠️ Ces clés sont à usage unique — à transmettre de façon sécurisée.' },
         timestamp:   new Date().toISOString(),

@@ -5,6 +5,7 @@ import { AuthService } from './auth.service';
 import { ActivateDto, HeartbeatDto, RefreshTokenDto } from './auth.dto';
 import { LicenseAuthGuard, JwtPayload } from '../../common/guards/auth.guard';
 import { RateLimit, RateLimitGuard } from '../../common/guards/rate-limit.guard';
+import { KillGuard } from '../kill-switch/kill.guard';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -14,7 +15,7 @@ export class AuthController {
   // ── POST /api/v1/auth/activate ──
   @Post('activate')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(RateLimitGuard)
+  @UseGuards(KillGuard, RateLimitGuard)
   @RateLimit({ max: 5, window: 60, keyPrefix: 'activate' })
   @ApiOperation({ summary: 'Activate license key with HWID binding' })
   async activate(@Body() dto: ActivateDto, @Req() req: Request) {

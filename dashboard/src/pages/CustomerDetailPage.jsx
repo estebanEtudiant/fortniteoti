@@ -24,11 +24,15 @@ export default function CustomerDetailPage({ id, navigate }) {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState('');
   const [actionMsg, setActionMsg] = useState('');
+  const [productOptions, setProductOptions] = useState([
+    { value: 'FTN_OPTIMIZER', label: 'FTN Optimizer' },
+  ]);
   const [licenseForm, setLicenseForm] = useState({
     plan: 'DAYS_30',
     customDays: '',
     maxActivations: '1',
     sendEmail: true,
+    product: 'FTN_OPTIMIZER',
   });
   const [attachLicenseForm, setAttachLicenseForm] = useState({
     licenseKey: '',
@@ -41,6 +45,16 @@ export default function CustomerDetailPage({ id, navigate }) {
   }, [id]);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    api.getServers().then(servers => {
+      const seen = new Set();
+      const opts = [{ value: 'FTN_OPTIMIZER', label: 'FTN Optimizer' }];
+      (servers || []).filter(s => s.active && s.product && !seen.has(s.product) && seen.add(s.product))
+        .forEach(s => opts.push({ value: s.product, label: s.name }));
+      setProductOptions(opts);
+    }).catch(() => {});
+  }, []);
 
   const doAction = async (action) => {
     setActionLoading(action);
@@ -90,6 +104,7 @@ export default function CustomerDetailPage({ id, navigate }) {
       const payload = {
         plan: licenseForm.plan,
         sendEmail: licenseForm.sendEmail,
+        product: licenseForm.product,
       };
 
       const customDays = Number(licenseForm.customDays);
@@ -233,7 +248,20 @@ export default function CustomerDetailPage({ id, navigate }) {
             <KeyRound className="w-4 h-4 text-cyan-400" /> Ajouter une licence
           </h3>
 
-          <div className="grid lg:grid-cols-4 gap-3">
+          <div className="grid lg:grid-cols-5 gap-3">
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Produit</label>
+              <select
+                value={licenseForm.product}
+                onChange={(e) => setLicenseForm(prev => ({ ...prev, product: e.target.value }))}
+                className="w-full"
+                disabled={!!actionLoading}
+              >
+                {productOptions.map(o => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+            </div>
             <div>
               <label className="block text-xs text-gray-400 mb-1">Plan</label>
               <select

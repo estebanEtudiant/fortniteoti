@@ -191,8 +191,11 @@ int main() {
 ## Production — Checklist
 
 - [ ] Générer tous les secrets (.env)
+- [ ] Générer une clé dédiée `OFFLINE_TOKEN_SECRET`
 - [ ] Configurer HTTPS (reverse proxy nginx/Caddy)
+- [ ] Laisser PostgreSQL, Redis, API et dashboards bindés sur `127.0.0.1` puis publier uniquement via le reverse proxy
 - [ ] Configurer CORS (ADMIN_CORS_ORIGIN)
+- [ ] Activer `TRUST_PROXY=true` derrière nginx/Caddy/Cloudflare
 - [ ] Configurer backup PostgreSQL
 - [ ] Changer le mot de passe admin
 - [ ] Configurer Stripe en mode live

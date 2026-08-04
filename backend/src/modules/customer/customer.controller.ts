@@ -1,10 +1,11 @@
 import {
-  Controller, Post, Get, Put, Body, Req, UseGuards,
+  Controller, Post, Get, Put, Delete, Body, Req, Res, UseGuards,
   HttpCode, HttpStatus, Query,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { CustomerService } from './customer.service';
+import { ForumService } from '../forum/forum.service';
 import {
   RegisterCustomerDto, LoginCustomerDto,
   UpdateProfileDto, ChangePasswordDto,
@@ -16,29 +17,58 @@ import { RateLimit, RateLimitGuard } from '../../common/guards/rate-limit.guard'
 @ApiTags('customer')
 @Controller('customer')
 export class CustomerController {
-  constructor(private readonly customerService: CustomerService) {}
+  constructor(
+    private readonly customerService: CustomerService,
+    private readonly forum: ForumService,
+  ) {}
 
-  // ── POST /api/v1/customer/register ──
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(RateLimitGuard)
   @RateLimit({ max: 5, window: 300, keyPrefix: 'customer-register' })
   @ApiOperation({ summary: 'Register a new customer account' })
-  async register(@Body() dto: RegisterCustomerDto) {
-    return this.customerService.register(dto);
+  async register(@Body() dto: RegisterCustomerDto, @Res({ passthrough: true }) res: Response) {
+    const result = await this.customerService.register(dto);
+    await this.forum.setSessionCookie(res, result.customer);
+    return result;
   }
 
-  // ── POST /api/v1/customer/login ──
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @UseGuards(RateLimitGuard)
   @RateLimit({ max: 10, window: 60, keyPrefix: 'customer-login' })
   @ApiOperation({ summary: 'Customer login' })
-  async login(@Body() dto: LoginCustomerDto) {
-    return this.customerService.login(dto);
+  async login(@Body() dto: LoginCustomerDto, @Res({ passthrough: true }) res: Response) {
+    const result = await this.customerService.login(dto);
+    await this.forum.setSessionCookie(res, result.customer);
+    return result;
   }
 
-  // ── POST /api/v1/customer/forgot-password ──
+  @Post('forum-sso')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(CustomerAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Refresh forum SSO cookie for logged-in customer' })
+  async refreshForumSso(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const { customerId } = (req as any).customer;
+    const profile = await this.customerService.getProfile(customerId);
+    await this.forum.setSessionCookie(res, {
+      id: profile.id,
+      username: profile.username,
+      email: profile.email,
+      avatarUrl: profile.avatarUrl,
+    });
+    return { success: true };
+  }
+
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Clear forum SSO cookie' })
+  logout(@Res({ passthrough: true }) res: Response) {
+    this.forum.clearSessionCookie(res);
+    return { success: true };
+  }
+
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
   @UseGuards(RateLimitGuard)
@@ -48,7 +78,6 @@ export class CustomerController {
     return this.customerService.forgotPassword(dto);
   }
 
-  // ── POST /api/v1/customer/reset-password ──
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
   @UseGuards(RateLimitGuard)
@@ -58,7 +87,6 @@ export class CustomerController {
     return this.customerService.resetPassword(dto);
   }
 
-  // ── GET /api/v1/customer/profile ──
   @Get('profile')
   @UseGuards(CustomerAuthGuard)
   @ApiBearerAuth()
@@ -68,7 +96,6 @@ export class CustomerController {
     return this.customerService.getProfile(customerId);
   }
 
-  // ── PUT /api/v1/customer/profile ──
   @Put('profile')
   @UseGuards(CustomerAuthGuard)
   @ApiBearerAuth()
@@ -78,7 +105,6 @@ export class CustomerController {
     return this.customerService.updateProfile(customerId, dto);
   }
 
-  // ── PUT /api/v1/customer/password ──
   @Put('password')
   @UseGuards(CustomerAuthGuard)
   @ApiBearerAuth()
@@ -88,7 +114,6 @@ export class CustomerController {
     return this.customerService.changePassword(customerId, dto);
   }
 
-  // ── GET /api/v1/customer/verify-email?token= ──
   @Get('verify-email')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Verify email with token' })
@@ -96,7 +121,6 @@ export class CustomerController {
     return this.customerService.verifyEmail(token);
   }
 
-  // ── POST /api/v1/customer/resend-verification ──
   @Post('resend-verification')
   @HttpCode(HttpStatus.OK)
   @UseGuards(CustomerAuthGuard)
@@ -105,5 +129,36 @@ export class CustomerController {
   async resendVerification(@Req() req: Request) {
     const { customerId } = (req as any).customer;
     return this.customerService.resendVerification(customerId);
+  }
+
+  // ── Discord OAuth ──
+
+  @Get('discord/connect')
+  @UseGuards(CustomerAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get Discord OAuth URL to link account' })
+  async discordConnect(@Req() req: Request) {
+    const { customerId } = (req as any).customer;
+    return this.customerService.discordConnectUrl(customerId);
+  }
+
+  @Get('discord/callback')
+  @ApiOperation({ summary: 'Discord OAuth callback' })
+  async discordCallback(
+    @Query('code') code: string,
+    @Query('state') state: string,
+    @Res() res: Response,
+  ) {
+    const redirectUrl = await this.customerService.discordCallback(code, state);
+    return res.redirect(redirectUrl);
+  }
+
+  @Delete('discord')
+  @UseGuards(CustomerAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Unlink Discord account' })
+  async discordDisconnect(@Req() req: Request) {
+    const { customerId } = (req as any).customer;
+    return this.customerService.discordDisconnect(customerId);
   }
 }

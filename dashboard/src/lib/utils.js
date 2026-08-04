@@ -7,6 +7,7 @@ export const PLAN_COLORS = {
 
 export const PLAN_ICON_MAP = {
   DAYS_1:   { emoji: '⚡', label: '1 jour' },
+  DAYS_3:   { emoji: '⚡', label: '3 jours' },
   DAYS_7:   { emoji: '📅', label: '7 jours' },
   DAYS_14:  { emoji: '📅', label: '14 jours' },
   DAYS_30:  { emoji: '🗓️', label: '30 jours' },
@@ -18,7 +19,7 @@ export const PLAN_ICON_MAP = {
 export function formatPlan(plan) {
   const map = {
     DAYS_30: '30 jours', DAYS_90: '90 jours', DAYS_365: '1 an', LIFETIME: 'Lifetime',
-    DAYS_1: '1 jour', DAYS_7: '7 jours', DAYS_14: '14 jours',
+    DAYS_1: '1 jour', DAYS_3: '3 jours', DAYS_7: '7 jours', DAYS_14: '14 jours',
   };
   return map[plan] || plan;
 }

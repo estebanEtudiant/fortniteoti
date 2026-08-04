@@ -1,10 +1,16 @@
 'use strict';
 require('dotenv').config();
+const path = require('path');
 
 function required(name) {
   const val = process.env[name];
   if (!val) throw new Error(`Variable d'environnement manquante : ${name}`);
   return val;
+}
+
+function parsePositiveInt(value, fallback) {
+  const parsed = parseInt(value, 10);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
 }
 
 const config = {
@@ -37,29 +43,40 @@ const config = {
     backup:         process.env.CHANNEL_BACKUP    || null,
     ticketCategory: process.env.CATEGORY_TICKETS  || null,
     reviews:        process.env.CHANNEL_REVIEWS   || '1476353103878947101',
+    update:         process.env.CHANNEL_UPDATES   || null,
   },
 
   webhook: {
-    port: parseInt(process.env.WEBHOOK_PORT || '3001', 10),
+    port: parsePositiveInt(process.env.WEBHOOK_PORT || '3001', 3001),
+    maxBodyBytes: parsePositiveInt(process.env.WEBHOOK_MAX_BODY_BYTES || '16384', 16384),
   },
 
   monitor: {
     storefrontUrl:   process.env.STOREFRONT_URL   || 'http://localhost:3002',
     downloadUrl:     process.env.DOWNLOAD_URL     || null,
-    intervalMs:      parseInt(process.env.STATUS_INTERVAL_MS || '60000', 10),
+    intervalMs:      parsePositiveInt(process.env.STATUS_INTERVAL_MS || '60000', 60000),
   },
 
   automod: {
-    spamThreshold: parseInt(process.env.AUTOMOD_SPAM_THRESHOLD || '5', 10),
-    spamWindowMs:  parseInt(process.env.AUTOMOD_SPAM_WINDOW_MS || '5000', 10),
+    spamThreshold: parsePositiveInt(process.env.AUTOMOD_SPAM_THRESHOLD || '5', 5),
+    spamWindowMs:  parsePositiveInt(process.env.AUTOMOD_SPAM_WINDOW_MS || '5000', 5000),
   },
 
   db: {
-    path: process.env.DB_PATH || './data/bot.sqlite',
+    path: path.resolve(process.env.DB_PATH || './data/bot.sqlite'),
   },
 
   log: {
     level: process.env.LOG_LEVEL || 'info',
+  },
+
+  ng: {
+    guildId:         process.env.NG_GUILD_ID          || null,
+    channelWelcome:  process.env.NG_CHANNEL_WELCOME   || null,
+    channelGiveaway: process.env.NG_CHANNEL_GIVEAWAY  || null,
+    channelStatus:   process.env.NG_CHANNEL_STATUS    || null,
+    storefrontUrl:   process.env.NG_STOREFRONT_URL    || 'https://404tweaks.tech/404Client',
+    roleMember:      process.env.NG_ROLE_MEMBER       || null,
   },
 };
 

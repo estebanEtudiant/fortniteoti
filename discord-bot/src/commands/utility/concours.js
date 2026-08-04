@@ -1,10 +1,10 @@
 'use strict';
 
-const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, ChannelType, ButtonBuilder, ButtonStyle, ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
 const Colors = require('../../config/colors');
+const config = require('../../config/config');
 const logger = require('../../services/logger');
 const { stmts } = require('../../services/database');
-const { generateKeys } = require('../../services/licenseApi');
 const { buildContestEmbed, updateContestEmbed, PLAN_LABELS } = require('../../services/contestHelper');
 
 // Durées disponibles
@@ -39,6 +39,7 @@ module.exports = {
         .setDescription('Plan de la clé à gagner (défaut : 30 jours)')
         .setRequired(false)
         .addChoices(
+          { name: '7 Jours',   value: 'DAYS_7'   },
           { name: '30 Jours',  value: 'DAYS_30'  },
           { name: '90 Jours',  value: 'DAYS_90'  },
           { name: '1 An',      value: 'DAYS_365' },
@@ -104,6 +105,8 @@ module.exports = {
     if (sub === 'exclure')    return handleExclure(interaction);
     if (sub === 'inclure')    return handleInclure(interaction);
   },
+
+  drawWinner,
 };
 
 // ─── /concours lancer ────────────────────────────────────────────────────────
@@ -203,7 +206,7 @@ async function handleClassement(interaction) {
         { name: '⏰ Fin',         value: endsAt.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', hour: '2-digit', minute: '2-digit' }), inline: true },
         { name: '🎯 Condition',   value: `${contest.invites_required} invitation(s)`, inline: true },
       ],
-      footer: { text: '404 Tweaks • Concours' },
+      footer: { text: '404 Client • Concours' },
     }],
     ephemeral: true,
   });
@@ -213,83 +216,130 @@ async function handleClassement(interaction) {
 async function handleTerminer(interaction) {
   await interaction.deferReply({ ephemeral: true });
 
-  const contest = stmts.getActiveContest.get(interaction.guildId);
-  if (!contest) {
+  const contests = stmts.getAllActiveContests.all(interaction.guildId);
+  if (contests.length === 0) {
     return interaction.editReply({
       embeds: [{ color: Colors.ERROR, description: '❌ Aucun concours actif à terminer.' }],
     });
   }
 
-  return drawWinner(interaction.client, contest, interaction);
+  if (contests.length === 1) {
+    return drawWinner(interaction.client, contests[0], interaction);
+  }
+
+  const options = contests.map(c => {
+    const planLbl = PLAN_LABELS[c.plan] || c.plan;
+    const endsAt  = new Date(c.ends_at * 1000).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+    const participants = stmts.getContestLeaderboard.all(c.id).length;
+    return {
+      label:       `#${c.id} — ${planLbl}`,
+      description: `Se termine le ${endsAt} • ${participants} participant(s)`,
+      value:       String(c.id),
+    };
+  });
+
+  const select = new StringSelectMenuBuilder()
+    .setCustomId('concours:terminer')
+    .setPlaceholder('Choisir le concours à terminer…')
+    .addOptions(options);
+
+  return interaction.editReply({
+    embeds: [{
+      color: Colors.WARNING,
+      description: `⚠️ **${contests.length} concours actifs** — lequel veux-tu terminer ?`,
+    }],
+    components: [new ActionRowBuilder().addComponents(select)],
+  });
 }
 
 // ─── Logique tirage au sort ───────────────────────────────────────────────────
 async function drawWinner(client, contest, interaction = null) {
-  // Participants qualifiés (ont le nombre d'invitations requis)
   const qualified = stmts.getContestParticipants.all(contest.id, contest.invites_required);
 
   const respond = async (embeds) => {
-    if (interaction) {
-      await interaction.editReply({ embeds }).catch(() => {});
-    }
+    if (interaction) await interaction.editReply({ embeds }).catch(() => {});
   };
 
   if (qualified.length === 0) {
-    // Aucun qualifié — clôture sans gagnant
     stmts.endContest.run({ id: contest.id, winner_id: null, prize_key: null });
     await updateContestEmbed(client, { ...contest, ended: 1, winner_id: null }).catch(() => {});
-
     logger.info(`[CONCOURS] Concours #${contest.id} terminé — aucun qualifié`);
     await respond([{ color: Colors.GOLD, description: '🏁 Concours terminé. Aucun participant qualifié cette fois.' }]);
     return;
   }
 
-  // Tirage au sort
-  const winner = qualified[Math.floor(Math.random() * qualified.length)];
+  // Tirage pondéré : 1 invite = 1 ticket
+  const tickets = [];
+  for (const p of qualified) {
+    for (let i = 0; i < p.invites; i++) tickets.push(p);
+  }
+  const winner = tickets[Math.floor(Math.random() * tickets.length)];
 
-  // Génère la clé via l'API backend
-  const result = await generateKeys(contest.plan, 1);
-  const prizeKey = result?.success && result.keys?.length > 0 ? result.keys[0] : null;
-
-  // Sauvegarde en DB
-  stmts.endContest.run({ id: contest.id, winner_id: winner.inviter_id, prize_key: prizeKey || null });
-
-  // Met à jour l'embed avec le gagnant
+  stmts.endContest.run({ id: contest.id, winner_id: winner.inviter_id, prize_key: null });
   await updateContestEmbed(client, { ...contest, ended: 1, winner_id: winner.inviter_id }).catch(() => {});
 
-  // Envoie la clé au gagnant en DM
-  const winnerUser = await client.users.fetch(winner.inviter_id).catch(() => null);
-  if (winnerUser) {
-    const dmLines = [
-      `🎉 **Félicitations ${winnerUser.username} !**`,
-      '',
-      `Tu as été **tiré au sort** parmi les ${qualified.length} participant(s) qualifié(s) du concours **404 Tweaks** !`,
-      '',
-    ];
+  // Ouvre un ticket pour remettre la récompense
+  let ticketChannel = null;
+  const guild = await client.guilds.fetch(contest.guild_id).catch(() => null);
 
-    if (prizeKey) {
-      dmLines.push(`🔑 **Ta clé de licence (${PLAN_LABELS[contest.plan] || contest.plan}) :**`);
-      dmLines.push(`\`\`\`${prizeKey}\`\`\``);
-      dmLines.push('Utilise `/verify <clé>` sur le serveur Discord pour activer tes rôles.');
-      dmLines.push('Rends-toi sur **404tweaks.tech** pour télécharger le logiciel.');
-    } else {
-      dmLines.push('⚠️ La clé n\'a pas pu être générée automatiquement. Un admin va te la transmettre sous peu.');
+  if (guild && config.channels.ticketCategory) {
+    try {
+      const winnerMember = await guild.members.fetch(winner.inviter_id).catch(() => null);
+      const safeName = winnerMember?.user.username.toLowerCase().replace(/[^a-z0-9]/g, '') ?? winner.inviter_id;
+      const channelName = `concours-${safeName}-${Date.now().toString(36)}`;
+
+      const channel = await guild.channels.create({
+        name: channelName,
+        type: ChannelType.GuildText,
+        parent: config.channels.ticketCategory,
+        permissionOverwrites: [
+          { id: guild.id,             deny:  [PermissionFlagsBits.ViewChannel] },
+          { id: winner.inviter_id,    allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ReadMessageHistory] },
+          { id: client.user.id,       allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ManageChannels] },
+          ...(config.roles.moderator ? [{ id: config.roles.moderator, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ReadMessageHistory] }] : []),
+        ],
+        topic: `Récompense concours — ${winnerMember?.user.tag ?? winner.inviter_id}`,
+      });
+
+      stmts.createTicket.run({
+        guild_id:   guild.id,
+        channel_id: channel.id,
+        user_id:    winner.inviter_id,
+        subject:    `Récompense concours — ${PLAN_LABELS[contest.plan] || contest.plan}`,
+      });
+
+      const closeButton = new ButtonBuilder()
+        .setCustomId('close_ticket')
+        .setLabel('Fermer le ticket')
+        .setStyle(ButtonStyle.Danger)
+        .setEmoji('🔒');
+
+      await channel.send({
+        content: `<@${winner.inviter_id}>`,
+        embeds: [{
+          color: Colors.GOLD,
+          title: '🏆 Félicitations — Tu as gagné le concours !',
+          description: [
+            `Tu as été **tiré au sort** parmi les **${qualified.length}** participant(s) qualifié(s) !`,
+            `Tu as effectué **${winner.invites}** invitation(s).`,
+            '',
+            `**Prix :** Clé de licence **${PLAN_LABELS[contest.plan] || contest.plan}** pour le produit de ton choix.`,
+            '',
+            "L'équipe va te remettre ta clé ici et t'expliquer comment l'activer.",
+          ].join('\n'),
+          footer: { text: '404 Client • Concours' },
+          timestamp: new Date().toISOString(),
+        }],
+        components: [new ActionRowBuilder().addComponents(closeButton)],
+      });
+
+      ticketChannel = channel;
+    } catch (err) {
+      logger.warn(`[CONCOURS] Impossible d'ouvrir le ticket pour ${winner.inviter_id}: ${err.message}`);
     }
-
-    await winnerUser.send({
-      embeds: [{
-        color: Colors.GOLD,
-        title: '🏆 Tu as gagné le concours 404 Tweaks !',
-        description: dmLines.join('\n'),
-        footer: { text: '404 Tweaks • Concours' },
-        timestamp: new Date().toISOString(),
-      }],
-    }).catch(() => {
-      logger.warn(`[CONCOURS] Impossible d\'envoyer le DM au gagnant ${winner.inviter_id}`);
-    });
   }
 
-  logger.info(`[CONCOURS] Concours #${contest.id} terminé — Gagnant: ${winner.inviter_id} (${winner.invites} invites) — Clé: ${prizeKey || 'ERREUR'}`);
+  logger.info(`[CONCOURS] Concours #${contest.id} terminé — Gagnant: ${winner.inviter_id} (${winner.invites} invites)`);
 
   await respond([{
     color: Colors.GOLD,
@@ -297,9 +347,7 @@ async function drawWinner(client, contest, interaction = null) {
     description: [
       `**Gagnant :** <@${winner.inviter_id}> avec **${winner.invites}** invitation(s)`,
       `**Qualifiés :** ${qualified.length} participant(s)`,
-      prizeKey ? `**Clé générée :** \`${prizeKey}\`` : '⚠️ Erreur génération clé — à envoyer manuellement',
-      '',
-      'La clé a été envoyée en DM au gagnant.',
+      ticketChannel ? `**Ticket ouvert :** ${ticketChannel}` : '⚠️ Impossible d\'ouvrir le ticket — crée-le manuellement.',
     ].join('\n'),
   }]);
 }

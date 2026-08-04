@@ -9,8 +9,14 @@ const logger   = require('./logger');
 // Crée le dossier data/ si inexistant
 const dbDir = path.dirname(path.resolve(config.db.path));
 if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
+fs.chmodSync(dbDir, 0o700);
 
 const db = new Database(path.resolve(config.db.path));
+try {
+  fs.chmodSync(path.resolve(config.db.path), 0o600);
+} catch (_) {
+  // The file may not exist until SQLite creates it on first open.
+}
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
 
@@ -65,6 +71,16 @@ db.exec(`
   );
 `);
 
+// ─── Table statut embed NG ────────────────────────────────────────────────────
+db.exec(`
+  CREATE TABLE IF NOT EXISTS ng_status_messages (
+    id         INTEGER PRIMARY KEY CHECK(id = 1),
+    guild_id   TEXT NOT NULL,
+    channel_id TEXT NOT NULL,
+    message_id TEXT NOT NULL
+  );
+`);
+
 // ─── Table avis clients ───────────────────────────────────────────────────────
 db.exec(`
   CREATE TABLE IF NOT EXISTS reviews (
@@ -86,15 +102,31 @@ try {
 // ─── Table giveaways ──────────────────────────────────────────────────────────
 db.exec(`
   CREATE TABLE IF NOT EXISTS giveaways (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    guild_id    TEXT    NOT NULL,
-    channel_id  TEXT    NOT NULL,
-    message_id  TEXT    NOT NULL,
-    host_id     TEXT    NOT NULL,
-    prize       TEXT    NOT NULL,
-    winners_count INTEGER NOT NULL DEFAULT 1,
-    ends_at     INTEGER NOT NULL,
-    ended       INTEGER NOT NULL DEFAULT 0
+    id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    guild_id         TEXT    NOT NULL,
+    channel_id       TEXT    NOT NULL,
+    message_id       TEXT    NOT NULL,
+    host_id          TEXT    NOT NULL,
+    prize            TEXT    NOT NULL,
+    winners_count    INTEGER NOT NULL DEFAULT 1,
+    ends_at          INTEGER NOT NULL,
+    ended            INTEGER NOT NULL DEFAULT 0,
+    required_role_id TEXT
+  );
+`);
+
+// Migration : ajout de required_role_id si la table existait déjà
+try {
+  db.exec('ALTER TABLE giveaways ADD COLUMN required_role_id TEXT');
+} catch (_) { /* colonne déjà présente */ }
+
+// ─── Table participants giveaway ──────────────────────────────────────────────
+db.exec(`
+  CREATE TABLE IF NOT EXISTS giveaway_entries (
+    giveaway_id  INTEGER NOT NULL,
+    user_id      TEXT    NOT NULL,
+    entered_at   INTEGER NOT NULL DEFAULT (strftime('%s','now')),
+    PRIMARY KEY (giveaway_id, user_id)
   );
 `);
 
@@ -132,6 +164,17 @@ db.exec(`
     inviter_id  TEXT    NOT NULL,
     invited_id  TEXT    NOT NULL UNIQUE,
     invited_at  INTEGER NOT NULL DEFAULT (strftime('%s','now'))
+  );
+`);
+
+// ─── Table prix en attente (choix produit concours) ──────────────────────────
+db.exec(`
+  CREATE TABLE IF NOT EXISTS pending_prizes (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    TEXT    NOT NULL,
+    plan       TEXT    NOT NULL,
+    contest_id INTEGER NOT NULL,
+    created_at INTEGER NOT NULL DEFAULT (strftime('%s','now'))
   );
 `);
 
@@ -186,7 +229,7 @@ const stmts = {
   getReviewByDiscordId: db.prepare('SELECT * FROM reviews WHERE discord_id = ?'),
   getAllReviews:        db.prepare('SELECT * FROM reviews ORDER BY created_at DESC LIMIT 50'),
 
-  // Status embed
+  // Status embed FTN
   getStatusMessage:    db.prepare('SELECT * FROM status_messages WHERE id = 1'),
   upsertStatusMessage: db.prepare(`
     INSERT INTO status_messages (id, guild_id, channel_id, message_id)
@@ -197,6 +240,18 @@ const stmts = {
       message_id = excluded.message_id
   `),
   deleteStatusMessage: db.prepare('DELETE FROM status_messages WHERE id = 1'),
+
+  // Status embed NG
+  getNgStatusMessage:    db.prepare('SELECT * FROM ng_status_messages WHERE id = 1'),
+  upsertNgStatusMessage: db.prepare(`
+    INSERT INTO ng_status_messages (id, guild_id, channel_id, message_id)
+    VALUES (1, @guild_id, @channel_id, @message_id)
+    ON CONFLICT(id) DO UPDATE SET
+      guild_id   = excluded.guild_id,
+      channel_id = excluded.channel_id,
+      message_id = excluded.message_id
+  `),
+  deleteNgStatusMessage: db.prepare('DELETE FROM ng_status_messages WHERE id = 1'),
 
   // Tickets
   createTicket:   db.prepare(`
@@ -213,13 +268,19 @@ const stmts = {
 
   // Giveaways
   createGiveaway: db.prepare(`
-    INSERT INTO giveaways (guild_id, channel_id, message_id, host_id, prize, winners_count, ends_at)
-    VALUES (@guild_id, @channel_id, @message_id, @host_id, @prize, @winners_count, @ends_at)
+    INSERT INTO giveaways (guild_id, channel_id, message_id, host_id, prize, winners_count, ends_at, required_role_id)
+    VALUES (@guild_id, @channel_id, @message_id, @host_id, @prize, @winners_count, @ends_at, @required_role_id)
   `),
-  getGiveaway:    db.prepare('SELECT * FROM giveaways WHERE id = ?'),
-  getActiveGiveaways: db.prepare('SELECT * FROM giveaways WHERE ended = 0 AND ends_at <= strftime(\'%s\',\'now\')'),
-  markGiveawayEnded:  db.prepare('UPDATE giveaways SET ended = 1 WHERE id = ?'),
+  getGiveaway:          db.prepare('SELECT * FROM giveaways WHERE id = ?'),
+  getActiveGiveaways:   db.prepare('SELECT * FROM giveaways WHERE ended = 0 AND ends_at <= strftime(\'%s\',\'now\')'),
+  markGiveawayEnded:    db.prepare('UPDATE giveaways SET ended = 1 WHERE id = ?'),
   getGiveawayByMessage: db.prepare('SELECT * FROM giveaways WHERE message_id = ?'),
+
+  // Participants giveaway
+  addGiveawayEntry:    db.prepare('INSERT OR IGNORE INTO giveaway_entries (giveaway_id, user_id) VALUES (?, ?)'),
+  hasGiveawayEntry:    db.prepare('SELECT 1 FROM giveaway_entries WHERE giveaway_id = ? AND user_id = ?'),
+  getGiveawayEntries:  db.prepare('SELECT user_id FROM giveaway_entries WHERE giveaway_id = ?'),
+  countGiveawayEntries:db.prepare('SELECT COUNT(*) as count FROM giveaway_entries WHERE giveaway_id = ?'),
 
   // Concours invitations
   createContest: db.prepare(`
@@ -227,6 +288,7 @@ const stmts = {
     VALUES (@guild_id, @channel_id, @message_id, @host_id, @plan, @invites_required, @ends_at)
   `),
   getActiveContest:    db.prepare('SELECT * FROM contests WHERE guild_id = ? AND ended = 0 ORDER BY created_at DESC LIMIT 1'),
+  getAllActiveContests: db.prepare('SELECT * FROM contests WHERE guild_id = ? AND ended = 0 ORDER BY created_at DESC'),
   getContestById:      db.prepare('SELECT * FROM contests WHERE id = ?'),
   endContest:          db.prepare('UPDATE contests SET ended = 1, winner_id = @winner_id, prize_key = @prize_key WHERE id = @id'),
   updateContestMessage:db.prepare('UPDATE contests SET message_id = ? WHERE id = ?'),
@@ -249,6 +311,11 @@ const stmts = {
     GROUP BY inviter_id HAVING invites >= ?
   `),
   alreadyInvited: db.prepare('SELECT id FROM contest_invites WHERE contest_id = ? AND invited_id = ?'),
+
+  // Prix en attente
+  createPendingPrize:    db.prepare('INSERT INTO pending_prizes (user_id, plan, contest_id) VALUES (?, ?, ?)'),
+  getPendingPrize:       db.prepare('SELECT * FROM pending_prizes WHERE id = ?'),
+  deletePendingPrize:    db.prepare('DELETE FROM pending_prizes WHERE id = ?'),
 
   // Exclusions concours
   addExcluded:    db.prepare('INSERT OR REPLACE INTO contest_excluded (guild_id, user_id, added_by) VALUES (?, ?, ?)'),

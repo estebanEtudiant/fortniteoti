@@ -1,6 +1,6 @@
 'use strict';
 
-const { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
+const { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const Colors      = require('../config/colors');
 const config      = require('../config/config');
 const logger      = require('../services/logger');
@@ -40,6 +40,58 @@ module.exports = {
     // ─── Boutons ──────────────────────────────────────────────────────────────
     if (interaction.isButton()) {
       const [action, ...args] = interaction.customId.split(':');
+
+      // ── Participer à un giveaway ──
+      if (action === 'giveaway' && args[0] === 'enter') {
+        const giveawayId = parseInt(args[1], 10);
+        const row = stmts.getGiveaway.get(giveawayId);
+
+        if (!row || row.ended) {
+          return interaction.reply({ embeds: [{ color: Colors.ERROR, description: '❌ Ce giveaway est terminé.' }], ephemeral: true });
+        }
+
+        // Vérifie le rôle requis
+        if (row.required_role_id) {
+          const member = interaction.member;
+          if (!member.roles.cache.has(row.required_role_id)) {
+            const role = interaction.guild.roles.cache.get(row.required_role_id);
+            return interaction.reply({
+              embeds: [{
+                color: Colors.ERROR,
+                title: '🎉 Giveaway — Accès refusé',
+                description: `❌ Tu n'as pas le rôle **${role?.name ?? 'requis'}** pour participer à ce giveaway !\n\nBooster le serveur pour obtenir ce rôle et participer aux prochains giveaways exclusifs. 🚀`,
+              }],
+              ephemeral: true,
+            });
+          }
+        }
+
+        // Déjà inscrit ?
+        const already = stmts.hasGiveawayEntry.get(giveawayId, interaction.user.id);
+        if (already) {
+          return interaction.reply({ embeds: [{ color: Colors.WARNING, description: '⚠️ Tu es déjà inscrit à ce giveaway !' }], ephemeral: true });
+        }
+
+        // Inscription
+        stmts.addGiveawayEntry.run(giveawayId, interaction.user.id);
+        const { count } = stmts.countGiveawayEntries.get(giveawayId);
+
+        // Met à jour le bouton avec le nouveau compteur
+        await interaction.message.edit({
+          components: [
+            new ActionRowBuilder().addComponents(
+              new ButtonBuilder()
+                .setCustomId(`giveaway:enter:${giveawayId}`)
+                .setLabel(`🎉 Participer (${count})`)
+                .setStyle(ButtonStyle.Primary),
+            ),
+          ],
+        }).catch(() => {});
+
+        logger.info(`[GIVEAWAY #${giveawayId}] ${interaction.user.tag} inscrit (${count} participants)`);
+
+        return interaction.reply({ embeds: [{ color: Colors.SUCCESS, description: '✅ Tu es inscrit au giveaway ! Bonne chance 🎉' }], ephemeral: true });
+      }
 
       // ── Fermer ticket ──
       if (action === 'close_ticket') {
@@ -92,6 +144,25 @@ module.exports = {
 
         await interaction.showModal(modal);
         return;
+      }
+    }
+
+    // ─── Select menus ─────────────────────────────────────────────────────────
+    if (interaction.isStringSelectMenu()) {
+      if (interaction.customId === 'concours:terminer') {
+        await interaction.deferUpdate();
+        const contestId = parseInt(interaction.values[0], 10);
+        const contest   = stmts.getContestById.get(contestId);
+
+        if (!contest || contest.ended) {
+          return interaction.editReply({
+            embeds: [{ color: Colors.ERROR, description: '❌ Ce concours est déjà terminé ou introuvable.' }],
+            components: [],
+          });
+        }
+
+        const { drawWinner } = require('../commands/utility/concours');
+        return drawWinner(interaction.client, contest, interaction);
       }
     }
 

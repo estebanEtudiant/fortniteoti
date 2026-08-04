@@ -6,6 +6,8 @@ import { AuthService } from './auth.service';
 import { LicenseAuthGuard, AdminAuthGuard } from '../../common/guards/auth.guard';
 import { RateLimitGuard } from '../../common/guards/rate-limit.guard';
 import { Reflector } from '@nestjs/core';
+import { KillSwitchModule } from '../kill-switch/kill.module';
+import { ResellerModule } from '../reseller/reseller.module';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { Reflector } from '@nestjs/core';
         signOptions: { expiresIn: config.get<string>('jwt.accessExpiry', '15m') },
       }),
     }),
+    KillSwitchModule,
+    ResellerModule,
   ],
   controllers: [AuthController],
   providers: [

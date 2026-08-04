@@ -58,6 +58,7 @@ export default function SoftwarePage() {
       formData.append('version', version.trim());
       formData.append('changelog', changelog.trim());
       formData.append('mandatory', mandatory ? 'true' : 'false');
+      formData.append('product', 'FTN_OPTIMIZER');
 
       const result = await api.uploadSoftware(formData);
       setUploadSuccess(`Version ${result.version} uploadée — URL de téléchargement mise à jour.`);

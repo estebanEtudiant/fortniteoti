@@ -14,10 +14,11 @@ const client = new Client({
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.GuildModeration,
     GatewayIntentBits.GuildInvites,
+    GatewayIntentBits.GuildMessageReactions,
     GatewayIntentBits.DirectMessages,
     GatewayIntentBits.MessageContent,
   ],
-  partials: [Partials.Channel, Partials.Message],
+  partials: [Partials.Channel, Partials.Message, Partials.Reaction, Partials.User],
 });
 
 // Cache des invitations par guilde : Map<guildId, Map<code, uses>>

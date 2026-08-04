@@ -43,7 +43,8 @@ class ApiClient {
 
   // Auth
   async register(email, username, password) {
-    const data = await this.request('POST', '/customer/register', { email, username, password });
+    const refCode = document.cookie.split('; ').find(c => c.startsWith('ref='))?.split('=')[1];
+    const data = await this.request('POST', '/customer/register', { email, username, password, ...(refCode && { refCode }) });
     this.setToken(data.token);
     return data;
   }
@@ -103,6 +104,21 @@ class ApiClient {
     return this.request('GET', '/software/latest');
   }
 
+  async downloadFtnSoftware() {
+    const jwtToken = this.token;
+    const res = await fetch(`${this.baseUrl}/software/customer/download-token?product=ftn`, {
+      headers: { Authorization: `Bearer ${jwtToken}` },
+    });
+    if (!res.ok) throw new Error('Téléchargement refusé');
+    const { token } = await res.json();
+    const a = document.createElement('a');
+    a.href = `${this.baseUrl}/software/dl?token=${token}`;
+    a.download = '';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
   // Reviews
   async getReviews() {
     return this.request('GET', '/reviews');
@@ -128,6 +144,34 @@ class ApiClient {
     const body = { plan };
     if (promoCode) body.promoCode = promoCode;
     return this.request('POST', '/payment/checkout', body);
+  }
+
+  // Menoria plans + checkout
+  async getMenoriaPlans() {
+    return this.request('GET', '/payment/plans?product=MENORIA');
+  }
+
+  async createMenoriaCheckoutSession(plan, promoCode) {
+    const body = { plan, product: 'MENORIA' };
+    if (promoCode) body.promoCode = promoCode;
+    return this.request('POST', '/payment/checkout', body);
+  }
+
+  // Pokemon — kits de rénovation (produit physique)
+  async getPokemonProducts() {
+    return this.request('GET', '/pokemon/products');
+  }
+
+  async getPokemonSettings() {
+    return this.request('GET', '/pokemon/settings');
+  }
+
+  async getPokemonOrders() {
+    return this.request('GET', '/pokemon/orders');
+  }
+
+  async createPokemonCheckoutSession(payload) {
+    return this.request('POST', '/payment/pokemon/checkout', payload);
   }
 
   // Admin: promo codes

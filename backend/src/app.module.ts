@@ -14,6 +14,20 @@ import { CustomerModule } from './modules/customer/customer.module';
 import { HealthModule } from './modules/health/health.module';
 import { BotModule } from './modules/bot/bot.module';
 import { SoftwareModule } from './modules/software/software.module';
+import { SoftwareAdminModule } from './modules/software-admin/software-admin.module';
+import { ShopModule } from './modules/shop/shop.module';
+import { PokemonModule } from './modules/pokemon/pokemon.module';
+import { ForumModule } from './modules/forum/forum.module';
+import { AffiliateModule } from './modules/affiliate/affiliate.module';
+import { AlertsModule } from './modules/alerts/alerts.module';
+import { KillSwitchModule } from './modules/kill-switch/kill.module';
+import { ResellerModule } from './modules/reseller/reseller.module';
+import { TelemetryModule } from './modules/telemetry/telemetry.module';
+import { MetricsModule } from './modules/metrics/metrics.module';
+import { KernelSymbolsModule } from './modules/kernel-symbols/kernel-symbols.module';
+import { MinecraftModule } from './modules/minecraft/minecraft.module';
+import { RequestLogMiddleware } from './common/middleware/request-log.middleware';
+import { MiddlewareConsumer, NestModule } from '@nestjs/common';
 
 @Module({
   imports: [
@@ -45,6 +59,30 @@ import { SoftwareModule } from './modules/software/software.module';
     HealthModule,
     BotModule,
     SoftwareModule,
+    SoftwareAdminModule,
+    ShopModule,
+    PokemonModule,
+    ForumModule,
+
+    // ── Affiliate & Reseller ──
+    AffiliateModule,
+    ResellerModule,
+
+    // ── Monitoring & Security ──
+    AlertsModule,
+    KillSwitchModule,
+    TelemetryModule,
+    MetricsModule,
+
+    // ── Kernel Symbols ──
+    KernelSymbolsModule,
+
+    // ── Minecraft Server ──
+    MinecraftModule,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(RequestLogMiddleware).forRoutes('*');
+  }
+}

@@ -14,8 +14,8 @@ export class PaymentController {
   @Get('plans')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get active plans with prices (public)' })
-  async getPlans() {
-    return this.paymentService.getActivePlans();
+  async getPlans(@Query('product') product?: string) {
+    return this.paymentService.getActivePlans(product);
   }
 
   // ── GET /api/v1/payment/stats (public) ──
@@ -51,9 +51,62 @@ export class PaymentController {
   @UseGuards(CustomerAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a Stripe Checkout session' })
-  async createCheckout(@Req() req: Request, @Body() body: { plan?: string; promoCode?: string }) {
+  async createCheckout(@Req() req: Request, @Body() body: { plan?: string; promoCode?: string; product?: string }) {
     const { customerId } = (req as any).customer;
-    return this.paymentService.createCheckoutSession(customerId, body.plan, body.promoCode);
+    return this.paymentService.createCheckoutSession(customerId, body.plan, body.promoCode, body.product);
+  }
+
+  // ── POST /api/v1/payment/shop/checkout ──
+  @Post('shop/checkout')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(CustomerAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create a Stripe Checkout session for a 404 GG shop game/plan' })
+  async createShopCheckout(@Req() req: Request, @Body() body: { game?: string; plan?: string; promoCode?: string; items?: Array<{ game: string; plan: string; qty?: number }> }) {
+    const { customerId } = (req as any).customer;
+    if (Array.isArray(body.items) && body.items.length) {
+      return this.paymentService.createShopCartCheckoutSession(customerId, body.items, body.promoCode);
+    }
+    return this.paymentService.createShopCheckoutSession(customerId, body.game!, body.plan!, body.promoCode);
+  }
+
+  // ── POST /api/v1/payment/shop/crypto-checkout (NOWPayments) ──
+  @Post('shop/crypto-checkout')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(CustomerAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create a NOWPayments crypto checkout for a 404 GG cart' })
+  async createShopCryptoCheckout(@Req() req: Request, @Body() body: { promoCode?: string; items?: Array<{ game: string; plan: string; qty?: number }> }) {
+    const { customerId } = (req as any).customer;
+    return this.paymentService.createShopCryptoCheckout(customerId, body.items || [], body.promoCode);
+  }
+
+  // ── POST /api/v1/payment/pokemon/checkout ──
+  @Post('pokemon/checkout')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(CustomerAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create a Stripe Checkout session for a Pokemon card renovation kit order' })
+  async createPokemonCheckout(
+    @Req() req: Request,
+    @Body() body: {
+      items: Array<{ slug: string; qty: number }>;
+      shippingName: string; shippingLine1: string; shippingLine2?: string;
+      shippingCity: string; shippingPostalCode: string; shippingCountry: string; shippingPhone?: string;
+    },
+  ) {
+    const { customerId } = (req as any).customer;
+    return this.paymentService.createPokemonCheckoutSession(customerId, body);
+  }
+
+  // ── POST /api/v1/payment/webhook/nowpayments (IPN) ──
+  @Post('webhook/nowpayments')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'NOWPayments IPN webhook' })
+  async nowpaymentsWebhook(@Req() req: Request, @Body() body: any) {
+    const sig = (req.headers['x-nowpayments-sig'] as string) || '';
+    await this.paymentService.handleNowpaymentsIpn(body, sig);
+    return { received: true };
   }
 
   // ── POST /api/v1/payment/webhook/stripe ──

@@ -6,6 +6,7 @@ const logger     = require('../services/logger');
 const { getBotConfig } = require('../services/licenseApi');
 const { stmts }  = require('../services/database');
 const { updateContestEmbed } = require('../services/contestHelper');
+const communityStats = require('../services/communityStats');
 
 const SITE_URL = 'https://404tweaks.tech/';
 
@@ -41,6 +42,10 @@ module.exports = {
 
   async execute(client, member) {
     logger.info(`Nouveau membre : ${member.user.tag} (${member.id}) sur ${member.guild.name}`);
+
+    if (member.guild.id === config.discord.guildId) {
+      communityStats.pushStats(client, member).catch(() => {});
+    }
 
     // ─── Tracking concours : détection de l'inviteur ─────────────────────────
     try {
@@ -98,14 +103,51 @@ module.exports = {
       logger.error('[CONCOURS] guildMemberAdd tracking error:', err);
     }
 
+    const isNgGuild = config.ng.guildId && member.guild.id === config.ng.guildId;
+
     // ─── Rôle automatique ─────────────────────────────────────────────────────
-    if (config.roles.member) {
-      await member.roles.add(config.roles.member, 'Rôle membre automatique').catch((err) => {
+    const memberRoleId = isNgGuild ? config.ng.roleMember : config.roles.member;
+    if (memberRoleId) {
+      await member.roles.add(memberRoleId, 'Rôle membre automatique').catch((err) => {
         logger.warn(`Impossible d'ajouter le rôle member à ${member.user.tag}:`, err.message);
       });
     }
 
-    // ─── Récupérer la config embeds (fallback sur défauts) ────────────────────
+    // ─── Serveur NG : welcome fixe ────────────────────────────────────────────
+    if (isNgGuild) {
+      const ngTitle = `👋 Bienvenue sur 404 Client, ${member.user.displayName} !`;
+      const giveawayChan = config.ng.channelGiveaway ? `<#${config.ng.channelGiveaway}>` : '#🎁・giveaway';
+      const ngDesc  = [
+        `Heureux de t'accueillir sur le serveur officiel **404 Client** !`,
+        `Nous sommes le **${member.guild.memberCount}ème** membre à nous rejoindre.`,
+        '',
+        '**Premiers pas :**',
+        '> 🛒 **Pas encore client ?** Achète ta licence sur [**404tweaks.tech/404Client**](https://404tweaks.tech/404Client)',
+        '> 🎫 **Besoin d\'aide ?** Ouvre un ticket avec `/ticket`',
+        `> 🎁 N'hésite pas à participer au giveaway dans le salon ${giveawayChan}`,
+      ].join('\n');
+
+      if (config.ng.channelWelcome) {
+        const channel = member.guild.channels.cache.get(config.ng.channelWelcome);
+        if (channel) {
+          await channel.send({
+            content: `${member}`,
+            embeds: [{
+              color:       Colors.PRIMARY,
+              title:       ngTitle,
+              description: ngDesc,
+              thumbnail:   { url: member.user.displayAvatarURL({ dynamic: true, size: 256 }) },
+              footer:      { text: '404 Client' },
+              timestamp:   new Date().toISOString(),
+            }],
+          }).catch((err) => logger.warn('guildMemberAdd NG welcome:', err.message));
+        }
+      }
+
+      return;
+    }
+
+    // ─── Serveur FTN : config dynamique (fallback sur défauts) ───────────────
     const cfg = await getBotConfig();
 
     const channelTitle = (cfg.welcome_channel_title || DEFAULTS.welcome_channel_title)
@@ -115,9 +157,6 @@ module.exports = {
     const channelDesc = (cfg.welcome_channel_desc || DEFAULTS.welcome_channel_desc)
       .replace('{username}', member.user.displayName)
       .replace('{memberCount}', member.guild.memberCount);
-
-    const dmTitle = cfg.welcome_dm_title || DEFAULTS.welcome_dm_title;
-    const dmDesc  = cfg.welcome_dm_desc  || DEFAULTS.welcome_dm_desc;
 
     // ─── Message de bienvenue dans le salon dédié ────────────────────────────
     if (config.channels.welcome) {
@@ -137,15 +176,5 @@ module.exports = {
       }
     }
 
-    // ─── DM de bienvenue ─────────────────────────────────────────────────────
-    await member.send({
-      embeds: [{
-        color:       Colors.PRIMARY,
-        title:       dmTitle,
-        description: dmDesc,
-      }],
-    }).catch(() => {
-      // DMs désactivés — pas grave
-    });
   },
 };

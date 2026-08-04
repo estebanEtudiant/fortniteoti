@@ -22,6 +22,17 @@ export class RegisterCustomerDto {
   @MinLength(8, { message: 'Mot de passe: 8 caractères minimum' })
   @MaxLength(128, { message: 'Mot de passe: 128 caractères maximum' })
   password: string;
+
+  @ApiProperty({ example: 'ng', required: false })
+  @IsOptional()
+  @IsString()
+  source?: string;
+
+  @ApiProperty({ example: 'PLAYER1ABC', required: false })
+  @IsOptional()
+  @IsString()
+  @MaxLength(15)
+  refCode?: string;
 }
 
 // ── Login ──

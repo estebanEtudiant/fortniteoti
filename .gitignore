@@ -11,8 +11,16 @@ build/
 # ── Fichiers uploadés (binaires, .exe) ──
 backend/uploads/
 
+# ── Stockage runtime (binaires produit, crash dumps/logs clients) ──
+backend/storage/
+storage/
+
 # ── C++ compiled output ──
 client-cpp/build/
+
+# ── Rust compiled output ──
+target/
+**/target/
 
 # ── Environment variables (NE JAMAIS PUSH) ──
 .env

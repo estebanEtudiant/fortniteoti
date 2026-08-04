@@ -21,6 +21,13 @@ import MaintenancePage from './pages/MaintenancePage.jsx';
 import PaymentCancelPage from './pages/PaymentCancelPage.jsx';
 import PaymentPage from './pages/PaymentPage.jsx';
 import PaymentSuccessPage from './pages/PaymentSuccessPage.jsx';
+import MenoriaPage from './pages/MenoriaPage.jsx';
+import PokemonPage from './pages/PokemonPage.jsx';
+import PokemonLoginPage from './pages/PokemonLoginPage.jsx';
+import PokemonRegisterPage from './pages/PokemonRegisterPage.jsx';
+import PokemonAccountPage from './pages/PokemonAccountPage.jsx';
+import PokemonLegalPage from './pages/PokemonLegalPage.jsx';
+import MenoriaPaymentPage from './pages/MenoriaPaymentPage.jsx';
 import PrivacyPage from './pages/PrivacyPage.jsx';
 import ProfilePage from './pages/ProfilePage.jsx';
 import RegisterPage from './pages/RegisterPage.jsx';
@@ -64,6 +71,23 @@ function AppContent() {
     );
   }
 
+  // Mini-site totalement à part (CardRevive) : sa propre DA, son propre routing,
+  // pas de header/footer/bannière 404Tweaks.
+  if (route.startsWith('/pokemon')) {
+    switch (route) {
+      case '/pokemon/login':
+        return customer ? <PokemonAccountPage customer={customer} onLogout={logout} /> : <PokemonLoginPage onLogin={login} />;
+      case '/pokemon/register':
+        return customer ? <PokemonAccountPage customer={customer} onLogout={logout} /> : <PokemonRegisterPage onRegister={register} />;
+      case '/pokemon/account':
+        return customer ? <PokemonAccountPage customer={customer} onLogout={logout} /> : <PokemonLoginPage onLogin={login} />;
+      case '/pokemon/legal':
+        return <PokemonLegalPage customer={customer} onLogout={logout} />;
+      default:
+        return <PokemonPage customer={customer} onLogout={logout} />;
+    }
+  }
+
   if (publicSettings.maintenanceMode && !customer?.isAdmin) {
     return <MaintenancePage discordUrl={publicSettings.discordInviteUrl} />;
   }
@@ -81,6 +105,12 @@ function AppContent() {
       break;
     case '/payment':
       page = customer ? <PaymentPage customer={customer} /> : <LoginPage onLogin={login} />;
+      break;
+    case '/menoria':
+      page = <MenoriaPage customer={customer} />;
+      break;
+    case '/menoria/payment':
+      page = customer ? <MenoriaPaymentPage customer={customer} /> : <LoginPage onLogin={login} />;
       break;
     case '/payment/success':
       page = <PaymentSuccessPage />;

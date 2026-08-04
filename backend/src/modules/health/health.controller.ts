@@ -1,8 +1,9 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../database/prisma.service';
 import { RedisService } from '../../database/redis.service';
+import { BotAuthGuard } from '../bot/bot-auth.guard';
 
 @ApiTags('health')
 @Controller('health')
@@ -26,9 +27,10 @@ export class HealthController {
 
   /**
    * GET /api/v1/health/detailed — statut complet pour le bot Discord.
-   * Route publique : ne retourne aucune donnée sensible.
+   * Route protégée : réservée aux intégrations internes.
    */
   @Get('detailed')
+  @UseGuards(BotAuthGuard)
   async detailed() {
     const result: Record<string, { status: string; latencyMs?: number }> = {};
 
