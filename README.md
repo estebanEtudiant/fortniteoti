@@ -1,205 +1,205 @@
-# FortniteOptimizer 2026 — Système de Licence Sécurisé
+# FortniteOpti
+
+Application de vente et de gestion de licences et produits numériques FortniteOpti. Le dépôt regroupe l’API, le tableau de bord d’administration, le site client, le bot Discord et le client Windows C++.
+
+## Sommaire
+
+- [Fonctionnalités](#fonctionnalités)
+- [Architecture](#architecture)
+- [Prérequis](#prérequis)
+- [Configuration](#configuration)
+- [Démarrage avec Docker](#démarrage-avec-docker)
+- [Développement local](#développement-local)
+- [Produits et stock du Temp Spoofer](#produits-et-stock-du-temp-spoofer)
+- [Paiements et livraison](#paiements-et-livraison)
+- [Tests et maintenance](#tests-et-maintenance)
+- [Déploiement et sécurité](#déploiement-et-sécurité)
+- [Documentation complémentaire](#documentation-complémentaire)
+
+## Fonctionnalités
+
+- Boutique publique avec catalogue, pages produit, commandes et paiement.
+- Comptes clients, profil et accès aux licences et téléchargements associés aux achats.
+- Tableau de bord d’administration pour les produits, commandes, clients et paramètres de la boutique.
+- Inventaire de clés fournisseur du Temp Spoofer, suivi des réservations et des livraisons par offre.
+- Paiements Stripe et paiements crypto via les intégrations configurées dans le backend.
+- API NestJS, base PostgreSQL et Redis.
+- Bot Discord séparé pour les commandes, la modération, les tickets et les intégrations backend.
+- Client Windows C++ et modules liés aux licences.
 
 ## Architecture
 
-```
-licensing-system/
-├── backend/          ← API NestJS (TypeScript)
-│   ├── prisma/       ← Schéma BDD PostgreSQL
-│   └── src/
-│       ├── modules/
-│       │   ├── auth/      ← Activation, Heartbeat, Refresh
-│       │   ├── license/   ← CRUD licences, expiration auto
-│       │   ├── admin/     ← Dashboard API
-│       │   ├── payment/   ← Stripe webhooks
-│       │   └── health/    ← Health check
-│       ├── common/
-│       │   ├── guards/    ← JWT auth, Rate limiting
-│       │   ├── filters/   ← Exception handling global
-│       │   ├── interceptors/ ← Logging HTTP
-│       │   └── utils/     ← Crypto (SHA256, HMAC, key generation)
-│       └── database/      ← Prisma + Redis services
-│
-├── client-cpp/       ← Client Windows C++
-│   ├── include/      ← Headers
-│   │   ├── licensing.h    ← Client de licence
-│   │   ├── hwid.h         ← Génération HWID
-│   │   ├── http_client.h  ← Client HTTPS (WinHTTP)
-│   │   ├── crypto_utils.h ← SHA256, XOR, Nonce
-│   │   └── anti_debug.h   ← Anti-debugging
-│   ├── src/          ← Implémentations
-│   └── CMakeLists.txt
-│
-├── dashboard/        ← Admin React + Tailwind
-│   └── src/
-│       ├── App.jsx        ← App complète (Login, Dashboard, CRUD)
-│       └── lib/api.js     ← Client API
-│
-├── scripts/          ← Utilitaires admin
-├── docker-compose.yml
-├── .env.example
-└── docs/ARCHITECTURE.md   ← Diagrammes et schéma BDD
-```
+| Dossier | Rôle |
+| --- | --- |
+| `backend/` | API NestJS, logique métier, paiements, authentification, shop, clients et accès aux données Prisma. |
+| `backend/prisma/` | Schéma et migrations PostgreSQL. |
+| `dashboard/` | Interface React d’administration. |
+| `storefront/` | Site React public et espace client. |
+| `discord-bot/` | Bot Discord Node.js et intégration backend. |
+| `client-cpp/` | Client Windows C++ et composants de licence. |
+| `docs/` | Guides d’architecture, de durcissement et du Temp Spoofer. |
+| `scripts/` | Outils d’administration et de génération de clés. |
+| `docker-compose.yml` | PostgreSQL, Redis, backend, dashboard et storefront. |
 
-## Démarrage Rapide
+## Prérequis
 
-### 1. Prérequis
-- Docker + Docker Compose
-- Node.js 20+ (pour le développement)
-- Visual Studio 2022 ou MinGW (pour le client C++)
+- Node.js 20 ou supérieur et npm.
+- Docker Engine et Docker Compose pour le lancement conteneurisé.
+- PostgreSQL 16 et Redis 7 si les services sont lancés séparément.
+- Visual Studio 2022 avec C++ ou un compilateur compatible CMake pour compiler `client-cpp/`.
+- Comptes et secrets du fournisseur de paiement si les paiements correspondants doivent être activés.
 
-### 2. Configuration
+## Configuration
+
+Ne commitez jamais de secrets, de clés fournisseur ou de fichiers `.env`. Les fichiers `.env.example` sont des modèles :
+
+- `backend/.env.example` : configuration backend, base de données, Redis, secrets JWT, paiements, CORS et SMTP.
+- `dashboard/.env.example` : URL publique de l’API utilisée à la compilation.
+- `storefront/.env.example` : URL de l’API et URL de téléchargement générale éventuelle.
+- `discord-bot/.env.example` : token Discord, rôles, salons et secret d’intégration backend.
+
+Générez des secrets aléatoires distincts pour `JWT_SECRET`, `JWT_REFRESH_SECRET`, `OFFLINE_TOKEN_SECRET`, `HWID_SALT` et `BOT_API_SECRET`. Exemple pour une valeur :
 
 ```bash
-cp .env.example .env
-
-# Générer les secrets
-node -e "console.log('JWT_SECRET=' + require('crypto').randomBytes(64).toString('hex'))"
-node -e "console.log('JWT_REFRESH_SECRET=' + require('crypto').randomBytes(64).toString('hex'))"
-node -e "console.log('HWID_SALT=' + require('crypto').randomBytes(32).toString('hex'))"
-
-# Éditer .env avec les valeurs générées
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ```
 
-### 3. Lancement (Docker)
+Pour Docker Compose, créez un fichier `.env` à la racine, à partir de `backend/.env.example`, puis adaptez les valeurs utilisées par `docker-compose.yml`. Les variables de base de données, Redis et les secrets de paiement doivent correspondre à votre environnement. Compose expose les ports sur `127.0.0.1` par défaut ; utilisez un reverse proxy HTTPS pour les rendre accessibles publiquement.
+
+Pour un lancement local sans Docker, créez `backend/.env` à partir de `backend/.env.example` et configurez `DATABASE_URL` et `REDIS_URL` pour vos services locaux. Les deux interfaces acceptent `VITE_API_URL`. Ces variables `VITE_*` sont intégrées lors du build, elles ne sont pas des secrets.
+
+## Démarrage avec Docker
+
+Depuis la racine du dépôt, après avoir créé et rempli `.env` :
 
 ```bash
-docker compose up -d
+docker compose up -d --build
 ```
 
-Cela démarre PostgreSQL, Redis, l'API et le Dashboard.
-
-### 4. Initialisation
+Le compose lance PostgreSQL, Redis, l’API, le dashboard et le storefront. Consultez les journaux avec :
 
 ```bash
-# Créer le premier admin
+docker compose logs -f backend
+docker compose logs -f dashboard storefront
+```
+
+L’API est publiée localement sur `http://127.0.0.1:3000`, le dashboard sur `http://127.0.0.1:5173` et le storefront sur `http://127.0.0.1:3002`. L’endpoint de santé est `http://127.0.0.1:3000/api/v1/health`. Configurez `API_URL` dans l’environnement Compose pour l’URL d’API intégrée aux deux interfaces lors du build.
+
+Les migrations Prisma doivent être appliquées au déploiement. Pour une base déjà configurée, depuis `backend/` :
+
+```bash
+npm ci
+npx prisma generate
+npx prisma migrate deploy
+```
+
+Pour créer ou gérer le compte administrateur, utilisez la procédure prévue par le projet et ses outils dans `scripts/` et `backend/scripts/`. N’utilisez pas de mot de passe d’exemple en production.
+
+## Développement local
+
+Lancez d’abord PostgreSQL et Redis, puis configurez `backend/.env`. Dans des terminaux séparés :
+
+```bash
 cd backend
-npm install
-npx prisma migrate dev
-npx ts-node ../scripts/seed-admin.ts admin MonMotDePasse!
-
-# Générer des clés de test
-npx ts-node ../scripts/generate-keys.ts DAYS_30 5
-```
-
-### 5. Accès
-- **API**: http://localhost:3000/api/v1/health
-- **Dashboard**: http://localhost:5173
-- **Swagger** (dev): http://localhost:3000/docs
-
-## Développement Local (sans Docker)
-
-```bash
-# Terminal 1 — Backend
-cd backend
-npm install
+npm ci
 npx prisma generate
 npx prisma migrate dev
 npm run start:dev
+```
 
-# Terminal 2 — Dashboard
+```bash
 cd dashboard
-npm install
+npm ci
 npm run dev
 ```
 
-## Client C++ — Compilation
+```bash
+cd storefront
+npm ci
+npm run dev
+```
 
-### MSVC (Visual Studio 2022)
+Par défaut, Vite démarre le storefront sur le port `3002`. Le dashboard utilise le port Vite par défaut. Ajustez `VITE_API_URL` dans les fichiers `.env` locaux si l’API n’est pas sur `http://localhost:3000`.
+
+### Bot Discord
+
+Le bot est optionnel et se configure indépendamment :
+
+```bash
+cd discord-bot
+npm ci
+cp .env.example .env
+npm run dev
+```
+
+Renseignez les IDs Discord et le token dans `discord-bot/.env`, ainsi que `API_BASE_URL` et le même `BOT_API_SECRET` que le backend. La commande `npm run deploy` enregistre les commandes Discord.
+
+### Client C++
+
+Avec Visual Studio 2022 :
+
 ```bash
 cd client-cpp
 cmake -B build -G "Visual Studio 17 2022"
 cmake --build build --config Release
-# → build/Release/FortniteOptimizer2026.exe
 ```
 
-### MinGW
+Consultez `client-cpp/CMakeLists.txt` et les sources du client pour les options et l’intégration dans un autre exécutable.
+
+## Produits et stock du Temp Spoofer
+
+Le produit utilise le slug `spoofer`. La configuration des offres, prix et clés fournisseur se fait dans le dashboard, dans l’espace dédié aux clés du Temp Spoofer. Les prix configurés actuellement sont 7 jours à 8,99 €, 14 jours à 16,99 € et 30 jours à 29,99 €. L’offre 1 jour peut être configurée séparément dans le dashboard.
+
+Le stock disponible est affiché par durée sur la boutique. Une offre sans clé disponible ne peut pas être achetée. Les clés sont réservées pendant le paiement, mais ne sont décomptées comme vendues et livrées qu’après confirmation du paiement. Le dashboard permet de consulter les clés disponibles, réservées ou livrées, ainsi que l’ordre, le client et les dates associés. Les commandes en attente peuvent être supprimées depuis l’onglet Commandes ; leur réservation est alors libérée. Une clé livrée n’est jamais remise en stock.
+
+Le fichier du spoofer se gère dans l’onglet d’upload dédié. Après un achat confirmé, le client retrouve sa clé et le bouton de téléchargement dans son profil. N’ajoutez pas de clés réelles dans le dépôt ou dans ce README. Pour les règles détaillées de réservation et de réconciliation des paiements, voir [`docs/spoofer.md`](docs/spoofer.md).
+
+## Paiements et livraison
+
+- Configurez les clés et signatures du fournisseur utilisé dans l’environnement du backend.
+- Configurez les webhooks de paiement vers l’API, avec les URL et secrets correspondant à l’environnement.
+- La livraison d’une clé du Temp Spoofer intervient après confirmation du paiement ; les événements d’échec et d’expiration libèrent les réservations selon le flux du fournisseur.
+- Les téléchargements de produits achetés sont servis via l’accès du compte client. Ne rendez pas les fichiers privés accessibles par une URL publique permanente.
+- Vérifiez les commandes et événements de webhook dans le dashboard et les journaux avant toute intervention manuelle sur l’inventaire.
+
+Les endpoints et payloads varient selon les modules et versions intégrés ; consultez les contrôleurs backend et la documentation API du projet avant d’intégrer un client externe.
+
+## Tests et maintenance
+
+Dans `backend/`, les scripts disponibles incluent :
+
 ```bash
-cd client-cpp
-cmake -B build -G "MinGW Makefiles"
-cmake --build build
+npm test
+npm run lint
+npm run build
 ```
 
-### Intégration dans FortniteOptimizer existant
-```cpp
-#include "licensing.h"
+Les tests d’intégration du stock du spoofer peuvent être lancés avec :
 
-int main() {
-    licensing::LicenseClient client("https://api.yourdomain.com");
-
-    // Activation
-    auto info = client.activate("XXXXX-XXXXX-XXXXX-XXXXX-XXXXX");
-    if (info.status != licensing::Status::VALID) {
-        // Afficher erreur et quitter
-        return 1;
-    }
-
-    // Démarrer heartbeat en arrière-plan (toutes les 5 min)
-    client.startHeartbeatLoop(300);
-
-    // ... code de l'optimiseur ...
-
-    // Vérification périodique dans la boucle principale
-    if (!client.isValid()) {
-        // Licence révoquée pendant la session
-    }
-}
+```bash
+SPOOFER_INTEGRATION=1 npm test -- --runInBand test/spoofer.spec.ts
 ```
 
-## API Endpoints
+Ces tests d’intégration nécessitent une base PostgreSQL configurée pour les tests et créent/suppriment un schéma temporaire. Ils n’utilisent pas de clés commerciales.
 
-| Méthode | Endpoint | Description | Auth |
-|---------|----------|-------------|------|
-| POST | `/api/v1/auth/activate` | Activation licence + HWID | Non |
-| POST | `/api/v1/auth/heartbeat` | Heartbeat périodique | JWT |
-| POST | `/api/v1/auth/refresh` | Refresh access token | Non |
-| POST | `/api/v1/admin/login` | Login admin | Non |
-| GET | `/api/v1/admin/licenses` | Lister licences | Admin |
-| POST | `/api/v1/admin/licenses` | Créer licence | Admin |
-| POST | `/api/v1/admin/licenses/batch` | Générer lot de clés | Admin |
-| GET | `/api/v1/admin/licenses/:id` | Détail licence | Admin |
-| PUT | `/api/v1/admin/licenses/:id/ban` | Bannir licence | Admin |
-| PUT | `/api/v1/admin/licenses/:id/unban` | Débannir | Admin |
-| PUT | `/api/v1/admin/licenses/:id/reset-hwid` | Reset HWID | Admin |
-| PUT | `/api/v1/admin/licenses/:id/extend` | Étendre durée | Admin |
-| DELETE | `/api/v1/admin/licenses/:id` | Supprimer | Admin |
-| GET | `/api/v1/admin/stats` | Statistiques | Admin |
-| GET | `/api/v1/admin/logs` | Logs activation | Admin |
-| POST | `/api/v1/payment/webhook/stripe` | Webhook Stripe | Signature |
-| GET | `/api/v1/health` | Health check | Non |
+Les interfaces disposent de scripts `build` et `preview` dans leurs dossiers respectifs. Le bot expose `npm run start`, `npm run dev` et `npm run deploy`.
 
-## Sécurité Implémentée
+## Déploiement et sécurité
 
-| Couche | Protection |
-|--------|-----------|
-| Transport | HTTPS / TLS 1.3, Helmet headers |
-| Auth | JWT 15min + Refresh 7j, bcrypt(12) admin |
-| HWID | SHA256 client → HMAC-SHA256 serveur (salé) |
-| Anti-replay | Nonce unique + timestamp (60s window) |
-| Rate limit | Redis sliding window par IP |
-| Brute force | Blocage IP après 10 échecs (10min) |
-| Client | Anti-debug (5 checks), XOR token storage |
-| Données | Refresh tokens hashés (SHA256), pas de clé en clair |
+- Remplacez toutes les valeurs de démonstration et révoquez tout secret qui aurait été exposé.
+- Servez les interfaces et l’API derrière HTTPS et un reverse proxy correctement configuré.
+- Gardez les ports PostgreSQL et Redis privés ; ne les exposez pas à Internet.
+- Configurez les origines CORS exactes et `TRUST_PROXY` uniquement si l’API est derrière un proxy de confiance.
+- Sauvegardez PostgreSQL et les fichiers privés du backend ; testez la restauration.
+- Gardez les clés fournisseur et les fichiers du spoofer hors du dépôt et hors des journaux.
+- Vérifiez la configuration des webhooks, les permissions d’accès et les politiques de téléchargement avant la mise en production.
 
-## Stripe — Configuration
+Le guide [`docs/PRODUCTION_HARDENING.md`](docs/PRODUCTION_HARDENING.md) donne des recommandations complémentaires.
 
-1. Créer produits dans Stripe Dashboard avec metadata `plan: DAYS_30`
-2. Configurer le webhook vers `https://api.yourdomain.com/api/v1/payment/webhook/stripe`
-3. Événements à écouter : `checkout.session.completed`, `customer.subscription.deleted`, `invoice.payment_failed`
-4. Ajouter `STRIPE_SECRET_KEY` et `STRIPE_WEBHOOK_SECRET` dans `.env`
+## Documentation complémentaire
 
-## Production — Checklist
-
-- [ ] Générer tous les secrets (.env)
-- [ ] Générer une clé dédiée `OFFLINE_TOKEN_SECRET`
-- [ ] Configurer HTTPS (reverse proxy nginx/Caddy)
-- [ ] Laisser PostgreSQL, Redis, API et dashboards bindés sur `127.0.0.1` puis publier uniquement via le reverse proxy
-- [ ] Configurer CORS (ADMIN_CORS_ORIGIN)
-- [ ] Activer `TRUST_PROXY=true` derrière nginx/Caddy/Cloudflare
-- [ ] Configurer backup PostgreSQL
-- [ ] Changer le mot de passe admin
-- [ ] Configurer Stripe en mode live
-- [ ] Obfusquer le binaire C++ (VMProtect/Themida recommandé)
-- [ ] Chiffrer l'URL API dans le client (utiliser crypto::deobfuscate)
-- [ ] Activer certificate pinning dans le client HTTP
-- [ ] Configurer monitoring (health endpoint)
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — architecture et flux de licence.
+- [`docs/PRODUCTION_HARDENING.md`](docs/PRODUCTION_HARDENING.md) — recommandations de durcissement.
+- [`docs/spoofer.md`](docs/spoofer.md) — stock, paiements et livraison du Temp Spoofer.
+- `backend/prisma/schema.prisma` — modèle de données.
+- `docker-compose.yml` — services conteneurisés et ports.
