@@ -10,7 +10,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
 import * as zlib from 'zlib';
-import { BinaryKind, VALID_KINDS } from './software-admin.dto';
+import { BinaryKind, VALID_KINDS, VALID_PRODUCTS, CHEAT_PRODUCT_TO_LICENSE, CheatProductId } from './software-admin.dto';
 
 // process.cwd() is the backend/ directory in both dev and production
 const STORAGE_ROOT = path.resolve(process.cwd(), 'storage', 'software');
@@ -33,11 +33,12 @@ export class SoftwareAdminService {
     private prisma: PrismaService,
     private redis: RedisService,
   ) {
-    for (const kind of VALID_KINDS) {
-      const dir = this.binaryDir('fortniteclient', kind);
-      fs.mkdirSync(dir, { recursive: true });
+    for (const productId of VALID_PRODUCTS) {
+      for (const kind of VALID_KINDS) {
+        fs.mkdirSync(this.binaryDir(productId, kind), { recursive: true });
+      }
+      fs.mkdirSync(this.bundleDir(productId), { recursive: true });
     }
-    fs.mkdirSync(this.bundleDir('fortniteclient'), { recursive: true });
   }
 
   private binaryDir(productId: string, kind: BinaryKind): string {
@@ -87,10 +88,14 @@ export class SoftwareAdminService {
     });
     if (existing) {
       fs.unlinkSync(file.path);
+      const bumped = await this.prisma.softwareBinary.update({
+        where: { id: existing.id },
+        data: { uploadedAt: new Date(), uploadedBy: adminId ?? existing.uploadedBy },
+      });
       this.logger.log(
-        `software.upload productId=${productId} kind=${kind} adminId=${adminId ?? 'unknown'} sha256=${sha256} size=${existing.size} (deduplicated)`,
+        `software.upload productId=${productId} kind=${kind} adminId=${adminId ?? 'unknown'} sha256=${sha256} size=${existing.size} (deduplicated, uploadedAt bumped)`,
       );
-      return existing;
+      return bumped;
     }
 
     const ext = path.extname(file.originalname).toLowerCase();
@@ -284,13 +289,15 @@ export class SoftwareAdminService {
         : null;
     }
 
+    const licenseProduct = CHEAT_PRODUCT_TO_LICENSE[productId as CheatProductId] ?? 'FORTNITE_CLIENT';
+
     const subscribers = await this.prisma.license.count({
-      where: { product: 'FORTNITE_CLIENT', status: 'ACTIVE' },
+      where: { product: licenseProduct, status: 'ACTIVE' },
     });
 
     const lastFetches = await this.prisma.activation.findMany({
       where: {
-        license: { product: 'FORTNITE_CLIENT' },
+        license: { product: licenseProduct },
         status: 'SUCCESS',
       },
       orderBy: { createdAt: 'desc' },

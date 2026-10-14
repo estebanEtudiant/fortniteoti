@@ -4,6 +4,7 @@ import { api } from './lib/api';
 
 // Components
 import Sidebar from './components/Sidebar';
+import CommandPalette from './components/CommandPalette';
 
 // Pages
 import DashboardPage from './pages/DashboardPage';
@@ -33,7 +34,7 @@ import VeltharPage from './pages/VeltharPage';
 import VeltharPlansPage from './pages/VeltharPlansPage';
 import UploadPage from './pages/UploadPage';
 import PlansHubPage from './pages/PlansHubPage';
-import ShopContentPage from './pages/ShopContentPage';
+import ShopContentPage, { ShopReviewsPage } from './pages/ShopContentPage';
 import PokemonPage from './pages/PokemonPage';
 import KillSwitchPage from './pages/KillSwitchPage';
 import MetricsPage from './pages/MetricsPage';
@@ -114,7 +115,7 @@ function LoginPage({ onLogin }) {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <Shield className="w-12 h-12 text-cyan-400 mx-auto mb-3" />
-          <h1 className="text-2xl font-bold">FnOptimizer Admin</h1>
+          <h1 className="text-2xl font-bold">404 Admin</h1>
           <p className="text-gray-500 text-sm mt-1">Licensing Management</p>
         </div>
         <form onSubmit={handleSubmit} className="bg-gray-900 rounded-xl p-6 border border-gray-800 space-y-4">
@@ -165,12 +166,26 @@ function LoginPage({ onLogin }) {
 export default function App() {
   const [authed, setAuthed] = useState(!!localStorage.getItem('admin_token'));
   const [orderToast, setOrderToast] = useState(null);
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const { path, navigate } = useRouter();
 
   useNewOrderNotifier(authed, (amount) => {
     setOrderToast(amount);
     setTimeout(() => setOrderToast(null), 6000);
   });
+
+  // ⌘K / Ctrl+K opens the global command palette from anywhere
+  useEffect(() => {
+    if (!authed) return;
+    const onKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setPaletteOpen(true);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [authed]);
 
   if (!authed) return <LoginPage onLogin={() => { setAuthed(true); navigate('/'); }} />;
   const logout = () => { api.clearToken(); setAuthed(false); };
@@ -189,6 +204,7 @@ export default function App() {
   else if (path === '/upload')             page = <UploadPage navigate={navigate} />;
   else if (path === '/plans-hub')          page = <PlansHubPage />;
   else if (path === '/shop-content')       page = <ShopContentPage />;
+  else if (path === '/shop-reviews')       page = <ShopReviewsPage />;
   else if (path === '/pokemon')            page = <PokemonPage />;
   else if (path === '/kill-switch')         page = <KillSwitchPage />;
   else if (path === '/metrics')            page = <MetricsPage navigate={navigate} />;
@@ -215,8 +231,9 @@ export default function App() {
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar path={path} navigate={navigate} onLogout={logout} />
+      <Sidebar path={path} navigate={navigate} onLogout={logout} onOpenSearch={() => setPaletteOpen(true)} />
       <main className="flex-1 min-w-0 p-4 lg:p-6 overflow-auto pt-16 lg:pt-6">{page}</main>
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} navigate={navigate} />
 
       {/* New order notification toast */}
       {orderToast !== null && (

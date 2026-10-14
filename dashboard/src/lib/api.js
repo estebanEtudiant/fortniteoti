@@ -126,6 +126,7 @@ class ApiClient {
     const qs = new URLSearchParams(params).toString();
     return this.get(`/admin/orders${qs ? '?' + qs : ''}`);
   }
+  cancelSpooferOrder(id) { return this.del(`/payment/admin/shop-orders/${id}`); }
 
   // Ã¢â€â‚¬Ã¢â€â‚¬ Plans Ã¢â€â‚¬Ã¢â€â‚¬
   getPlans() { return this.get('/admin/plans'); }
@@ -297,6 +298,9 @@ class ApiClient {
   // Shop — Settings (hero, etc.)
   getShopSettings()             { return this.get('/shop/admin/settings'); }
   updateShopSettings(data)      { return this.patch('/shop/admin/settings', data); }
+  getShopReviews()              { return this.get('/shop/admin/reviews'); }
+  moderateShopReview(id, approved) { return this.patch(`/shop/admin/reviews/${id}`, { approved }); }
+  deleteShopReview(id)          { return this.del(`/shop/admin/reviews/${id}`); }
 
   // Pokemon — Produits (kits de rénovation)
   getPokemonProducts()          { return this.get('/pokemon/admin/products'); }
@@ -335,6 +339,7 @@ class ApiClient {
   metricsErrors(hours = 24) { return this.get(`/admin/metrics/errors?hours=${hours}`); }
   metricsTopUsers(days = 7, limit = 20) { return this.get(`/admin/metrics/top-users?days=${days}&limit=${limit}`); }
   metricsSignupsCancels(days = 14) { return this.get(`/admin/metrics/signups-cancels?days=${days}`); }
+  metricsRevenueByProduct() { return this.get('/admin/metrics/revenue-by-product'); }
 
   // Affiliates (admin)
   affiliateList(filters = {}) {

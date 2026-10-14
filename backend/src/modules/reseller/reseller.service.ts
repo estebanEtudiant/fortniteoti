@@ -27,18 +27,21 @@ function gameSlugToProduct(slug: string): string {
   return 'SHOP_' + slug.toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
 }
 
+/**
+ * Clé reseller au format standard du loader : XXXXX-XXXXX-XXXXX-XXXXX-XXXXX (alphabet A-Z2-9).
+ * Le 1er bloc commence par « R » (+ préfixe du reseller si défini), complété aléatoirement à 5 caractères.
+ * (L'ancien format « R404-… » était refusé par le loader : bloc de 4 caractères contenant un 0.)
+ */
 function generateResellerKey(prefix?: string): string {
-  const segments = 4;
-  const segLen = 5;
-  const parts: string[] = [];
-  for (let s = 0; s < segments; s++) {
-    const bytes = randomBytes(segLen);
-    let seg = '';
-    for (let i = 0; i < segLen; i++) seg += CHARS[bytes[i] % CHARS.length];
-    parts.push(seg);
-  }
-  const pfx = prefix ? `R${prefix.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6)}` : 'R404';
-  return `${pfx}-${parts.join('-')}`;
+  const rand = (n: number) => {
+    const bytes = randomBytes(n);
+    let out = '';
+    for (let i = 0; i < n; i++) out += CHARS[bytes[i] % CHARS.length];
+    return out;
+  };
+  const cleanPfx = (prefix || '').toUpperCase().split('').filter((c) => CHARS.includes(c)).join('').slice(0, 4);
+  const first = ('R' + cleanPfx + rand(5)).slice(0, 5);
+  return [first, rand(5), rand(5), rand(5), rand(5)].join('-');
 }
 
 @Injectable()
@@ -205,6 +208,9 @@ export class ResellerService {
   // ── Batches ──
 
   async orderBatch(customerId: string, productId: string, plan: string, keyCount: number) {
+    if (productId.toLowerCase() === 'spoofer' || productId.toUpperCase() === 'SHOP_SPOOFER') {
+      throw new BadRequestException('Les clés fournisseur Temp Spoofer sont disponibles uniquement dans la boutique');
+    }
     const r = await this.requireActiveReseller(customerId);
 
     if (r.termsVersion !== CURRENT_TERMS_VERSION) {
@@ -271,22 +277,33 @@ export class ResellerService {
         },
       });
 
-      const licenseExpiry = this.calculateLicenseExpiry(licensePlan);
+      // Clés reseller : la durée démarre à la 1ʳᵉ activation dans le loader (pas à la génération),
+      // pour qu'une clé vendue plusieurs jours plus tard garde toute sa durée.
+      // expiresAt reste null jusque-là ; auth.service.activate le fixe au premier lancement.
+      const durationDays = this.planDurationDays(licensePlan);   // null = à vie
 
       for (const key of keys) {
         await tx.license.create({
           data: {
             licenseKey: key, plan: licensePlan, product: productKey,
-            expiresAt: licenseExpiry, resellerId: r.id, batchId: b.id,
-            metadata: { source: 'reseller', batchId: b.id, shopGame: game.slug, shopPlan: shopPlan.slug },
+            expiresAt: null, resellerId: r.id, batchId: b.id,
+            metadata: {
+              source: 'reseller', batchId: b.id, shopGame: game.slug, shopPlan: shopPlan.slug,
+              ...(durationDays ? { startOnActivation: true, durationDays } : {}),
+            },
           },
         });
       }
 
+      const debit = await tx.reseller.updateMany({
+        where: { id: r.id, walletCents: { gte: totalCents } },
+        data: { walletCents: { decrement: totalCents } },
+      });
+      if (debit.count !== 1) throw new BadRequestException('Solde insuffisant');
+
       await tx.reseller.update({
         where: { id: r.id },
         data: {
-          walletCents: { decrement: totalCents },
           totalSpentCents: { increment: totalCents },
           totalKeysGenerated: { increment: keyCount },
         },
@@ -327,7 +344,7 @@ export class ResellerService {
 
     const keys = await this.prisma.license.findMany({
       where: { batchId },
-      select: { licenseKey: true, status: true, activatedHwid: true, activatedAt: true, expiresAt: true, createdAt: true },
+      select: { licenseKey: true, status: true, activatedHwid: true, activatedAt: true, expiresAt: true, createdAt: true, metadata: true },
       orderBy: { createdAt: 'asc' },
     });
 
@@ -338,7 +355,7 @@ export class ResellerService {
     const data = await this.getBatch(customerId, batchId);
     const header = 'key,status,activated,activated_at,expires_at';
     const rows = data.keys.map(k =>
-      `${k.licenseKey},${k.status},${k.activatedHwid ? 'yes' : 'no'},${k.activatedAt?.toISOString() || ''},${k.expiresAt?.toISOString() || 'lifetime'}`,
+      `${k.licenseKey},${k.status},${k.activatedHwid ? 'yes' : 'no'},${k.activatedAt?.toISOString() || ''},${k.expiresAt?.toISOString() || ((k.metadata as any)?.startOnActivation ? `${(k.metadata as any).durationDays}d from activation` : 'lifetime')}`,
     );
     return [header, ...rows].join('\n');
   }
@@ -468,13 +485,8 @@ export class ResellerService {
     ]);
 
     // Activate kill switch for each product in the batch
-    const products = [...new Set(licenses.map(l => l.product))];
-    for (const prod of products) {
-      await this.killService.activate(
-        prod, 'all', `Reseller batch ${batchId.slice(0, 8)} revoked: ${reason}`,
-        adminUsername, undefined, 1,
-      ).catch(() => {});
-    }
+    // Les clés sont bannies ci-dessus : le loader les refuse à l'activation et au prochain heartbeat.
+    // (Avant : kill switch scope 'all' sur tout le produit → coupait TOUS les clients du jeu pendant 1 h.)
 
     this.alerts.sendCriticalAlert('Reseller Batch Revoked',
       `Batch \`${batchId.slice(0, 8)}\` — **${batch.keyCount}** clés bannies — ${reason}`,
@@ -546,11 +558,17 @@ export class ResellerService {
     });
 
     for (const r of resellers) {
-      if (r.createdAt > ninetyDaysAgo || r.totalKeysGenerated < 20) continue;
-      const rate = r.totalKeysActivated / r.totalKeysGenerated;
+      if (r.createdAt > ninetyDaysAgo) continue;
+      // compte sur les clés réellement existantes (les compteurs incluent des clés supprimées/test)
+      const [generated, activated] = await Promise.all([
+        this.prisma.license.count({ where: { resellerId: r.id } }),
+        this.prisma.license.count({ where: { resellerId: r.id, activatedHwid: { not: null } } }),
+      ]);
+      if (generated < 20) continue;
+      const rate = activated / generated;
       if (rate < 0.3) {
         this.alerts.sendAdminNotification('Low Activation Rate',
-          `Reseller **${r.companyName || r.id.slice(0, 8)}** — ${(rate * 100).toFixed(0)}% activation rate (${r.totalKeysActivated}/${r.totalKeysGenerated})`,
+          `Reseller **${r.companyName || r.id.slice(0, 8)}** — ${(rate * 100).toFixed(0)}% activation rate (${activated}/${generated})`,
         ).catch(() => {});
       }
     }
@@ -686,6 +704,14 @@ export class ResellerService {
     }
 
     return null;
+  }
+
+  /** Durée d'un plan en jours (null = à vie / inconnu). */
+  private planDurationDays(plan: string): number | null {
+    const days: Record<string, number> = {
+      DAYS_1: 1, DAYS_3: 3, DAYS_7: 7, DAYS_14: 14, DAYS_30: 30, DAYS_90: 90, DAYS_365: 365,
+    };
+    return days[plan] || null;
   }
 
   private calculateLicenseExpiry(plan: string): Date | null {

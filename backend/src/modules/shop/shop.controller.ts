@@ -1,13 +1,42 @@
 import {
-  Controller, Get, Post, Patch, Delete, Body, Param, UseGuards,
+  Controller, Get, Post, Patch, Delete, Body, Param, UseGuards, Req, Query, Header,
 } from '@nestjs/common';
 import { ShopService } from './shop.service';
+import { SpooferService } from './spoofer.service';
 import { CreateGameDto, UpdateGameDto, CreatePlanDto, UpdatePlanDto, UpdateShopSettingsDto } from './shop.dto';
-import { AdminAuthGuard } from '../../common/guards/auth.guard';
+import { AdminAuthGuard, CustomerAuthGuard } from '../../common/guards/auth.guard';
 
 @Controller('shop')
 export class ShopController {
-  constructor(private readonly shop: ShopService) {}
+  constructor(private readonly shop: ShopService, private readonly spoofer: SpooferService) {}
+
+  @Get('spoofer/plans')
+  @Header('Cache-Control', 'no-store')
+  spooferPlans() { return this.spoofer.publicPlans(); }
+
+  @Get('admin/spoofer')
+  @UseGuards(AdminAuthGuard)
+  @Header('Cache-Control', 'private, no-store')
+  spooferStock() { return this.spoofer.plans(); }
+
+  @Get('admin/spoofer/keys')
+  @UseGuards(AdminAuthGuard)
+  @Header('Cache-Control', 'private, no-store')
+  spooferKeys(@Query() filters: { plan?: string; status?: string; search?: string; page?: string }) {
+    return this.spoofer.listKeys(filters);
+  }
+
+  @Post('admin/spoofer/keys')
+  @UseGuards(AdminAuthGuard)
+  importSpooferKeys(@Body() body: { plan: string; keys: string }) {
+    return this.spoofer.importKeys(body.plan, body.keys);
+  }
+
+  @Patch('admin/spoofer/plans/:slug')
+  @UseGuards(AdminAuthGuard)
+  updateSpooferPlan(@Param('slug') slug: string, @Body() body: { price: number; enabled: boolean }) {
+    return this.spoofer.updatePlan(slug, body.price, body.enabled);
+  }
 
   // ─────────── Public (shop frontend) ───────────
   @Get('games')
@@ -23,6 +52,48 @@ export class ShopController {
   @Get('settings')
   getPublicSettings() {
     return this.shop.getSettings();
+  }
+
+  // ─────────── Avis clients (boutique) ───────────
+  @Get('reviews')
+  getPublicReviews() {
+    return this.shop.publicReviews();
+  }
+
+  @Get('my-reviews')
+  @UseGuards(CustomerAuthGuard)
+  getMyReviews(@Req() req: any) {
+    return this.shop.myReviews(req.customer.customerId);
+  }
+
+  @Get('my-coupons')
+  @UseGuards(CustomerAuthGuard)
+  getMyCoupons(@Req() req: any) {
+    return this.shop.myCoupons(req.customer.customerId);
+  }
+
+  @Post('reviews')
+  @UseGuards(CustomerAuthGuard)
+  submitReview(@Req() req: any, @Body() body: { game?: string; rating?: number; text?: string }) {
+    return this.shop.submitReview(req.customer.customerId, body || {});
+  }
+
+  @Get('admin/reviews')
+  @UseGuards(AdminAuthGuard)
+  adminReviews() {
+    return this.shop.adminReviews();
+  }
+
+  @Patch('admin/reviews/:id')
+  @UseGuards(AdminAuthGuard)
+  moderateReview(@Param('id') id: string, @Body() body: { approved?: boolean }) {
+    return this.shop.moderateReview(id, !!(body && body.approved));
+  }
+
+  @Delete('admin/reviews/:id')
+  @UseGuards(AdminAuthGuard)
+  deleteReview(@Param('id') id: string) {
+    return this.shop.deleteReview(id);
   }
 
   @Get('community-stats')

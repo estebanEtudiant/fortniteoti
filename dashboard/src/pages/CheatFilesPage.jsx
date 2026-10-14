@@ -5,7 +5,13 @@ import {
 import { api } from '../lib/api';
 import { formatDate } from '../lib/utils';
 
-const PRODUCT = 'fortniteclient';
+const PRODUCTS = [
+  { id: 'fortniteclient', label: 'Fortnite' },
+  { id: 'marvelrivalsclient', label: 'Marvel Rivals' },
+  { id: 'ngclient', label: 'NG Client' },
+  { id: 'rustclient', label: 'Rust' },
+];
+const PRODUCT_STORAGE_KEY = 'cheatFiles.product';
 const KINDS = [
   { key: 'driver', label: 'Driver', ext: '.sys', desc: '404.sys' },
   { key: 'reader', label: 'Reader', ext: '.exe', desc: 'DwmRenderHelper.exe' },
@@ -22,7 +28,7 @@ const formatSize = (b) => {
 
 const shortSha = (s) => s ? s.slice(0, 12) + '…' : '—';
 
-function BinaryPanel({ kind, onUploaded }) {
+function BinaryPanel({ product, kind, onUploaded }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -33,11 +39,11 @@ function BinaryPanel({ kind, onUploaded }) {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await api.cheatBinaries(PRODUCT, kind.key);
+      const data = await api.cheatBinaries(product, kind.key);
       setHistory(data);
     } catch (e) { setError(e.message); }
     finally { setLoading(false); }
-  }, [kind.key]);
+  }, [product, kind.key]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -46,7 +52,7 @@ function BinaryPanel({ kind, onUploaded }) {
     if (!file) return;
     setUploading(true); setError(''); setSuccess(''); setProgress(0);
     try {
-      const result = await api.cheatUploadBinary(PRODUCT, kind.key, file, setProgress);
+      const result = await api.cheatUploadBinary(product, kind.key, file, setProgress);
       setSuccess(`${kind.label} uploadé — sha256: ${shortSha(result.sha256)}`);
       e.target.value = '';
       await load();
@@ -107,6 +113,18 @@ function BinaryPanel({ kind, onUploaded }) {
 }
 
 export default function CheatFilesPage() {
+  const [product, setProduct] = useState(() => {
+    try {
+      const stored = localStorage.getItem(PRODUCT_STORAGE_KEY);
+      if (stored && PRODUCTS.some((p) => p.id === stored)) return stored;
+    } catch { /* ignore */ }
+    return PRODUCTS[0].id;
+  });
+
+  useEffect(() => {
+    try { localStorage.setItem(PRODUCT_STORAGE_KEY, product); } catch { /* ignore */ }
+  }, [product]);
+
   const [versions, setVersions] = useState([]);
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -125,14 +143,14 @@ export default function CheatFilesPage() {
     setLoading(true); setError('');
     try {
       const [v, s] = await Promise.all([
-        api.cheatVersions(PRODUCT),
-        api.cheatStatus(PRODUCT),
+        api.cheatVersions(product),
+        api.cheatStatus(product),
       ]);
       setVersions(v);
       setStatus(s);
     } catch (e) { setError(e.message); }
     finally { setLoading(false); }
-  }, []);
+  }, [product]);
 
   useEffect(() => { load(); }, [load, refreshKey]);
 
@@ -140,7 +158,7 @@ export default function CheatFilesPage() {
     e.preventDefault();
     setPublishing(true); setPubError(''); setPubResult(null);
     try {
-      const result = await api.cheatPublish(PRODUCT, {
+      const result = await api.cheatPublish(product, {
         version: pubVersion.trim() || undefined,
         notes: pubNotes.trim() || undefined,
       });
@@ -155,7 +173,7 @@ export default function CheatFilesPage() {
     if (!window.confirm(`Rollback vers la version ${ver} ?`)) return;
     setRollingBack(id);
     try {
-      await api.cheatRollback(PRODUCT, id);
+      await api.cheatRollback(product, id);
       await load();
     } catch (err) { setError(err.message); }
     finally { setRollingBack(null); }
@@ -163,19 +181,32 @@ export default function CheatFilesPage() {
 
   const handleDownload = async (id, ver) => {
     try {
-      const blob = await api.cheatDownloadBundle(PRODUCT, id);
+      const blob = await api.cheatDownloadBundle(product, id);
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `fortniteclient_v${ver}.bin`;
+      a.download = `${product}_v${ver}.bin`;
       a.click();
       URL.revokeObjectURL(a.href);
     } catch (err) { setError(err.message); }
   };
 
+  const productLabel = PRODUCTS.find((p) => p.id === product)?.label ?? product;
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-5">
-        <h2 className="text-lg font-bold">Cheat Files — fortniteclient</h2>
+      <div className="flex items-center justify-between mb-5 gap-3 flex-wrap">
+        <div className="flex items-center gap-3">
+          <h2 className="text-lg font-bold">Cheat Files — {productLabel}</h2>
+          <select
+            value={product}
+            onChange={(e) => setProduct(e.target.value)}
+            className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-cyan-500"
+          >
+            {PRODUCTS.map((p) => (
+              <option key={p.id} value={p.id}>{p.label}</option>
+            ))}
+          </select>
+        </div>
         <button onClick={() => setRefreshKey((k) => k + 1)}
           className="flex items-center gap-2 text-sm text-gray-400 hover:text-white bg-gray-800 px-3 py-1.5 rounded-lg">
           <RefreshCw className="w-4 h-4" /> Actualiser
@@ -204,7 +235,7 @@ export default function CheatFilesPage() {
       {/* Binary panels */}
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {KINDS.map((k) => (
-          <BinaryPanel key={k.key} kind={k} onUploaded={() => setRefreshKey((n) => n + 1)} />
+          <BinaryPanel key={`${product}:${k.key}`} product={product} kind={k} onUploaded={() => setRefreshKey((n) => n + 1)} />
         ))}
       </div>
 

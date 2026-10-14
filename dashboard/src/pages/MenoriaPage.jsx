@@ -7,6 +7,7 @@ import {
 } from 'recharts';
 import { api } from '../lib/api';
 import Loading from '../components/Loading';
+import ProductAnalytics from '../components/ProductAnalytics';
 import { formatDate } from '../lib/utils';
 
 export default function MenoriaPage() {
@@ -146,6 +147,8 @@ export default function MenoriaPage() {
           {error}
         </div>
       )}
+
+      <ProductAnalytics productKey="MENORIA" dauProductId="MENORIA" />
 
       {/* Stats JAR */}
       {stats && (

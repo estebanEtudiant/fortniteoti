@@ -12,6 +12,9 @@ const SLUG_TO_PRODUCT: Record<string, string> = {
   veltharloader: 'VELTHAR_LOADER',
   veltharlauncher: 'VELTHAR_LAUNCHER',
   fortniteclient: 'FORTNITE_CLIENT',
+  marvelrivalsclient: 'MARVEL_RIVALS_CLIENT',
+  ngclient: 'NG_RECUBE_CLIENT',
+  rustclient: 'RUST_CLIENT',
 };
 
 @Injectable()

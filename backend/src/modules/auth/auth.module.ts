@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { AuthController } from './auth.controller';
+import { NgAuthController } from './ng-auth.controller';
 import { AuthService } from './auth.service';
 import { LicenseAuthGuard, AdminAuthGuard } from '../../common/guards/auth.guard';
 import { RateLimitGuard } from '../../common/guards/rate-limit.guard';
@@ -21,7 +22,7 @@ import { ResellerModule } from '../reseller/reseller.module';
     KillSwitchModule,
     ResellerModule,
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, NgAuthController],
   providers: [
     AuthService,
     LicenseAuthGuard,

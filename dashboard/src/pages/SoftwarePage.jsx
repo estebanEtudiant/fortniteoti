@@ -7,6 +7,7 @@ import {
 } from 'recharts';
 import { api } from '../lib/api';
 import Loading from '../components/Loading';
+import ProductAnalytics from '../components/ProductAnalytics';
 import { formatDate } from '../lib/utils';
 
 export default function SoftwarePage() {
@@ -113,6 +114,8 @@ export default function SoftwarePage() {
           {error}
         </div>
       )}
+
+      <ProductAnalytics productKey="FTN_OPTIMIZER" dauProductId="FTN_OPTIMIZER" />
 
       {/* Stats Row */}
       {stats && (

@@ -54,7 +54,7 @@ export default function LicenseDetailPage({ id, navigate }) {
       <div className="grid lg:grid-cols-3 gap-4 mb-6">
         <InfoCard label="Plan" value={formatPlan(lic.plan)} />
         <InfoCard label="Créée" value={formatDate(lic.createdAt)} />
-        <InfoCard label="Expire" value={lic.expiresAt ? formatDate(lic.expiresAt) : 'Lifetime'} />
+        <InfoCard label="Expire" value={lic.expiresAt ? formatDate(lic.expiresAt) : (lic.metadata?.startOnActivation ? `${lic.metadata.durationDays} j dès l'activation` : 'Lifetime')} />
         <InfoCard label="HWID" value={lic.hwid || '— Non liée —'} mono />
         <InfoCard label="Email" value={lic.email || '—'} />
         <InfoCard label="Dernière IP" value={lic.lastIp || '—'} mono />

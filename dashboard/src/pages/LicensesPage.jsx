@@ -13,6 +13,9 @@ const PRODUCTS = [
   { key: '', label: 'Tous produits' },
   { key: 'FTN_OPTIMIZER', label: 'FTN Optimizer' },
   { key: 'FORTNITE_CLIENT', label: 'Fortnite Client' },
+  { key: 'MARVEL_RIVALS_CLIENT', label: 'Marvel Rivals Client' },
+  { key: 'NG_RECUBE_CLIENT', label: 'NG Recube Client' },
+  { key: 'RUST_CLIENT', label: 'Rust Client' },
   { key: 'NG_LOADER', label: 'NG Loader' },
   { key: 'MENORIA', label: 'Menoria' },
   { key: 'VELTHAR_LOADER', label: 'Velthar' },
@@ -66,7 +69,7 @@ export default function LicensesPage({ navigate }) {
     if (!data?.data?.length) return;
     const header = 'Clé,Produit,Plan,Statut,Email,HWID,Expire,Dernier HB';
     const rows = data.data.map(l =>
-      `${l.licenseKey},${l.product || ''},${l.plan},${l.status},${l.email || ''},${l.hwid || ''},${l.expiresAt || 'Lifetime'},${l.lastHeartbeat || ''}`
+      `${l.licenseKey},${l.product || ''},${l.plan},${l.status},${l.email || ''},${l.hwid || ''},${l.expiresAt || (l.metadata?.startOnActivation ? `${l.metadata.durationDays}d from activation` : 'Lifetime')},${l.lastHeartbeat || ''}`
     );
     const csv = [header, ...rows].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -224,7 +227,7 @@ export default function LicensesPage({ navigate }) {
                       <td className="px-4 py-3"><StatusBadge status={lic.status} /></td>
                       <td className="px-4 py-3 font-mono text-xs text-gray-500">{lic.hwid ? lic.hwid.substring(0, 12) + '...' : '—'}</td>
                       <td className="px-4 py-3 text-xs text-gray-400">{formatDate(lic.lastHeartbeat)}</td>
-                      <td className="px-4 py-3 text-xs text-gray-400">{lic.expiresAt ? formatDate(lic.expiresAt) : 'Lifetime'}</td>
+                      <td className="px-4 py-3 text-xs text-gray-400">{lic.expiresAt ? formatDate(lic.expiresAt) : (lic.metadata?.startOnActivation ? `${lic.metadata.durationDays} j dès l'activation` : 'Lifetime')}</td>
                     </tr>
                   ))}
                 </tbody>

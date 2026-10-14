@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
   Sparkles, Package, Truck, Settings as SettingsIcon, Plus, Pencil, Trash2,
-  Save, EyeOff, Star, Upload, Boxes,
+  Save, EyeOff, Star, Upload, Boxes, Euro, ShoppingCart, TrendingUp, TrendingDown, Minus,
 } from 'lucide-react';
+import {
+  AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
+} from 'recharts';
 import { api } from '../lib/api';
 import Collapsible from '../components/Collapsible';
 
@@ -383,6 +386,95 @@ function SettingsManager() {
   );
 }
 
+const PIE_COLORS = ['#f59e0b', '#06b6d4', '#8b5cf6', '#10b981', '#ef4444', '#6366f1', '#ec4899'];
+
+// ════════════════════════════════ ANALYTICS ════════════════════════════════
+function PokemonAnalytics() {
+  const [data, setData] = useState(null);
+  useEffect(() => {
+    api.metricsRevenueByProduct().then(setData).catch(() => {});
+  }, []);
+
+  if (!data) return null;
+  const pkm = data.products.find((p) => p.key === 'POKEMON');
+  if (!pkm || (pkm.revenue30d === 0 && pkm.revenuePrev30d === 0)) return null;
+
+  const pct = pkm.deltaPct || 0;
+  const DeltaIcon = pct > 0 ? TrendingUp : pct < 0 ? TrendingDown : Minus;
+  const byStatus = (data.pokemonByStatus || []).map((s) => ({ name: STATUS_LABELS[s.status] || s.status, value: s.count }));
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-sm text-gray-400">Revenu (30j)</span>
+            <Euro className="w-4 h-4 text-gray-600" />
+          </div>
+          <p className="text-2xl font-bold text-green-400">{(pkm.revenue30d / 100).toFixed(2)}€</p>
+          <span className={`text-xs flex items-center gap-1 mt-1 ${pct > 0 ? 'text-green-400' : pct < 0 ? 'text-red-400' : 'text-gray-500'}`}>
+            <DeltaIcon className="w-3 h-3" /> {pct > 0 ? '+' : ''}{pct}% vs 30j préc.
+          </span>
+        </div>
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-sm text-gray-400">Commandes (30j)</span>
+            <ShoppingCart className="w-4 h-4 text-gray-600" />
+          </div>
+          <p className="text-2xl font-bold">{pkm.orders30d}</p>
+        </div>
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-sm text-gray-400">Panier moyen</span>
+            <TrendingUp className="w-4 h-4 text-gray-600" />
+          </div>
+          <p className="text-2xl font-bold">{pkm.orders30d ? `${((pkm.revenue30d / pkm.orders30d) / 100).toFixed(2)}€` : '—'}</p>
+        </div>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-4">
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+          <h3 className="text-sm font-semibold text-gray-300 mb-3">Revenus — 30 derniers jours</h3>
+          <ResponsiveContainer width="100%" height={180}>
+            <AreaChart data={pkm.trend}>
+              <defs>
+                <linearGradient id="pkm-rev" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.35} />
+                  <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+              <XAxis dataKey="date" tick={{ fill: '#6b7280', fontSize: 10 }} tickFormatter={(d) => d.slice(5)} />
+              <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} tickFormatter={(v) => `${(v / 100).toFixed(0)}€`} />
+              <Tooltip
+                contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 8 }}
+                labelStyle={{ color: '#9ca3af' }}
+                formatter={(v) => [`${(v / 100).toFixed(2)}€`, 'Revenu']}
+              />
+              <Area type="monotone" dataKey="amount" stroke="#f59e0b" fill="url(#pkm-rev)" strokeWidth={2} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+
+        {byStatus.length > 0 && (
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+            <h3 className="text-sm font-semibold text-gray-300 mb-3">Commandes par statut</h3>
+            <ResponsiveContainer width="100%" height={180}>
+              <PieChart>
+                <Pie data={byStatus} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={60} paddingAngle={2}>
+                  {byStatus.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                </Pie>
+                <Tooltip contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 8, fontSize: 12 }} />
+                <Legend wrapperStyle={{ fontSize: 11, color: '#9ca3af' }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ════════════════════════════════ PAGE ════════════════════════════════
 export default function PokemonPage() {
   const [open, setOpen] = useState('products');
@@ -395,6 +487,8 @@ export default function PokemonPage() {
           <p className="text-gray-500 text-sm">Gère les kits, le stock, la livraison et les commandes affichées sur 404tweaks.tech/pokemon.</p>
         </div>
       </div>
+
+      <PokemonAnalytics />
 
       <div className="space-y-2">
         <Collapsible icon={Package} label="Kits & stock" open={open === 'products'} onToggle={() => setOpen(open === 'products' ? null : 'products')}>

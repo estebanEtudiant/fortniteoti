@@ -1,5 +1,6 @@
 import { Injectable, Logger, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import * as crypto from 'crypto';
 import Stripe from 'stripe';
 import { LicensePlan, OrderStatus } from '@prisma/client';
@@ -11,6 +12,7 @@ import { DiscordRoleService } from '../customer/discord-role.service';
 import { BotNotifyService } from '../bot/bot-notify.service';
 import { AffiliateService } from '../affiliate/affiliate.service';
 import { ResellerService } from '../reseller/reseller.service';
+import { SpooferService, SPOOFER_PLANS } from '../shop/spoofer.service';
 
 const PLANS_CONFIG_KEY = 'admin:plans_config';
 const NG_PLANS_CONFIG_KEY = 'admin:ng_plans_config';
@@ -190,6 +192,7 @@ export class PaymentService {
     private botNotify: BotNotifyService,
     private affiliateService: AffiliateService,
     private resellerService: ResellerService,
+    private spooferService: SpooferService,
   ) {
     const secretKey = config.get<string>('stripe.secretKey', '');
     this.webhookSecret = config.get<string>('stripe.webhookSecret', '');
@@ -230,15 +233,51 @@ export class PaymentService {
     return { activeThisMonth: count };
   }
 
-  async validatePromoCode(code: string): Promise<{ type: 'percent' | 'fixed'; amount: number; label: string }> {
+  /**
+   * Restrictions des coupons personnels (ex : récompense d'avis) :
+   * expiresAt (ISO) → refusé après la date ; customerId → utilisable uniquement par ce compte ;
+   * scope 'shop' → uniquement sur la boutique 404.
+   */
+  private assertPromoAllowed(promo: any, customerId?: string | null, context: 'shop' | 'other' = 'other') {
+    if (promo?.expiresAt && new Date(promo.expiresAt).getTime() < Date.now()) {
+      throw new BadRequestException('Code promo expiré');
+    }
+    if (promo?.customerId) {
+      if (!customerId) throw new BadRequestException('Connecte-toi pour utiliser ce code personnel');
+      if (promo.customerId !== customerId) throw new BadRequestException('Ce code est réservé à un autre compte');
+    }
+    if (promo?.scope === 'shop' && context !== 'shop') {
+      throw new BadRequestException('Ce code est valable uniquement sur la boutique 404');
+    }
+  }
+
+  /** Consomme un coupon personnel une fois la commande payée (pas à la création du paiement). */
+  private async consumeRewardCoupon(code?: string) {
+    if (!code) return;
+    try {
+      const raw = await this.redis.get(PROMO_CODES_KEY);
+      const codes: Record<string, any> = raw ? JSON.parse(raw) : {};
+      const promo = codes[code];
+      if (!promo) return;
+      promo.uses = (promo.uses || 0) + 1;
+      if (promo.maxUses > 0 && promo.uses >= promo.maxUses) promo.active = false;
+      promo.usedAt = new Date().toISOString();
+      await this.redis.set(PROMO_CODES_KEY, JSON.stringify(codes));
+    } catch (e) {
+      this.logger.warn(`Reward coupon consume failed (${code}): ${(e as Error).message}`);
+    }
+  }
+
+  async validatePromoCode(code: string, customerId?: string | null, context: 'shop' | 'other' = 'other'): Promise<{ type: 'percent' | 'fixed'; amount: number; label: string; expiresAt?: string }> {
     if (!code) throw new BadRequestException('Code requis');
     const raw = await this.redis.get(PROMO_CODES_KEY);
     const codes: Record<string, any> = raw ? JSON.parse(raw) : {};
     const promo = codes[code.toUpperCase()];
     if (!promo || !promo.active) throw new BadRequestException('Code promo invalide ou expire');
     if (promo.maxUses > 0 && promo.uses >= promo.maxUses) throw new BadRequestException('Code promo epuise');
+    this.assertPromoAllowed(promo, customerId, context);
     const label = promo.type === 'percent' ? `-${promo.amount}%` : `-${(promo.amount / 100).toFixed(2)} EUR`;
-    return { type: promo.type, amount: promo.amount, label };
+    return { type: promo.type, amount: promo.amount, label, ...(promo.expiresAt ? { expiresAt: promo.expiresAt } : {}) };
   }
 
   private sanitizePlanKey(rawKey: string): string {
@@ -495,13 +534,17 @@ export class PaymentService {
 
     if (order.status === OrderStatus.COMPLETED && order.licenseId) {
       if (session.metadata?.product === 'SHOP') {
+        const delivered = await this.prisma.license.findMany({ where: { metadata: { path: ['orderId'], equals: order.id } }, orderBy: { createdAt: 'asc' } });
+        if (delivered.length) return { licenseKey: delivered[0].licenseKey, licenseKeys: delivered.map((license) => license.licenseKey) };
         const full = await this.prisma.order.findUnique({ where: { id: order.id } });
         const items: any[] = Array.isArray(full?.items) ? (full!.items as any[]) : [];
         const gamesSlugs = items.map((it: any) => String(it.game || '')).filter(Boolean);
-        const productKeys = gamesSlugs.map(g =>
-          g.toLowerCase() === 'fortnite' ? 'FORTNITE_CLIENT'
-            : 'SHOP_' + g.toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, ''),
-        );
+        const productKeys = gamesSlugs.map(g => {
+          const s = g.toLowerCase();
+          if (s === 'fortnite') return 'FORTNITE_CLIENT';
+          if (s === 'marvel_rivals' || s === 'marvel-rivals' || s === 'marvelrivals') return 'MARVEL_RIVALS_CLIENT';
+          return 'SHOP_' + g.toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+        });
         if (productKeys.length) {
           const licenses = await this.prisma.license.findMany({
             where: { product: { in: productKeys }, email: (await this.prisma.customer.findUnique({ where: { id: customerId } }))?.email },
@@ -622,6 +665,8 @@ export class PaymentService {
   ): Promise<{ order: any; customer: any; lineItems: any[]; amountTotal: number }> {
     if (!Array.isArray(items) || items.length === 0) throw new BadRequestException('Panier vide');
 
+    const currency = 'EUR';
+
     const customer = await this.prisma.customer.findUnique({ where: { id: customerId } });
     if (!customer) throw new NotFoundException('Customer not found');
     if (!customer.emailVerified) {
@@ -634,6 +679,14 @@ export class PaymentService {
       const qty = Math.min(50, Math.max(1, Math.floor(Number(it.qty) || 1)));
       const game = await this.prisma.game.findUnique({ where: { slug: String(it.game) } });
       if (!game || !game.visible) throw new BadRequestException(`Jeu introuvable: ${it.game}`);
+      if (game.slug === 'spoofer') {
+        const licensePlan = SPOOFER_PLANS[it.plan];
+        const offer = licensePlan ? await this.prisma.spooferPlan.findUnique({ where: { plan: licensePlan } }) : null;
+        if (!offer?.enabled || offer.price <= 0) throw new BadRequestException('Offre spoofer indisponible');
+        resolved.push({ game: game.slug, gameName: game.name, plan: it.plan, planName: `${Number(licensePlan.slice(5))} jours`, qty, unitBase: offer.price / 100, licensePlan });
+        totalQty += qty;
+        continue;
+      }
       const plan = await this.prisma.shopPlan.findUnique({ where: { slug: String(it.plan) } });
       if (!plan || !plan.visible) throw new BadRequestException(`Plan introuvable: ${it.plan}`);
       const { plan: licensePlan, customDays } = this.shopPlanToLicense(plan.slug);
@@ -644,6 +697,7 @@ export class PaymentService {
     const bulkPct = this.shopBulkDiscountPct(totalQty);
 
     let promoPct = 0;
+    let rewardCoupon: string | undefined;
     if (promoCode) {
       try {
         const raw = await this.redis.get(PROMO_CODES_KEY);
@@ -651,10 +705,19 @@ export class PaymentService {
         const promo = codes[promoCode.toUpperCase()];
         if (promo?.active) {
           if (promo.maxUses > 0 && promo.uses >= promo.maxUses) throw new BadRequestException('Code promo épuisé');
+          this.assertPromoAllowed(promo, customerId, 'shop');
+          if (promo.customerId) rewardCoupon = promoCode.toUpperCase();
           if (promo.type === 'percent') promoPct = promo.amount / 100;
-          promo.uses = (promo.uses || 0) + 1;
-          codes[promoCode.toUpperCase()] = promo;
-          await this.redis.set(PROMO_CODES_KEY, JSON.stringify(codes));
+          else if (promo.type === 'fixed') {
+            // montant fixe (centimes) converti en % du total après remise volume, plafonné à 90 %
+            const subCents = resolved.reduce((n, r) => n + r.unitBase * (1 - bulkPct) * 100 * r.qty, 0);
+            promoPct = subCents > 0 ? Math.min(0.9, promo.amount / subCents) : 0;
+          }
+          if (!promo.customerId) {      // coupons personnels : consommés seulement après paiement
+            promo.uses = (promo.uses || 0) + 1;
+            codes[promoCode.toUpperCase()] = promo;
+            await this.redis.set(PROMO_CODES_KEY, JSON.stringify(codes));
+          }
         }
       } catch (err: any) { if (err?.status === 400) throw err; }
     }
@@ -667,7 +730,7 @@ export class PaymentService {
       amountTotal += unitCents * r.qty;
       lineItems.push({
         price_data: {
-          currency: 'eur',
+          currency: currency.toLowerCase(),
           product_data: {
             name: `404 GG — ${r.gameName} · ${r.planName}`,
             description: `Accès premium ${r.gameName} (${r.planName}). Clé de licence livrée par email. Aucun remboursement une fois la clé activée.`,
@@ -676,18 +739,22 @@ export class PaymentService {
         },
         quantity: r.qty,
       });
-      orderItems.push({ game: r.game, gameName: r.gameName, plan: r.plan, planName: r.planName, qty: r.qty, licensePlan: r.licensePlan, customDays: r.customDays ?? null, unit: unitCents });
+      orderItems.push({ game: r.game, gameName: r.gameName, plan: r.plan, planName: r.planName, qty: r.qty, licensePlan: r.licensePlan, customDays: r.customDays ?? null, unit: unitCents, ...(rewardCoupon && !orderItems.length ? { rewardCoupon } : {}) });
     }
 
-    const order = await this.prisma.order.create({
+    const order = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.order.create({
       data: {
         customerId,
         plan: resolved[0].licensePlan,
         amount: amountTotal,
-        currency: 'EUR',
+        currency,
         status: OrderStatus.PENDING,
         items: orderItems as any,
       },
+      });
+      await this.spooferService.reserve(tx, created.id, orderItems);
+      return created;
     });
 
     return { order, customer, lineItems, amountTotal };
@@ -706,12 +773,20 @@ export class PaymentService {
 
     const session = await stripeInstance.checkout.sessions.create({
       mode: 'payment',
-      payment_method_types: ['card'],
+      // Card carries Apple Pay / Google Pay automatically on Stripe-hosted Checkout.
+      // link/revolut_pay/bancontact/klarna/amazon_pay are all "active" capabilities on
+      // this account (verified via /v1/account/capabilities) — paypal isn't (Stripe
+      // rejects it: "not activated in your dashboard"), and native Stripe `crypto`
+      // doesn't support EUR, hence the separate NOWPayments crypto flow below.
+      payment_method_types: order.currency === 'USD' ? ['card', 'link'] : ['card', 'link', 'revolut_pay', 'bancontact', 'klarna', 'amazon_pay'] as any,
       customer_email: customer.email,
       line_items: lineItems,
       metadata: { product: 'SHOP', customerId, orderId: order.id },
       success_url: `${this.shopStorefrontUrl}/?session_id={CHECKOUT_SESSION_ID}#success`,
       cancel_url: `${this.shopStorefrontUrl}/#cart`,
+    }, { idempotencyKey: `shop-order-${order.id}` }).catch(async (error) => {
+      if (error.type === 'StripeInvalidRequestError') await this.spooferService.release(order.id);
+      throw error;
     });
 
     await this.prisma.order.update({ where: { id: order.id }, data: { stripeSessionId: session.id } });
@@ -725,6 +800,9 @@ export class PaymentService {
     promoCode?: string,
   ): Promise<{ url: string }> {
     if (!this.nowpaymentsApiKey) throw new BadRequestException('Paiement crypto non configuré');
+    if (items.some((item) => item.game === 'spoofer')) {
+      throw new BadRequestException('Le paiement crypto n’est pas disponible pour le Temp Spoofer. Utilise le paiement par carte.');
+    }
 
     const { order, amountTotal } = await this.prepareShopOrder(customerId, items, promoCode);
     const amountEur = Math.max(0.5, amountTotal / 100);
@@ -735,7 +813,7 @@ export class PaymentService {
         headers: { 'x-api-key': this.nowpaymentsApiKey, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           price_amount: Number(amountEur.toFixed(2)),
-          price_currency: 'eur',
+          price_currency: order.currency.toLowerCase(),
           order_id: order.id,
           order_description: '404 GG — licence(s) de jeu',
           ipn_callback_url: `${this.apiPublicUrl}/payment/webhook/nowpayments`,
@@ -744,6 +822,7 @@ export class PaymentService {
         }),
       });
       if (!res.ok) {
+        if (res.status >= 400 && res.status < 500) await this.spooferService.release(order.id);
         const txt = await res.text();
         this.logger.error(`NOWPayments invoice failed: ${res.status} ${txt}`);
         throw new BadRequestException('Création du paiement crypto échouée');
@@ -781,6 +860,10 @@ export class PaymentService {
     const status = String(body.payment_status || '');
     const orderId = String(body.order_id || '');
     if (!orderId) return;
+    if (status === 'failed' || status === 'expired') {
+      await this.spooferService.release(orderId);
+      return;
+    }
     if (status === 'finished' || status === 'confirmed') {
       const order = await this.prisma.order.findUnique({ where: { id: orderId } });
       if (!order) { this.logger.warn(`NOWPayments IPN: order ${orderId} introuvable`); return; }
@@ -817,41 +900,47 @@ export class PaymentService {
     customer: { id: string; email: string } | null,
     paymentId?: string,
   ): Promise<{ licenseKey: string; licenseKeys: string[] }> {
-    const fresh = await this.prisma.order.findUnique({ where: { id: order.id } });
-    if (!fresh) return { licenseKey: '', licenseKeys: [] };
-    if (fresh.status === OrderStatus.COMPLETED) return { licenseKey: '', licenseKeys: [] }; // déjà traité
+    if (!customer) throw new BadRequestException('Client introuvable');
+    const result = await this.prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT id FROM orders WHERE id = ${order.id}::uuid FOR UPDATE`;
+    const fresh = await tx.order.findUniqueOrThrow({ where: { id: order.id } });
+    if (fresh.status === OrderStatus.COMPLETED) {
+      const licenses = await tx.license.findMany({ where: { metadata: { path: ['orderId'], equals: order.id } } });
+      return { keys: licenses.map((license) => license.licenseKey), deliveries: [], items: [], fresh, alreadyCompleted: true };
+    }
+    if (fresh.status === OrderStatus.REFUNDED) throw new BadRequestException('Commande remboursée');
     const items: any[] = Array.isArray(fresh.items) ? (fresh.items as any[]) : [];
-    if (!items.length) return { licenseKey: '', licenseKeys: [] };
+    if (!items.length) throw new BadRequestException('Commande vide');
 
     const keys: string[] = [];
+    const deliveries: Array<{ key: string; label: string }> = [];
     let firstLicenseId: string | null = null;
     for (const it of items) {
       const gameSlug = String(it.game || '').trim();
-      const productKey = gameSlug.toLowerCase() === 'fortnite'
+      const slugLower = gameSlug.toLowerCase();
+      const productKey = slugLower === 'fortnite'
         ? 'FORTNITE_CLIENT'
+        : slugLower === 'marvel_rivals' || slugLower === 'marvel-rivals' || slugLower === 'marvelrivals'
+        ? 'MARVEL_RIVALS_CLIENT'
         : gameSlug ? 'SHOP_' + gameSlug.toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '') : 'SHOP';
       const requested = String(it.licensePlan || '').toUpperCase() as LicensePlan;
       const licensePlan = LICENSE_PLAN_VALUES.has(requested) ? requested : LicensePlan.DAYS_30;
       const customDays = Number(it.customDays) > 0 ? Number(it.customDays) : undefined;
       const qty = Math.min(50, Math.max(1, Math.floor(Number(it.qty) || 1)));
       for (let i = 0; i < qty; i++) {
-        const license = await this.licenseService.create({
+        const license = slugLower === 'spoofer'
+          ? await this.spooferService.deliver(tx, order.id, it, customer.email)
+          : await this.licenseService.create({
           plan: licensePlan, customDays, email: customer?.email, product: productKey,
-          metadata: { shopGame: it.game, shopGameName: it.gameName, shopPlan: it.plan },
-        });
+          metadata: { shopGame: it.game, shopGameName: it.gameName, shopPlan: it.plan, orderId: order.id },
+        }, tx);
         if (!firstLicenseId) firstLicenseId = license.id;
         keys.push(license.licenseKey);
-        if (customer?.email) {
-          try {
-            await this.mail.sendLicenseKey(customer.email, license.licenseKey, `${it.gameName || ''} · ${it.planName || it.plan || ''}`.trim(), `${this.shopStorefrontUrl}/#profile`, 'shop');
-          } catch (err) {
-            this.logger.error(`Failed to send shop license email to ${customer.email}: ${(err as Error).message}`);
-          }
-        }
+        deliveries.push({ key: license.licenseKey, label: `${it.gameName || ''} · ${it.planName || it.plan || ''}`.trim() });
       }
     }
 
-    await this.prisma.order.update({
+    await tx.order.update({
       where: { id: order.id },
       data: {
         status: OrderStatus.COMPLETED,
@@ -861,16 +950,78 @@ export class PaymentService {
       },
     });
 
-    this.logger.log(`Shop order ${order.id} fulfilled: ${keys.length} licence(s)`);
-    this.botNotify.notifySale(`SHOP x${keys.length}`, fresh.amount).catch(() => {});
+    return { keys, deliveries, items, fresh, alreadyCompleted: false };
+    }, { timeout: 30000 });
+    const { keys, deliveries, items, fresh } = result;
+    if (result.alreadyCompleted) return { licenseKey: keys[0] || '', licenseKeys: keys };
+    for (const delivery of deliveries) {
+      try {
+        await this.mail.sendLicenseKey(customer.email, delivery.key, delivery.label, `${this.shopStorefrontUrl}/#profile`, 'shop');
+      } catch (error) {
+        this.logger.error(`Failed to send shop license email for order ${order.id}: ${(error as Error).message}`);
+      }
+    }
 
-    if (customer?.id) {
+    await this.consumeRewardCoupon(items.find((i) => i && i.rewardCoupon)?.rewardCoupon);
+
+    this.logger.log(`Shop order ${order.id} fulfilled: ${keys.length} licence(s)`);
+    if (fresh.currency === 'EUR') this.botNotify.notifySale(`SHOP x${keys.length}`, fresh.amount).catch(() => {});
+
+    if (customer?.id && fresh.currency === 'EUR') {
       this.affiliateService.createConversion(customer.id, order.id, fresh.amount).catch((e) => {
         this.logger.warn(`Affiliate conversion tracking failed: ${e.message}`);
       });
     }
 
     return { licenseKey: keys[0] || '', licenseKeys: keys };
+  }
+
+  async cancelPendingSpooferOrder(orderId: string) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    const items = Array.isArray(order?.items) ? order.items as Array<{ game?: string }> : [];
+    if (!order || order.status !== OrderStatus.PENDING || !items.some((item) => item.game === 'spoofer')) {
+      throw new BadRequestException('Seule une commande Temp Spoofer en attente peut être annulée');
+    }
+    if (!this.stripe || !order.stripeSessionId?.startsWith('cs_')) {
+      throw new BadRequestException('Impossible de vérifier le paiement Stripe de cette commande');
+    }
+    let session = await this.stripe.checkout.sessions.retrieve(order.stripeSessionId);
+    if (session.payment_status === 'paid') {
+      const customer = await this.prisma.customer.findUnique({ where: { id: order.customerId } });
+      await this.completeShopOrder(session, order, customer);
+      throw new BadRequestException('Cette commande a déjà été payée et livrée');
+    }
+    if (session.status === 'open') session = await this.stripe.checkout.sessions.expire(order.stripeSessionId);
+    if (session.status !== 'expired') {
+      throw new BadRequestException('Le paiement n’est pas expiré; la clé reste réservée');
+    }
+    await this.spooferService.release(order.id);
+    return { success: true, status: 'FAILED' };
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async reconcileSpooferReservations() {
+    if (!this.stripe) return;
+    const reservations = await this.prisma.spooferKey.findMany({
+      where: { orderId: { not: null }, licenseId: null }, select: { orderId: true }, distinct: ['orderId'],
+    });
+    const orders = await this.prisma.order.findMany({ where: {
+      id: { in: reservations.map((entry) => entry.orderId!) }, status: 'PENDING',
+      stripeSessionId: { startsWith: 'cs_' }, createdAt: { lt: new Date(Date.now() - 86400000) },
+    }, take: 100, orderBy: { createdAt: 'asc' } });
+    for (const order of orders) {
+      try {
+        const session = await this.stripe.checkout.sessions.retrieve(order.stripeSessionId!);
+        if (session.payment_status === 'paid') {
+          const customer = await this.prisma.customer.findUnique({ where: { id: order.customerId } });
+          await this.completeShopOrder(session, order, customer);
+        } else if (session.status === 'expired') {
+          await this.spooferService.release(order.id);
+        }
+      } catch (error) {
+        this.logger.warn(`Spoofer reservation ${order.id}: ${(error as Error).message}`);
+      }
+    }
   }
 
   // ══════════════════════════════════════════════════════
@@ -1066,6 +1217,7 @@ export class PaymentService {
           if (promo.maxUses > 0 && promo.uses >= promo.maxUses) {
             throw new BadRequestException('Code promo épuisé');
           }
+          this.assertPromoAllowed(promo, customerId, 'other');
           const base = planCfg.price;
           discountedPrice = promo.type === 'percent'
             ? Math.max(1, Math.round(base * (1 - promo.amount / 100)))
@@ -1145,8 +1297,18 @@ export class PaymentService {
 
     switch (event.type) {
       case 'checkout.session.completed':
+      case 'checkout.session.async_payment_succeeded':
         await this.handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
         break;
+
+      case 'checkout.session.expired':
+      case 'checkout.session.async_payment_failed': {
+        const session = event.data.object as Stripe.Checkout.Session;
+        if (session.metadata?.product === 'SHOP' && session.metadata.orderId) {
+          await this.spooferService.release(session.metadata.orderId);
+        }
+        break;
+      }
 
       case 'customer.subscription.deleted':
         await this.handleSubscriptionCancelled(event.data.object as Stripe.Subscription);
@@ -1188,6 +1350,7 @@ export class PaymentService {
     // Shop orders → delegate to fulfillShopOrder (handles multi-item, correct product keys, shop email)
     if (session.metadata?.product === 'SHOP') {
       if (!orderId) return;
+      if (session.payment_status !== 'paid' && session.payment_status !== 'no_payment_required') return;
       const order = await this.prisma.order.findUnique({ where: { id: orderId } });
       if (!order) return;
       const customer = order.customerId
@@ -1297,9 +1460,18 @@ export class PaymentService {
     const order = await this.prisma.order.findFirst({ where: { stripePaymentId: paymentIntent } });
     if (!order?.customerId) return;
 
-    this.affiliateService.handleRefund(order.customerId).catch((e) => {
-      this.logger.warn(`Affiliate refund handling failed: ${e.message}`);
-    });
+    if (charge.refunded && Array.isArray(order.items) && (order.items as any[]).some((item) => item.game === 'spoofer')) {
+      await this.prisma.$transaction([
+        this.prisma.order.update({ where: { id: order.id }, data: { status: 'REFUNDED' } }),
+        this.prisma.license.updateMany({ where: { product: 'SHOP_SPOOFER', metadata: { path: ['orderId'], equals: order.id } }, data: { status: 'SUSPENDED' } }),
+      ]);
+    }
+
+    if (order.currency === 'EUR') {
+      this.affiliateService.handleRefund(order.customerId).catch((e) => {
+        this.logger.warn(`Affiliate refund handling failed: ${e.message}`);
+      });
+    }
 
     this.resellerService.handleChargeback(paymentIntent).catch((e) => {
       this.logger.warn(`Reseller chargeback handling failed: ${e.message}`);

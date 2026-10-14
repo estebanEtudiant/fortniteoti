@@ -14,10 +14,11 @@ import * as crypto from 'crypto';
 import { execFileSync } from 'child_process';
 import { SOFTWARE_UPLOAD_DIR } from './software.paths';
 
-export type ProductType = 'FTN_OPTIMIZER' | 'NG_LOADER' | 'NG_LAUNCHER' | 'MENORIA' | 'LOADER' | 'JRE' | 'VELTHAR_LOADER' | 'VELTHAR_LAUNCHER' | 'FORTNITE_CLIENT';
+export type ProductType = 'FTN_OPTIMIZER' | 'NG_LOADER' | 'NG_LAUNCHER' | 'MENORIA' | 'LOADER' | 'JRE' | 'VELTHAR_LOADER' | 'VELTHAR_LAUNCHER' | 'FORTNITE_CLIENT' | 'MARVEL_RIVALS_CLIENT' | 'NG_RECUBE_CLIENT' | 'RUST_CLIENT' | 'SHOP_SPOOFER';
 
 // Product slug used in URL params → maps to DB enum
 const PRODUCT_SLUGS: Record<string, ProductType> = {
+  spoofer: 'SHOP_SPOOFER',
   ftnoptimizer: 'FTN_OPTIMIZER',
   ngloader: 'NG_LOADER',
   nglauncher: 'NG_LAUNCHER',
@@ -28,7 +29,24 @@ const PRODUCT_SLUGS: Record<string, ProductType> = {
   veltharloader: 'VELTHAR_LOADER',
   veltharlauncher: 'VELTHAR_LAUNCHER',
   fortniteclient: 'FORTNITE_CLIENT',
+  marvelrivalsclient: 'MARVEL_RIVALS_CLIENT',
+  ngclient: 'NG_RECUBE_CLIENT',
+  marvelngclient: 'NG_RECUBE_CLIENT',
+  rustclient: 'RUST_CLIENT',
 };
+
+// Products served through the software-admin bundle pipeline (binaries → XOR-obfuscated bundle).
+// Maps License.product string ↔ the productId used inside software-admin storage.
+export const BUNDLED_PRODUCTS: Record<Extract<ProductType, 'FORTNITE_CLIENT' | 'MARVEL_RIVALS_CLIENT' | 'NG_RECUBE_CLIENT' | 'RUST_CLIENT'>, string> = {
+  FORTNITE_CLIENT: 'fortniteclient',
+  MARVEL_RIVALS_CLIENT: 'marvelrivalsclient',
+  NG_RECUBE_CLIENT: 'ngclient',
+  RUST_CLIENT: 'rustclient',
+};
+
+export function bundledProductId(product: ProductType): string | null {
+  return (BUNDLED_PRODUCTS as Record<string, string>)[product] ?? null;
+}
 
 export function slugToProduct(slug: string): ProductType {
   const p = PRODUCT_SLUGS[slug.toLowerCase()];
@@ -170,10 +188,17 @@ export class SoftwareService {
     mandatory = false,
   ): Promise<VersionRecord> {
     const sanitizedVersion = version.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+    const spooferExtension = path.extname(file.originalname).toLowerCase();
+    if (product === 'SHOP_SPOOFER' && !['.exe', '.zip'].includes(spooferExtension)) {
+      fs.unlinkSync(file.path);
+      throw new BadRequestException('Le spoofer doit être un fichier .exe ou .zip');
+    }
     const ext = (product === 'NG_LOADER' || product === 'MENORIA' || product === 'VELTHAR_LOADER') ? '.jar'
+      : product === 'SHOP_SPOOFER' ? spooferExtension
       : product === 'JRE' ? '.zip'
       : '.exe';
     const prefix = product === 'NG_LOADER' ? 'ngagent'
+      : product === 'SHOP_SPOOFER' ? 'TempSpoofer'
       : product === 'NG_LAUNCHER' ? 'NgLoader'
       : product === 'MENORIA' ? 'menoria'
       : product === 'LOADER' ? 'loader'
@@ -536,6 +561,14 @@ export class SoftwareService {
     return filePath;
   }
 
+  async licenseHasProduct(licenseId: string, product: ProductType): Promise<boolean> {
+    const license = await this.prisma.license.findUnique({ where: { id: licenseId } });
+    if (!license) return false;
+    if (license.product !== product) return false;
+    if (license.status !== 'ACTIVE') return false;
+    return true;
+  }
+
   async customerHasProduct(customerId: string, product: string): Promise<boolean> {
     const orders = await this.prisma.order.findMany({
       where: { customerId, status: 'COMPLETED', licenseId: { not: null } },
@@ -547,5 +580,20 @@ export class SoftwareService {
       where: { id: { in: licenseIds }, product, status: 'ACTIVE' },
     });
     return !!license;
+  }
+
+  async getCustomerSpooferPath(customerId: string): Promise<string> {
+    const orders = await this.prisma.order.findMany({ where: { customerId, status: 'COMPLETED' }, select: { id: true } });
+    const soldKeys = await this.prisma.spooferKey.findMany({ where: { orderId: { in: orders.map((order) => order.id) }, licenseId: { not: null } }, select: { licenseId: true } });
+    const license = await this.prisma.license.findFirst({ where: {
+      id: { in: soldKeys.map((key) => key.licenseId!) }, product: 'SHOP_SPOOFER', status: 'ACTIVE',
+      OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+    } });
+    if (!license) throw new ForbiddenException('Achat du spoofer requis');
+    const record = await this.getCurrentVersion('SHOP_SPOOFER');
+    if (!record) throw new NotFoundException('Le fichier du spoofer sera disponible prochainement');
+    const filePath = path.join(this.uploadDir, record.filename);
+    if (!fs.existsSync(filePath)) throw new NotFoundException('Fichier spoofer indisponible');
+    return filePath;
   }
 }

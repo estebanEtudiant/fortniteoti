@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Upload, RefreshCw, Download, TrendingUp, Package, Trash2 } from 'lucide-react';
 import { api } from '../lib/api';
 import Loading from '../components/Loading';
+import ProductAnalytics from '../components/ProductAnalytics';
 import { formatDate } from '../lib/utils';
 
 export default function VeltharPage() {
@@ -166,6 +167,8 @@ export default function VeltharPage() {
           {error}
         </div>
       )}
+
+      <ProductAnalytics productKey="VELTHAR_LOADER" dauProductId="VELTHAR_LOADER" />
 
       {/* Stats Row */}
       {stats && (

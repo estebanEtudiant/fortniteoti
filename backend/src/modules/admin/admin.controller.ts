@@ -48,12 +48,14 @@ class CreateLicenseBody {
   @IsOptional() @IsString() discordId?: string;
   @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(10) maxActivations?: number;
   @IsOptional() @IsString() product?: string;
+  @IsOptional() @IsBoolean() startOnActivation?: boolean;
 }
 class GenerateBatchBody {
   @IsEnum(LicensePlan) plan: LicensePlan;
   @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(3650) customDays?: number;
   @Type(() => Number) @IsInt() @Min(1) @Max(500) count: number;
   @IsOptional() @IsString() product?: string;
+  @IsOptional() @IsBoolean() startOnActivation?: boolean;
 }
 class BanBody {
   @IsString() @IsNotEmpty() reason: string;
@@ -338,7 +340,7 @@ export class AdminController {
   @UseGuards(AdminAuthGuard)
   @ApiBearerAuth()
   async createLicense(@Body() dto: CreateLicenseBody) {
-    const VALID_PRODUCTS = ['FTN_OPTIMIZER', 'NG_LOADER', 'NG_LAUNCHER', 'MENORIA', 'LOADER', 'VELTHAR_LOADER', 'FORTNITE_CLIENT'];
+    const VALID_PRODUCTS = ['FTN_OPTIMIZER', 'NG_LOADER', 'NG_LAUNCHER', 'NG_RECUBE_CLIENT', 'MENORIA', 'LOADER', 'VELTHAR_LOADER', 'FORTNITE_CLIENT', 'MARVEL_RIVALS_CLIENT', 'RUST_CLIENT'];
     return this.licenseService.create({
       ...dto,
       product: (VALID_PRODUCTS.includes(dto.product!) ? dto.product : 'FTN_OPTIMIZER') as any,
@@ -349,7 +351,7 @@ export class AdminController {
   @UseGuards(AdminAuthGuard)
   @ApiBearerAuth()
   async generateBatch(@Body() dto: GenerateBatchBody) {
-    const VALID_PRODUCTS = ['FTN_OPTIMIZER', 'NG_LOADER', 'NG_LAUNCHER', 'MENORIA', 'LOADER', 'VELTHAR_LOADER', 'FORTNITE_CLIENT'];
+    const VALID_PRODUCTS = ['FTN_OPTIMIZER', 'NG_LOADER', 'NG_LAUNCHER', 'NG_RECUBE_CLIENT', 'MENORIA', 'LOADER', 'VELTHAR_LOADER', 'FORTNITE_CLIENT', 'MARVEL_RIVALS_CLIENT', 'RUST_CLIENT'];
     const keys = await this.licenseService.generateBatch({
       ...dto,
       product: (VALID_PRODUCTS.includes(dto.product!) ? dto.product : 'FTN_OPTIMIZER') as any,
@@ -493,8 +495,9 @@ export class AdminController {
     @Query('limit') limit?: number,
     @Query('status') status?: string,
     @Query('plan') plan?: string,
+    @Query('search') search?: string,
   ) {
-    return this.adminService.listOrders(page, limit, status, plan);
+    return this.adminService.listOrders(page, limit, status, plan, search);
   }
 
   //

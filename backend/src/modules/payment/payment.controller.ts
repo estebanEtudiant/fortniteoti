@@ -1,14 +1,30 @@
 // ── payment.controller.ts ──
-import { Controller, Get, Post, Req, Body, Headers, HttpCode, HttpStatus, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Req, Body, Headers, HttpCode, HttpStatus, UseGuards, Query, Delete, Param } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { Request } from 'express';
 import { PaymentService } from './payment.service';
-import { CustomerAuthGuard } from '../../common/guards/auth.guard';
+import { AdminAuthGuard, CustomerAuthGuard } from '../../common/guards/auth.guard';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 @ApiTags('payment')
 @Controller('payment')
 export class PaymentController {
-  constructor(private paymentService: PaymentService) {}
+  constructor(
+    private paymentService: PaymentService,
+    private jwt: JwtService,
+    private config: ConfigService,
+  ) {}
+
+  /** Lit le compte client depuis le token s'il est présent (sans l'exiger). */
+  private async optionalCustomerId(req: Request): Promise<string | null> {
+    const h = String(req.headers.authorization || '');
+    if (!h.startsWith('Bearer ')) return null;
+    try {
+      const p: any = await this.jwt.verifyAsync(h.slice(7), { secret: this.config.get<string>('jwt.secret') });
+      return p?.customerId || null;
+    } catch { return null; }
+  }
 
   // ── GET /api/v1/payment/plans (public) ──
   @Get('plans')
@@ -30,8 +46,8 @@ export class PaymentController {
   @Get('validate-promo')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Validate a promo code' })
-  async validatePromo(@Query('code') code: string) {
-    return this.paymentService.validatePromoCode(code);
+  async validatePromo(@Req() req: Request, @Query('code') code: string, @Query('context') context?: string) {
+    return this.paymentService.validatePromoCode(code, await this.optionalCustomerId(req), context === 'shop' ? 'shop' : 'other');
   }
 
   // ── POST /api/v1/payment/confirm ──
@@ -79,6 +95,14 @@ export class PaymentController {
   async createShopCryptoCheckout(@Req() req: Request, @Body() body: { promoCode?: string; items?: Array<{ game: string; plan: string; qty?: number }> }) {
     const { customerId } = (req as any).customer;
     return this.paymentService.createShopCryptoCheckout(customerId, body.items || [], body.promoCode);
+  }
+
+  @Delete('admin/shop-orders/:id')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Cancel a pending Temp Spoofer order and release its key' })
+  async cancelPendingSpooferOrder(@Param('id') id: string) {
+    return this.paymentService.cancelPendingSpooferOrder(id);
   }
 
   // ── POST /api/v1/payment/pokemon/checkout ──

@@ -186,7 +186,15 @@ export default function PromoCodesPage() {
               <tbody className="divide-y divide-gray-700">
                 {codeList.map(c => (
                   <tr key={c.code} className="hover:bg-gray-750">
-                    <td className="px-4 py-3 font-mono font-bold text-cyan-400">{c.code}</td>
+                    <td className="px-4 py-3 font-mono font-bold text-cyan-400">
+                      {c.code}
+                      {(c.customerId || c.expiresAt) && (
+                        <div className="font-sans font-normal text-[11px] text-gray-500 mt-0.5">
+                          {c.customerId ? 'Personnel' : ''}{c.note ? ` · ${c.note}` : ''}
+                          {c.expiresAt ? ` · ${new Date(c.expiresAt) < new Date() ? 'expiré le' : 'expire le'} ${new Date(c.expiresAt).toLocaleDateString('fr-FR')}` : ''}
+                        </div>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-gray-300">{c.type === 'percent' ? 'Pourcentage' : 'Fixe'}</td>
                     <td className="px-4 py-3 text-green-400 font-semibold">
                       {c.type === 'percent' ? `-${c.amount}%` : `-${(c.amount / 100).toFixed(2)} €`}

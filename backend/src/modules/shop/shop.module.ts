@@ -3,7 +3,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { ShopController } from './shop.controller';
 import { ShopService } from './shop.service';
-import { AdminAuthGuard } from '../../common/guards/auth.guard';
+import { SpooferService } from './spoofer.service';
+import { AdminAuthGuard, CustomerAuthGuard } from '../../common/guards/auth.guard';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AdminAuthGuard } from '../../common/guards/auth.guard';
     }),
   ],
   controllers: [ShopController],
-  providers: [ShopService, AdminAuthGuard],
+  providers: [ShopService, SpooferService, AdminAuthGuard, CustomerAuthGuard],
+  exports: [SpooferService],
 })
 export class ShopModule {}

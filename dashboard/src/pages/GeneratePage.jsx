@@ -67,6 +67,9 @@ const GENERATE_PLANS = [
 const STATIC_PRODUCTS = [
   { key: 'FTN_OPTIMIZER', label: 'FTN Optimizer', emoji: '⚡', sub: 'Logiciel FortniteOpti' },
   { key: 'FORTNITE_CLIENT', label: 'Fortnite Client', emoji: '🎯', sub: 'Cheat loader (driver/reader/byovd)' },
+  { key: 'MARVEL_RIVALS_CLIENT', label: 'Marvel Rivals Client', emoji: '🦸', sub: 'Cheat loader Marvel Rivals' },
+  { key: 'NG_RECUBE_CLIENT', label: 'NG Recube Client', emoji: '🧊', sub: 'NG Recube cheat loader (driver/reader/byovd)' },
+  { key: 'RUST_CLIENT', label: 'Rust Client', emoji: '🦀', sub: 'Cheat loader Rust (Facepunch)' },
 ];
 
 export default function GeneratePage() {
@@ -85,6 +88,7 @@ export default function GeneratePage() {
   }, []);
   const [count, setCount] = useState(1);
   const [email, setEmail] = useState('');
+  const [startOnActivation, setStartOnActivation] = useState(true);   // durée démarrée au 1er lancement du loader
   const [keys, setKeys] = useState([]);
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState('single');
@@ -94,10 +98,10 @@ export default function GeneratePage() {
     setLoading(true); setKeys([]);
     try {
       if (mode === 'batch') {
-        const data = await api.generateBatch({ plan, count: parseInt(count) || 1, product });
+        const data = await api.generateBatch({ plan, count: parseInt(count) || 1, product, startOnActivation: plan !== 'LIFETIME' && startOnActivation });
         setKeys(data.keys);
       } else {
-        const data = await api.createLicense({ plan, email: email || undefined, product });
+        const data = await api.createLicense({ plan, email: email || undefined, product, startOnActivation: plan !== 'LIFETIME' && startOnActivation });
         setKeys([data.licenseKey]);
       }
     } catch (err) { alert(err.message); }
@@ -156,6 +160,20 @@ export default function GeneratePage() {
               <label className="block text-sm text-gray-400 mb-1">Email (optionnel)</label>
               <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full" placeholder="client@email.com" />
             </div>
+          )}
+
+          {plan !== 'LIFETIME' && (
+            <label className="flex items-start gap-3 p-3 rounded-lg bg-gray-800/60 border border-gray-700 cursor-pointer">
+              <input type="checkbox" checked={startOnActivation} onChange={e => setStartOnActivation(e.target.checked)} className="mt-0.5 w-4 h-4 accent-cyan-500" />
+              <span>
+                <span className="block text-sm text-gray-200 font-medium">Démarrer la durée à la 1ʳᵉ activation</span>
+                <span className="block text-xs text-gray-500 mt-0.5">
+                  {startOnActivation
+                    ? "Le compte à rebours commence quand la clé est lancée pour la première fois dans le loader (idéal pour des clés vendues plus tard)."
+                    : "Le compte à rebours commence dès maintenant, à la génération."}
+                </span>
+              </span>
+            </label>
           )}
 
           <button onClick={handleGenerate} disabled={loading}

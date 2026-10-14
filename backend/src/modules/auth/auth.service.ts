@@ -90,6 +90,25 @@ export class AuthService {
     // ── 6. HWID Binding ──
     const serverHwid = hashHwid(dto.hwid, this.hwidSalt);
 
+    // Clés à durée différée (reseller) : le compte à rebours démarre au tout premier lancement.
+    // activationStartedAt empêche de redémarrer la durée après un reset HWID.
+    let effectiveExpiresAt: Date | null = license.expiresAt;
+    const meta: any = (license.metadata && typeof license.metadata === 'object') ? license.metadata : {};
+    const startNow = meta.startOnActivation === true && !meta.activationStartedAt && !license.expiresAt
+      && Number(meta.durationDays) > 0;
+
+    if (startNow && license.hwid && !safeCompare(license.hwid, serverHwid)) {
+      // ne démarre pas la durée pour une machine refusée
+    } else if (startNow) {
+      const now = new Date();
+      effectiveExpiresAt = new Date(now.getTime() + Number(meta.durationDays) * 86400_000);
+      await this.prisma.license.update({
+        where: { id: license.id },
+        data: { expiresAt: effectiveExpiresAt, metadata: { ...meta, activationStartedAt: now.toISOString() } },
+      });
+      this.logger.log(`License ${this.maskKey(dto.key)} duration started: ${meta.durationDays}d → ${effectiveExpiresAt.toISOString()}`);
+    }
+
     if (!license.hwid) {
       // First activation → Bind HWID
       await this.prisma.license.update({
@@ -123,13 +142,13 @@ export class AuthService {
 
     // ── 6b. Reseller anti-fraud: block reseller from activating their own keys ──
     if (license.resellerId) {
-      await this.resellerService.checkResellerActivation(license.resellerId, serverHwid);
+      await this.resellerService.checkResellerActivation(license.id, serverHwid);
     }
 
     // ── 7. Generate tokens ──
     const accessToken = await this.generateAccessToken(license.id, dto.key, serverHwid);
     const refreshToken = await this.generateRefreshToken(license.id);
-    const offlineToken = this.generateOfflineToken(license.id, serverHwid, license.expiresAt);
+    const offlineToken = this.generateOfflineToken(license.id, serverHwid, effectiveExpiresAt);
 
     // ── 8. Log success ──
     await this.logActivation(license.id, ActivationStatus.SUCCESS, ip, dto, userAgent);
@@ -142,7 +161,7 @@ export class AuthService {
       accessToken,
       refreshToken,
       expiresIn: 900, // 15 min in seconds
-      licenseExpiresAt: license.expiresAt?.toISOString() || null,
+      licenseExpiresAt: effectiveExpiresAt?.toISOString() || null,
       plan: license.plan,
       offlineToken,
     };

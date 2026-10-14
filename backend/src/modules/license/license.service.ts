@@ -1,5 +1,5 @@
-import { Injectable, NotFoundException, ConflictException, Logger } from '@nestjs/common';
-import { LicensePlan, LicenseStatus } from '@prisma/client';
+import { Injectable, NotFoundException, ConflictException, Logger, BadRequestException } from '@nestjs/common';
+import { LicensePlan, LicenseStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { generateLicenseKey } from '../../common/utils/crypto.utils';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -13,6 +13,8 @@ export interface CreateLicenseDto {
   maxActivations?: number;
   metadata?: Record<string, any>;
   product?: string;
+  /** true → la durée démarre à la 1ʳᵉ activation dans le loader (voir auth.service.activate) */
+  startOnActivation?: boolean;
 }
 
 export interface GenerateBatchDto {
@@ -21,6 +23,7 @@ export interface GenerateBatchDto {
   count: number;
   prefix?: string;
   product?: string;
+  startOnActivation?: boolean;
 }
 
 export interface LicenseFilters {
@@ -39,11 +42,13 @@ export class LicenseService {
   constructor(private prisma: PrismaService) {}
 
   // ── Create single license ──
-  async create(dto: CreateLicenseDto): Promise<any> {
+  async create(dto: CreateLicenseDto, database: Prisma.TransactionClient = this.prisma): Promise<any> {
+    if (dto.product === 'SHOP_SPOOFER') throw new BadRequestException('Importer les clés fournisseur depuis Shop → Temp Spoofer');
     const licenseKey = generateLicenseKey();
-    const expiresAt = this.calculateExpiry(dto.plan, dto.customDays);
+    const deferred = this.deferredDuration(dto.plan, dto.customDays, dto.startOnActivation);
+    const expiresAt = deferred ? null : this.calculateExpiry(dto.plan, dto.customDays);
 
-    const license = await this.prisma.license.create({
+    const license = await database.license.create({
       data: {
         licenseKey,
         plan: dto.plan,
@@ -51,16 +56,16 @@ export class LicenseService {
         discordId: dto.discordId,
         maxActivations: dto.maxActivations || 1,
         expiresAt,
-        metadata: dto.metadata,
+        metadata: deferred ? { ...(dto.metadata || {}), ...deferred } : dto.metadata,
         product: dto.product ?? 'FTN_OPTIMIZER',
       },
     });
 
-    await this.prisma.activationLog.create({
+    await database.activationLog.create({
       data: {
         licenseId: license.id,
         action: 'license:created',
-        details: { plan: dto.plan, expiresAt: expiresAt?.toISOString() },
+        details: { plan: dto.plan, expiresAt: expiresAt?.toISOString(), ...(deferred ? { startsOnActivation: deferred.durationDays + 'd' } : {}) },
       },
     });
 
@@ -70,8 +75,10 @@ export class LicenseService {
 
   // ── Generate batch of keys ──
   async generateBatch(dto: GenerateBatchDto): Promise<string[]> {
+    if (dto.product === 'SHOP_SPOOFER') throw new BadRequestException('Importer les clés fournisseur depuis Shop → Temp Spoofer');
     const keys: string[] = [];
-    const expiresAt = this.calculateExpiry(dto.plan, dto.customDays);
+    const deferred = this.deferredDuration(dto.plan, dto.customDays, dto.startOnActivation);
+    const expiresAt = deferred ? null : this.calculateExpiry(dto.plan, dto.customDays);
 
     for (let i = 0; i < dto.count; i++) {
       const licenseKey = generateLicenseKey();
@@ -81,6 +88,7 @@ export class LicenseService {
           plan: dto.plan,
           expiresAt,
           product: dto.product ?? 'FTN_OPTIMIZER',
+          ...(deferred ? { metadata: deferred } : {}),
         },
       });
       keys.push(licenseKey);
@@ -92,7 +100,11 @@ export class LicenseService {
 
   // ── List licenses with filters ──
   async findAll(filters: LicenseFilters) {
-    const { status, plan, product, search, page = 1, limit = 50 } = filters;
+    const { status, plan, product, search } = filters;
+    // Query params come back as NaN (not undefined) via the global ValidationPipe
+    // when the caller omits page/limit entirely — guard so `skip` never breaks Prisma.
+    const page = Number(filters.page) > 0 ? Number(filters.page) : 1;
+    const limit = Number(filters.limit) > 0 ? Number(filters.limit) : 50;
     const skip = (page - 1) * limit;
 
     const where: any = {};
@@ -126,6 +138,7 @@ export class LicenseService {
           lastHeartbeat: true,
           activationCount: true,
           lastIp: true,
+          metadata: true,
         },
       }),
       this.prisma.license.count({ where }),
@@ -355,6 +368,15 @@ export class LicenseService {
   }
 
   // ── Private helpers ──
+
+  /** Durée différée : { startOnActivation, durationDays } si demandé et si le plan n'est pas à vie. */
+  private deferredDuration(plan: LicensePlan, customDays?: number, startOnActivation?: boolean) {
+    if (!startOnActivation) return null;
+    const days = customDays && customDays > 0 ? customDays : ({
+      DAYS_1: 1, DAYS_3: 3, DAYS_7: 7, DAYS_14: 14, DAYS_30: 30, DAYS_90: 90, DAYS_365: 365,
+    } as Record<string, number>)[plan];
+    return days ? { startOnActivation: true, durationDays: days } : null;
+  }
 
   private calculateExpiry(plan: LicensePlan, customDays?: number): Date | null {
     const now = new Date();

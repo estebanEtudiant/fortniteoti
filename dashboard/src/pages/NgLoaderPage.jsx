@@ -7,6 +7,7 @@ import {
 } from 'recharts';
 import { api } from '../lib/api';
 import Loading from '../components/Loading';
+import ProductAnalytics from '../components/ProductAnalytics';
 import { formatDate } from '../lib/utils';
 
 export default function NgLoaderPage() {
@@ -218,6 +219,8 @@ export default function NgLoaderPage() {
           {error}
         </div>
       )}
+
+      <ProductAnalytics productKey="NG_LOADER" dauProductId="NG_LOADER" />
 
       {/* Stats Row */}
       {stats && (

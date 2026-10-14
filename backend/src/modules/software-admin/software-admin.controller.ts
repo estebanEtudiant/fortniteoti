@@ -60,7 +60,7 @@ export class SoftwareAdminController {
   @Throttle({ default: { ttl: 60000, limit: 20 } })
   @ApiOperation({ summary: 'Upload un binaire (driver/reader/byovd)' })
   @ApiConsumes('multipart/form-data')
-  @ApiParam({ name: 'productId', enum: ['fortniteclient'] })
+  @ApiParam({ name: 'productId', enum: ['fortniteclient', 'marvelrivalsclient', 'ngclient'] })
   @ApiParam({ name: 'kind', enum: ['driver', 'reader', 'byovd', 'loader'] })
   @UseInterceptors(
     FileInterceptor('file', {
@@ -84,7 +84,7 @@ export class SoftwareAdminController {
   @Post(':productId/publish')
   @Throttle({ default: { ttl: 60000, limit: 5 } })
   @ApiOperation({ summary: 'Publie un nouveau bundle à partir des derniers binaires' })
-  @ApiParam({ name: 'productId', enum: ['fortniteclient'] })
+  @ApiParam({ name: 'productId', enum: ['fortniteclient', 'marvelrivalsclient', 'ngclient'] })
   async publish(
     @Param('productId') productId: string,
     @Body() dto: PublishDto,
@@ -97,7 +97,7 @@ export class SoftwareAdminController {
 
   @Get(':productId/versions')
   @ApiOperation({ summary: 'Liste toutes les versions publiées' })
-  @ApiParam({ name: 'productId', enum: ['fortniteclient'] })
+  @ApiParam({ name: 'productId', enum: ['fortniteclient', 'marvelrivalsclient', 'ngclient'] })
   async listVersions(@Param('productId') productId: string) {
     this.validateProduct(productId);
     return this.service.listVersions(productId);
@@ -105,7 +105,7 @@ export class SoftwareAdminController {
 
   @Get(':productId/versions/:id')
   @ApiOperation({ summary: 'Détail d\'une version (composition, checksums)' })
-  @ApiParam({ name: 'productId', enum: ['fortniteclient'] })
+  @ApiParam({ name: 'productId', enum: ['fortniteclient', 'marvelrivalsclient', 'ngclient'] })
   async getVersion(
     @Param('productId') productId: string,
     @Param('id') id: string,
@@ -117,7 +117,7 @@ export class SoftwareAdminController {
   @Post(':productId/versions/:id/rollback')
   @Throttle({ default: { ttl: 60000, limit: 5 } })
   @ApiOperation({ summary: 'Rollback : réactive une version précédente' })
-  @ApiParam({ name: 'productId', enum: ['fortniteclient'] })
+  @ApiParam({ name: 'productId', enum: ['fortniteclient', 'marvelrivalsclient', 'ngclient'] })
   async rollback(
     @Param('productId') productId: string,
     @Param('id') id: string,
@@ -128,7 +128,7 @@ export class SoftwareAdminController {
 
   @Get(':productId/status')
   @ApiOperation({ summary: 'Statut : version active, binaires, abonnés, derniers fetches' })
-  @ApiParam({ name: 'productId', enum: ['fortniteclient'] })
+  @ApiParam({ name: 'productId', enum: ['fortniteclient', 'marvelrivalsclient', 'ngclient'] })
   async getStatus(@Param('productId') productId: string) {
     this.validateProduct(productId);
     return this.service.getStatus(productId);
@@ -136,7 +136,7 @@ export class SoftwareAdminController {
 
   @Get(':productId/versions/:id/download')
   @ApiOperation({ summary: 'Télécharge le bundle (debug admin)' })
-  @ApiParam({ name: 'productId', enum: ['fortniteclient'] })
+  @ApiParam({ name: 'productId', enum: ['fortniteclient', 'marvelrivalsclient', 'ngclient'] })
   async downloadBundle(
     @Param('productId') productId: string,
     @Param('id') id: string,
@@ -154,7 +154,7 @@ export class SoftwareAdminController {
 
   @Get(':productId/binaries/:kind')
   @ApiOperation({ summary: 'Historique des uploads pour un kind' })
-  @ApiParam({ name: 'productId', enum: ['fortniteclient'] })
+  @ApiParam({ name: 'productId', enum: ['fortniteclient', 'marvelrivalsclient', 'ngclient'] })
   @ApiParam({ name: 'kind', enum: ['driver', 'reader', 'byovd', 'loader'] })
   async getBinariesHistory(
     @Param('productId') productId: string,

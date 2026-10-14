@@ -26,14 +26,14 @@ import { IsString, IsNotEmpty, IsOptional, IsBoolean, IsIn } from 'class-validat
 import { Transform } from 'class-transformer';
 import { AdminAuthGuard, LicenseAuthGuard, CustomerAuthGuard, JwtPayload } from '../../common/guards/auth.guard';
 import { KillGuard } from '../kill-switch/kill.guard';
-import { SoftwareService, ProductType, slugToProduct } from './software.service';
+import { SoftwareService, ProductType, slugToProduct, bundledProductId } from './software.service';
 import { SoftwareAdminService } from '../software-admin/software-admin.service';
 import { SOFTWARE_UPLOAD_DIR } from './software.paths';
 
 class UploadDto {
   @IsString() @IsNotEmpty() version: string;
   @IsString() @IsNotEmpty() changelog: string;
-  @IsString() @IsNotEmpty() @IsIn(['FTN_OPTIMIZER', 'NG_LOADER', 'NG_LAUNCHER', 'MENORIA', 'LOADER', 'JRE', 'VELTHAR_LOADER', 'VELTHAR_LAUNCHER']) product: ProductType;
+  @IsString() @IsNotEmpty() @IsIn(['FTN_OPTIMIZER', 'NG_LOADER', 'NG_LAUNCHER', 'MENORIA', 'LOADER', 'JRE', 'VELTHAR_LOADER', 'VELTHAR_LAUNCHER', 'SHOP_SPOOFER']) product: ProductType;
   @IsOptional()
   @Transform(({ value }) => value === 'true' || value === true || value === '1')
   @IsBoolean()
@@ -153,21 +153,27 @@ export class SoftwareController {
     const product = slugToProduct(productSlug);
     const jwtPayload = (req as any).license as JwtPayload;
 
-    if (product === 'FORTNITE_CLIENT') {
-      return this.serveFortniteclientPayload(req, res, jwtPayload);
+    const productId = bundledProductId(product);
+    if (productId) {
+      return this.serveBundledPayload(req, res, jwtPayload, product, productId);
     }
 
     const delivery = await this.softwareService.getPayloadDelivery(jwtPayload.sub, product);
     return this.streamPayloadFile(res, delivery);
   }
 
-  private async serveFortniteclientPayload(
+  private async serveBundledPayload(
     req: Request,
     res: Response,
     jwtPayload: JwtPayload,
+    product: ProductType,
+    productId: string,
   ): Promise<StreamableFile> {
-    const bundlePath = await this.softwareAdminService.getActiveBundlePath('fortniteclient');
-    if (!bundlePath) throw new NotFoundException('Aucun bundle actif pour fortniteclient');
+    const hasLicense = await this.softwareService.licenseHasProduct(jwtPayload.sub, product);
+    if (!hasLicense) throw new NotFoundException(`Aucune licence ${product} active`);
+
+    const bundlePath = await this.softwareAdminService.getActiveBundlePath(productId);
+    if (!bundlePath) throw new NotFoundException(`Aucun bundle actif pour ${productId}`);
 
     const { readFileSync } = require('fs');
     const bundle: Buffer = readFileSync(bundlePath);
@@ -179,10 +185,10 @@ export class SoftwareController {
       xored[i] = bundle[i] ^ jwtBytes[i % jwtBytes.length];
     }
 
-    const activeVersion = await this.softwareAdminService.getActiveVersion('fortniteclient');
+    const activeVersion = await this.softwareAdminService.getActiveVersion(productId);
     const ip = req.ip || req.socket.remoteAddress || 'unknown';
     this.logger.log(
-      `software.fetch productId=fortniteclient userId=${jwtPayload.sub} versionId=${activeVersion?.id ?? 'unknown'} ip=${ip}`,
+      `software.fetch productId=${productId} userId=${jwtPayload.sub} versionId=${activeVersion?.id ?? 'unknown'} ip=${ip}`,
     );
 
     res.set({
@@ -271,15 +277,51 @@ export class SoftwareController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ): Promise<StreamableFile> {
+    return this.serveCustomerLoader(req, res, 'FORTNITE_CLIENT', 'fortniteclient');
+  }
+
+  @Get('customer/spoofer')
+  @UseGuards(CustomerAuthGuard)
+  async downloadSpoofer(@Req() req: Request, @Res({ passthrough: true }) res: Response): Promise<StreamableFile> {
+    const filePath = await this.softwareService.getCustomerSpooferPath((req as any).customer.customerId);
+    res.set({ ...NO_CACHE_HEADERS, 'Content-Type': 'application/octet-stream', 'Content-Disposition': `attachment; filename="${filePath.split('/').pop()}"` });
+    return new StreamableFile(createReadStream(filePath));
+  }
+
+  @Get('spoofer/versions')
+  @UseGuards(AdminAuthGuard)
+  spooferVersions() { return this.softwareService.getVersions('SHOP_SPOOFER'); }
+
+  @Get('customer/marvel-rivals-loader')
+  @UseGuards(CustomerAuthGuard)
+  async downloadMarvelRivalsLoader(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<StreamableFile> {
+    return this.serveCustomerLoader(req, res, 'MARVEL_RIVALS_CLIENT', 'marvelrivalsclient');
+  }
+
+  @Get('customer/rust-loader')
+  @UseGuards(CustomerAuthGuard)
+  async downloadRustLoader(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<StreamableFile> {
+    return this.serveCustomerLoader(req, res, 'RUST_CLIENT', 'rustclient');
+  }
+
+  private async serveCustomerLoader(
+    req: Request,
+    res: Response,
+    product: 'FORTNITE_CLIENT' | 'MARVEL_RIVALS_CLIENT' | 'RUST_CLIENT',
+    productId: 'fortniteclient' | 'marvelrivalsclient' | 'rustclient',
+  ): Promise<StreamableFile> {
     const payload = (req as any).customer;
 
-    const hasLicense = await this.softwareService.customerHasProduct(
-      payload.customerId,
-      'FORTNITE_CLIENT',
-    );
-    if (!hasLicense) throw new NotFoundException('Aucune licence FORTNITE_CLIENT active');
+    const hasLicense = await this.softwareService.customerHasProduct(payload.customerId, product);
+    if (!hasLicense) throw new NotFoundException(`Aucune licence ${product} active`);
 
-    const loaderPath = await this.softwareAdminService.getLatestLoaderPath('fortniteclient');
+    const loaderPath = await this.softwareAdminService.getLatestLoaderPath(productId);
     if (!loaderPath) throw new NotFoundException('Loader non disponible');
 
     const crypto = require('crypto');
@@ -294,7 +336,7 @@ export class SoftwareController {
     });
 
     this.logger.log(
-      `loader.download product=FORTNITE_CLIENT customerId=${payload.customerId} filename=${randomName}`,
+      `loader.download product=${product} customerId=${payload.customerId} filename=${randomName}`,
     );
 
     return new StreamableFile(stream);

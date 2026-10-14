@@ -19,6 +19,9 @@ const FALLBACKS = {
   MENORIA:        { label: 'Menoria',  bg: 'bg-amber-500/20',  text: 'text-amber-400'  },
   LOADER:         { label: 'Loader',   bg: 'bg-gray-500/20',   text: 'text-gray-400'   },
   FORTNITE_CLIENT: { label: 'FN Client',bg: 'bg-red-500/20',    text: 'text-red-400'    },
+  MARVEL_RIVALS_CLIENT: { label: 'MR Client', bg: 'bg-pink-500/20', text: 'text-pink-400' },
+  NG_RECUBE_CLIENT:     { label: 'NG Recube', bg: 'bg-cyan-500/20', text: 'text-cyan-400' },
+  RUST_CLIENT:          { label: 'Rust',      bg: 'bg-yellow-700/20', text: 'text-yellow-500' },
 };
 
 function hexToClasses(hex) {

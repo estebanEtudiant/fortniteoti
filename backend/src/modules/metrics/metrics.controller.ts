@@ -48,4 +48,10 @@ export class MetricsController {
   async signupsCancels(@Query('days') days?: string) {
     return this.metrics.getSignupsCancels(Math.min(90, parseInt(days || '14') || 14));
   }
+
+  @Get('revenue-by-product')
+  @ApiOperation({ summary: 'Revenue breakdown per product/site (30d trend + totals)' })
+  async revenueByProduct() {
+    return this.metrics.getRevenueByProduct();
+  }
 }

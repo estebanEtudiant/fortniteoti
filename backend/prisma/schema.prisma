@@ -115,6 +115,7 @@ model License {
   refreshTokens   RefreshToken[]
   reseller        Reseller?     @relation(fields: [resellerId], references: [id])
   batch           KeyBatch?     @relation(fields: [batchId], references: [id])
+  spooferKey      SpooferKey?
 
   @@index([licenseKey])
   @@index([hwid])
@@ -251,6 +252,7 @@ model Order {
 
   // Relations
   customer        Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  spooferKeys     SpooferKey[]
 
   @@index([customerId])
   @@index([status])
@@ -364,6 +366,29 @@ model ShopPlan {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("shop_plans")
+}
+
+model SpooferPlan {
+  plan    LicensePlan @id
+  price   Int         @default(0)
+  enabled Boolean     @default(false)
+
+  @@map("spoofer_plans")
+}
+
+model SpooferKey {
+  id        String      @id @default(uuid()) @db.Uuid
+  key       String      @unique @db.VarChar(29)
+  plan      LicensePlan
+  orderId   String?     @map("order_id") @db.Uuid
+  licenseId String?     @unique @map("license_id") @db.Uuid
+  createdAt DateTime    @default(now()) @map("created_at")
+  soldAt    DateTime?   @map("sold_at")
+  order     Order?      @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  license   License?    @relation(fields: [licenseId], references: [id], onDelete: Restrict)
+
+  @@index([plan, orderId, licenseId])
+  @@map("spoofer_keys")
 }
 
 // ── Kill Switch ──

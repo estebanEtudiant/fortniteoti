@@ -151,7 +151,7 @@ export class CustomerService {
           take: 20,
           select: {
             id: true, plan: true, amount: true, currency: true,
-            status: true, createdAt: true, completedAt: true,
+            status: true, createdAt: true, completedAt: true, items: true,
           },
         },
       },
@@ -168,7 +168,17 @@ export class CustomerService {
       },
     });
 
-    return { ...customer, licenses };
+    const hasSpooferLicense = licenses.some((license) => license.product === 'SHOP_SPOOFER');
+    const spooferGame = hasSpooferLicense
+      ? await this.prisma.game.findUnique({ where: { slug: 'spoofer' }, select: { image: true } })
+      : null;
+
+    return {
+      ...customer,
+      licenses: licenses.map((license) => license.product === 'SHOP_SPOOFER'
+        ? { ...license, shopImage: spooferGame?.image || null }
+        : license),
+    };
   }
 
   async updateProfile(customerId: string, dto: UpdateProfileDto): Promise<any> {

@@ -10,6 +10,7 @@ import MenoriaPage from './MenoriaPage';
 import ImagesPage from './ImagesPage';
 import GalleryPage from './GalleryPage';
 import CheatFilesPage from './CheatFilesPage';
+import SpooferUpload from './SpooferPage';
 
 // ══════════════════════════════════════════════════════
 //  UploadPage — regroupe tous les uploads en sections repliables
@@ -31,6 +32,7 @@ export default function UploadPage({ navigate }) {
       title: 'Logiciels & Loaders',
       icon: Package,
       sections: [
+        { key: 'spoofer', label: 'Temp Spoofer', sublabel: '.exe · .zip', render: () => <SpooferUpload /> },
         { key: 'software', label: 'FTN Optimizer', sublabel: '.exe', render: () => <SoftwarePage /> },
         { key: 'ng-loader', label: 'NG Loader', sublabel: '.jar · launcher · JRE', render: () => <NgLoaderPage /> },
         { key: 'velthar', label: 'Velthar', sublabel: '.jar · launcher', render: () => <VeltharPage /> },
