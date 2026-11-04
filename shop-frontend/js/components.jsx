@@ -7,7 +7,7 @@ const Icon = {
   status: (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M3 12h4l2 6 4-14 2 8h6"/></svg>,
   reviews: (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M12 2l2.9 6 6.6.6-5 4.3 1.5 6.5L12 16.8 5.9 19.4 7.4 12.9 2.4 8.6 9 8z"/></svg>,
   user: (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>,
-  discord: (p) => <svg viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M20.3 4.5A19 19 0 0 0 15.6 3l-.3.6a14 14 0 0 1 4 2 16 16 0 0 0-13.6 0 14 14 0 0 1 4-2L9.4 3a19 19 0 0 0-4.7 1.5C1.9 8.6 1.2 12.6 1.5 16.6a19 19 0 0 0 5.8 3l.8-1.3a12 12 0 0 1-1.8-.9l.4-.3a13 13 0 0 0 11 0l.4.3a12 12 0 0 1-1.8.9l.8 1.3a19 19 0 0 0 5.8-3c.4-4.7-.6-8.6-3.4-12.1zM8.7 14.4c-1 0-1.9-1-1.9-2.1 0-1.2.8-2.1 1.9-2.1s2 1 1.9 2.1c0 1.2-.8 2.1-1.9 2.1zm6.6 0c-1 0-1.9-1-1.9-2.1 0-1.2.8-2.1 1.9-2.1s2 1 1.9 2.1c0 1.2-.8 2.1-1.9 2.1z"/></svg>,
+  discord: (p) => <svg viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>,
   star: (p) => <svg viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M12 2l2.9 6 6.6.6-5 4.3 1.5 6.5L12 16.8 5.9 19.4 7.4 12.9 2.4 8.6 9 8z"/></svg>,
   check: (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M20 6L9 17l-5-5"/></svg>,
   arrow: (p) => <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M5 12h14M13 6l6 6-6 6"/></svg>,
@@ -184,69 +184,156 @@ function BrandLogo({ className = "" }) {
   );
 }
 
-/* ---------- header ---------- */
-function Header({ route, go, lang, setLang, customer, cartCount = 0, navVariant = "gradient", navIconSet = "default" }) {
-  const top = route.split("/")[0];
-  const ic = getNavIcons(navIconSet);
-  const S = (DATA.SETTINGS || {});
-  const forumUrl = S.forumUrl || "https://forum.404tweaks.tech";
-  const discordUrl = S.discordUrl || "";
-  const nav = [
-    ["store", ic.store, "route", null],
-    ["status", ic.status, "route", null],
-    ["reviews", ic.reviews, "route", null],
-    ["account", ic.account, "route", null],
-    ...(discordUrl ? [["discord", ic.discord, "external", discordUrl]] : []),
-  ];
+/* ---------- emplacement de visuel : affiche un état vide soigné tant que le fichier n'existe pas ---------- */
+function MediaSlot({ src, type = "image", alt = "", label, className = "", priority, videoRef, autoPlayInView }) {
+  const [failed, setFailed] = useState(!src);
+  const vRef = useRef(null);
+  useEffect(() => { setFailed(!src); }, [src]);
+  useEffect(() => {
+    const v = vRef.current;
+    if (!autoPlayInView || !v || failed || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const io = new IntersectionObserver(([en]) => { if (en.isIntersecting) v.play().catch(() => {}); else v.pause(); }, { threshold: 0.4 });
+    io.observe(v);
+    return () => io.disconnect();
+  }, [autoPlayInView, failed]);
+  const setVideo = (v) => { vRef.current = v; if (videoRef) videoRef(v); };
+  const manual = autoPlayInView && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   return (
-    <header className="hdr">
-      <div className="wrap hdr-in">
-        <a className="logo" onClick={() => go("home")} style={{ cursor: "pointer" }} aria-label="404 — CHEAT NOT FOUND">
-          <BrandLogo />
+    <div className={"nx-slot" + (failed ? " is-empty" : "") + (className ? " " + className : "")}>
+      {!failed && (type === "video"
+        ? <video ref={setVideo} src={src} muted loop playsInline preload="metadata" controls={manual} onError={() => setFailed(true)} aria-label={label} />
+        : <img src={src} alt={alt} loading={priority ? "eager" : "lazy"} decoding="async" onError={() => setFailed(true)} />)}
+      {failed && <div className="nx-slot-empty" role={label ? "img" : undefined} aria-label={label}><span aria-hidden="true">404</span></div>}
+    </div>
+  );
+}
+
+/* ---------- header ---------- */
+const NX_DISCORD = "https://discord.com/invite/YacGgRdBAY";
+
+function Header({ route, go, lang, setLang, customer, cartCount = 0 }) {
+  const [open, setOpen] = useState(false);
+  const fr = lang === "fr";
+  const top = route.split("/")[0];
+  const links = [
+    ["store", top === "store" || top === "game"],
+    ["status", top === "status"],
+    ["reviews", top === "reviews"],
+  ];
+  useEffect(() => { setOpen(false); }, [route]);
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("keydown", onKey);
+    document.body.classList.add("nx-lock");
+    return () => { document.removeEventListener("keydown", onKey); document.body.classList.remove("nx-lock"); };
+  }, [open]);
+  const nav = (r) => (e) => { e.preventDefault(); setOpen(false); go(r); };
+  // projecteur qui glisse d'un lien à l'autre (largeur de base 100px, mise à l'échelle)
+  const navRef = useRef(null);
+  const lightRef = useRef(null);
+  const placeLight = (el) => {
+    const L = lightRef.current;
+    if (!L) return;
+    if (!el) { L.classList.remove("is-on"); return; }
+    const tf = "translateX(" + el.offsetLeft + "px) scaleX(" + el.offsetWidth / 100 + ")";
+    if (!L.classList.contains("is-on")) { L.style.transition = "none"; L.style.transform = tf; void L.offsetWidth; L.style.transition = ""; }
+    L.style.transform = tf;
+    L.classList.add("is-on");
+  };
+  const restLight = () => placeLight(navRef.current && navRef.current.querySelector('[aria-current="page"]'));
+  useEffect(() => {
+    restLight();
+    if (document.fonts) document.fonts.ready.then(restLight);
+  }, [route, lang]);
+  // se resserre en pilule centrée dès qu'on a défilé, reprend toute la largeur en haut de page
+  const hdrRef = useRef(null);
+  useEffect(() => {
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        const h = hdrRef.current;
+        if (h) h.classList.toggle("is-compact", window.scrollY > 120 && !document.body.classList.contains("nx-lock"));
+      });
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => { window.removeEventListener("scroll", onScroll); cancelAnimationFrame(raf); };
+  }, []);
+  const logout = () => { window.Auth.clear(); go("home"); };
+  const account = customer ? (
+    <>
+      <a className="nx-hdr-link nx-hdr-link--strong" href="#profile" onClick={nav("profile")}>{customer.displayName || customer.username}</a>
+      <button type="button" className="nx-hdr-link" onClick={logout}>{fr ? "Déconnexion" : "Log out"}</button>
+    </>
+  ) : (
+    <>
+      <a className="nx-hdr-link" href="#auth/signin" onClick={nav("auth/signin")}>{fr ? "Connexion" : "Sign in"}</a>
+      <a className="nx-hdr-link nx-hdr-link--strong" href="#auth/signup" onClick={nav("auth/signup")}>{fr ? "Inscription" : "Sign up"}</a>
+    </>
+  );
+  const langToggle = (
+    <div className="nx-lang" role="group" aria-label={fr ? "Langue" : "Language"}>
+      <button type="button" aria-pressed={lang === "fr"} onClick={() => setLang("fr")}>FR</button>
+      <span aria-hidden="true">/</span>
+      <button type="button" aria-pressed={lang === "en"} onClick={() => setLang("en")}>EN</button>
+    </div>
+  );
+  return (
+    <header className="nx-hdr" ref={hdrRef} onTransitionEnd={(e) => { if (e.propertyName === "max-width") restLight(); }}>
+      <div className="nx-wrap nx-hdr-in">
+        <a className="nx-logo" href="#home" onClick={nav("home")} aria-label={fr ? "404, accueil" : "404, home"}>
+          <span className="nx-logo-num">404</span>
+          <span className="nx-logo-tag">Cheat not found</span>
         </a>
-        <nav className={"nav nav--" + navVariant}>
-          {nav.map(([key, Ic, kind, href]) => {
-            const target = key === "store" ? "store" : key === "account" ? (customer ? "profile" : "auth") : key;
-            const on = kind === "route" && (key === "store" ? (top === "store" || top === "game") : (key === "account" ? (top === "profile" || top === "auth") : top === target));
-            const click = () => {
-              if (kind === "external" && href) { window.open(href, "_blank", "noopener,noreferrer"); return; }
-              go(target);
-            };
-            return (
-              <a key={key} className={on ? "on" : ""} onClick={click} href={kind === "external" && href ? href : undefined} target={kind === "external" ? "_blank" : undefined} rel={kind === "external" ? "noopener noreferrer" : undefined}>
-                <Ic /><span>{navLabel(key, lang)}</span>
-              </a>
-            );
-          })}
+        <nav className="nx-nav" ref={navRef} onMouseLeave={restLight} aria-label={fr ? "Navigation principale" : "Main navigation"}>
+          {links.map(([key, on]) => (
+            <a key={key} href={"#" + key} onClick={nav(key)} onMouseEnter={(e) => placeLight(e.currentTarget)} onFocus={(e) => placeLight(e.currentTarget)} onBlur={restLight}
+              aria-current={on ? "page" : undefined}>{navLabel(key, lang)}</a>
+          ))}
+          <span className="nx-nav-light" ref={lightRef} aria-hidden="true" />
         </nav>
-        <div className="hdr-right">
-          <button className={"cart-btn" + (route.split("/")[0] === "cart" ? " on" : "")} onClick={() => go("cart")} aria-label="cart">
-            <Icon.cart />
-            {cartCount > 0 && <span className="cart-badge">{cartCount > 99 ? "99+" : cartCount}</span>}
-          </button>
-          <div className="lang-tog">
-            <button className={lang === "fr" ? "on" : ""} onClick={() => setLang("fr")}>FR</button>
-            <button className={lang === "en" ? "on" : ""} onClick={() => setLang("en")}>EN</button>
+        <div className="nx-hdr-right">
+          <div className="nx-hdr-desk">
+            {langToggle}
+            <div className="nx-hdr-acc">{account}</div>
           </div>
-          {customer ? (
-            <>
-              <a className="signin" style={{ gap: 7, cursor: "pointer" }} onClick={() => go("profile")}>
-                <Icon.user style={{ width: 14, height: 14 }} /> {customer.displayName || customer.username}
-              </a>
-              <Btn kind="ghost" size="sm" onClick={() => { window.Auth.clear(); go("home"); }}>
-                {lang === "fr" ? "Déconnexion" : "Log out"}
-              </Btn>
-            </>
-          ) : (
-            <>
-              <a className="signin" onClick={() => go("auth/signin")} style={{ cursor: "pointer" }}>
-                {t("signin", lang)} <Icon.chevron style={{ width: 13, height: 13 }} />
-              </a>
-              <Btn kind="primary" size="sm" onClick={() => go("auth/signup")}>{t("signup", lang)}</Btn>
-            </>
-          )}
+          <a className="nx-ico" href={NX_DISCORD} target="_blank" rel="noopener noreferrer" aria-label={fr ? "Rejoindre le Discord" : "Join the Discord"} title="Discord">
+            <Icon.discord aria-hidden="true" />
+          </a>
+          <a className="nx-ico nx-me" href={customer ? "#profile" : "#auth/signin"} onClick={nav(customer ? "profile" : "auth/signin")}
+            aria-current={top === "profile" || top === "account" ? "page" : undefined}
+            aria-label={customer ? (fr ? "Mon compte" : "My account") : (fr ? "Connexion" : "Sign in")} title={customer ? (customer.displayName || customer.username) : (fr ? "Connexion" : "Sign in")}>
+            <Icon.user aria-hidden="true" />
+          </a>
+          <button type="button" className="nx-cart" onClick={() => go("cart")} aria-current={top === "cart" ? "page" : undefined}
+            aria-label={(fr ? "Panier" : "Cart") + (cartCount ? ", " + cartCount + (fr ? " article" + (cartCount > 1 ? "s" : "") : " item" + (cartCount > 1 ? "s" : "")) : "")}>
+            <Icon.cart />
+            {cartCount > 0 && <span className="nx-cart-n" aria-hidden="true">{cartCount > 99 ? "99+" : cartCount}</span>}
+          </button>
+          <button type="button" className="nx-burger" aria-expanded={open} aria-controls="nx-menu" aria-label={fr ? "Menu" : "Menu"} onClick={() => setOpen(!open)}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+              {open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 9h16M4 15h16" />}
+            </svg>
+          </button>
         </div>
       </div>
+      {open && (
+        <div id="nx-menu" className="nx-menu">
+          <nav className="nx-menu-links" aria-label={fr ? "Navigation principale" : "Main navigation"}>
+            {links.map(([key, on]) => (
+              <a key={key} href={"#" + key} onClick={nav(key)} aria-current={on ? "page" : undefined}>{navLabel(key, lang)}</a>
+            ))}
+            <a href="#faq" onClick={nav("faq")}>FAQ</a>
+          </nav>
+          <div className="nx-menu-foot">
+            {langToggle}
+            <div className="nx-hdr-acc">{account}</div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
@@ -287,120 +374,66 @@ function Crumbs({ trail, lang, overlap, go }) {
 
 /* ---------- footer ---------- */
 function Footer({ lang, go }) {
-  const games = DATA.GAMES;
-  const forumUrl = (DATA.SETTINGS && DATA.SETTINGS.forumUrl) || "https://forum.404tweaks.tech";
-  const discordUrl = (DATA.SETTINGS && DATA.SETTINGS.discordUrl) || "";
-  const PAY = [
-    ["visa", <b style={{ fontFamily: "var(--f-display)", fontStyle: "italic", fontWeight: 800, fontSize: 16, color: "#1434CB", letterSpacing: "-0.02em" }}>VISA</b>],
-    ["mc", (
-      <svg viewBox="0 0 40 24" width="34" height="21" aria-label="Mastercard">
-        <circle cx="16" cy="12" r="8" fill="#EB001B" />
-        <circle cx="24" cy="12" r="8" fill="#F79E1B" />
-        <path d="M20 5.8a8 8 0 0 1 0 12.4 8 8 0 0 1 0-12.4z" fill="#FF5F00" />
-      </svg>
-    )],
-    ["amex", <b style={{ fontFamily: "var(--f-display)", fontWeight: 800, fontSize: 11, color: "#fff", background: "#2E77BC", padding: "3px 6px", borderRadius: 4 }}>AMEX</b>],
-    ["gpay", (
-      <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-        <svg viewBox="0 0 24 24" width="15" height="15" aria-label="Google Pay">
-          <path fill="#4285F4" d="M23 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.2c-.3 1.4-1.1 2.6-2.3 3.4v2.8h3.7c2.2-2 3.4-5 3.4-8.4z" />
-          <path fill="#34A853" d="M12 24c3.1 0 5.7-1 7.6-2.8l-3.7-2.8c-1 .7-2.3 1.1-3.9 1.1-3 0-5.5-2-6.4-4.8H1.8v3C3.7 21.4 7.5 24 12 24z" />
-          <path fill="#FBBC05" d="M5.6 14.3c-.2-.7-.4-1.5-.4-2.3s.1-1.6.4-2.3v-3H1.8C1 8.2.5 10 .5 12s.5 3.8 1.3 5.3l3.8-3z" />
-          <path fill="#EA4335" d="M12 4.8c1.7 0 3.2.6 4.4 1.7l3.3-3.3C17.7 1.2 15.1 0 12 0 7.5 0 3.7 2.6 1.8 6.7l3.8 3c.9-2.9 3.4-4.9 6.4-4.9z" />
-        </svg>
-        <b style={{ fontFamily: "var(--f-display)", fontWeight: 700, fontSize: 13, color: "#5f6368" }}>Pay</b>
-      </span>
-    )],
-    ["applepay", (
-      <span style={{ display: "inline-flex", alignItems: "center", gap: 3, color: "#000" }}>
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="#000" aria-label="Apple Pay">
-          <path d="M17.05 12.04c-.03-2.6 2.13-3.85 2.22-3.91-1.21-1.77-3.1-2.01-3.77-2.04-1.6-.16-3.13.94-3.94.94-.81 0-2.07-.92-3.4-.9-1.75.03-3.36 1.02-4.26 2.58-1.82 3.15-.47 7.82 1.31 10.38.87 1.25 1.9 2.66 3.26 2.6 1.31-.05 1.8-.84 3.39-.84 1.58 0 2.03.84 3.41.82 1.41-.03 2.3-1.27 3.16-2.53.99-1.45 1.4-2.85 1.42-2.92-.03-.01-2.72-1.04-2.75-4.13zM14.5 4.5c.72-.87 1.2-2.08 1.07-3.29-1.03.04-2.28.69-3.02 1.56-.66.77-1.24 2-1.08 3.18 1.15.09 2.32-.58 3.03-1.45z" />
-        </svg>
-        <b style={{ fontFamily: "var(--f-display)", fontWeight: 600, fontSize: 13 }}>Pay</b>
-      </span>
-    )],
-    ["paypal", (
-      <b style={{ fontFamily: "var(--f-display)", fontWeight: 800, fontSize: 13, fontStyle: "italic" }}>
-        <span style={{ color: "#003087" }}>Pay</span><span style={{ color: "#0070E0" }}>Pal</span>
-      </b>
-    )],
-    ["btc", (
-      <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
-        <svg viewBox="0 0 24 24" width="17" height="17" aria-label="Bitcoin">
-          <circle cx="12" cy="12" r="11" fill="#F7931A" />
-          <text x="12" y="17" textAnchor="middle" fontFamily="Arial, sans-serif" fontWeight="700" fontSize="14" fill="#fff">₿</text>
-        </svg>
-        <b style={{ fontFamily: "var(--f-display)", fontWeight: 700, fontSize: 12, color: "#5b5366" }}>Bitcoin</b>
-      </span>
-    )],
+  const fr = lang === "fr";
+  const games = DATA.GAMES || [];
+  const summary = reviewSummary();
+  const nav = (r) => (e) => { e.preventDefault(); go(r); };
+  const info = [
+    ["faq", "FAQ"],
+    ["info", t("info", lang)],
+    ["about", t("aboutLink", lang)],
+    ["terms", t("tos", lang)],
+    ["terms-sale", t("tosale", lang)],
+    ["refund", t("refund", lang)],
   ];
+  const pay = [["Visa", "visa"], ["Mastercard", "mastercard"], ["American Express", "americanexpress"], ["Apple Pay", "applepay"], ["Google Pay", "googlepay"], ["PayPal", "paypal"], ["Bitcoin", "bitcoin"]];
   return (
-    <footer className="footer">
-      <div className="wrap">
-        <div className="pay-row">
-          <span className="pay-lab"><Icon.lock style={{ width: 13, height: 13 }} /> {lang === "fr" ? "Paiement 100% sécurisé" : "100% secure payment"}</span>
-          <div className="pay-badges">
-            {PAY.map(([k, node]) => <span className="pay" key={k}>{node}</span>)}
-          </div>
+    <footer className="nx-foot">
+      <div className="nx-wrap">
+        <div className="nx-foot-top">
+          <a className="nx-foot-mark" href="#home" onClick={nav("home")} aria-label={fr ? "404, accueil" : "404, home"}>404</a>
+          <p className="nx-foot-tag">Stay hidden. Stay 404.</p>
         </div>
-        <div className="foot-grid">
+        <div className="nx-foot-grid">
           <div>
-            <h5>{t("aboutTitle", lang)}</h5>
+            <h2 className="nx-foot-h">{t("aboutTitle", lang)}</h2>
             <p>{t("aboutBody", lang)}</p>
-            <div style={{ marginTop: 20 }}>
-              <div className="trust-cell" style={{ display: "inline-flex" }}>
-                {reviewSummary() ? (<>
-                  <div className="tp-ic" style={{ background: "var(--acc-grad)" }}><Icon.star style={{ width: 20, height: 20, color: "#14110a" }} /></div>
-                  <div style={{ cursor: "pointer" }} onClick={() => go("reviews")}>
-                    <div className="big">{reviewSummary().avg}<span style={{ fontSize: 12, color: "var(--tx-mute)" }}>/5</span></div>
-                    <div className="sub">{reviewSummary().count} {lang === "fr" ? "avis clients vérifiés" : "verified customer reviews"}</div>
-                  </div>
-                </>) : (<>
-                  <div className="tp-ic" style={{ background: "var(--acc-grad)" }}><Icon.shield style={{ width: 20, height: 20, color: "#14110a" }} /></div>
-                  <div>
-                    <div className="big">{((DATA.STATS && DATA.STATS.delivered) || 0).toLocaleString()}+</div>
-                    <div className="sub">{lang === "fr" ? "licences activées" : "licenses activated"}</div>
-                  </div>
-                </>)}
-              </div>
-            </div>
+            {summary && (
+              <a className="nx-link nx-foot-rating" href="#reviews" onClick={nav("reviews")}>
+                {fr ? `${summary.avg} sur 5, ${summary.count} avis vérifiés` : `${summary.avg} out of 5, ${summary.count} verified reviews`}
+              </a>
+            )}
           </div>
           <div>
-            <h5>{t("ourGames", lang)}</h5>
-            <ul className="foot-links">
-              {games.map(g => <li key={g.id}><a onClick={() => go("game/" + g.id)} style={{ cursor: "pointer" }}>{g.name}</a></li>)}
+            <h2 className="nx-foot-h">{t("ourGames", lang)}</h2>
+            <ul className="nx-foot-list">
+              {games.map((g) => <li key={g.id}><a href={"#game/" + g.id} onClick={nav("game/" + g.id)}>{g.name}</a></li>)}
             </ul>
           </div>
           <div>
-            <h5>{t("info", lang)}</h5>
-            <ul className="foot-links">
-              <li><a onClick={() => go("faq")} style={{ cursor: "pointer" }}>FAQ</a></li>
-              <li><a onClick={() => go("info")} style={{ cursor: "pointer" }}>{t("info", lang)}</a></li>
-              <li><a onClick={() => go("about")} style={{ cursor: "pointer" }}>{t("aboutLink", lang)}</a></li>
-              <li><a onClick={() => go("terms")} style={{ cursor: "pointer" }}>{t("tos", lang)}</a></li>
-              <li><a onClick={() => go("terms-sale")} style={{ cursor: "pointer" }}>{t("tosale", lang)}</a></li>
-              <li><a onClick={() => go("refund")} style={{ cursor: "pointer" }}>{t("refund", lang)}</a></li>
+            <h2 className="nx-foot-h">{t("info", lang)}</h2>
+            <ul className="nx-foot-list">
+              {info.map(([r, label]) => <li key={r}><a href={"#" + r} onClick={nav(r)}>{label}</a></li>)}
             </ul>
           </div>
           <div>
-            <h5>{t("contact", lang)}</h5>
-            <p style={{ marginBottom: 16 }}>{t("inquiries", lang)}<br /><span style={{ color: "var(--acc)" }}>support@404tweaks.tech</span></p>
-            <div className="socials">
-              {discordUrl && <a href={discordUrl} target="_blank" rel="noopener noreferrer" aria-label="Discord"><Icon.discord /></a>}
-              <a><Icon.telegram /></a>
-              <a><Icon.instagram /></a>
-            </div>
+            <h2 className="nx-foot-h">{t("contact", lang)}</h2>
+            <ul className="nx-foot-list">
+              <li><a href="mailto:support@404tweaks.tech">support@404tweaks.tech</a></li>
+              <li><a className="nx-foot-discord" href={NX_DISCORD} target="_blank" rel="noopener noreferrer"><Icon.discord aria-hidden="true" />{fr ? "Rejoindre le Discord" : "Join the Discord"}</a></li>
+            </ul>
+            <h2 className="nx-foot-h nx-foot-h--pay">{fr ? "Paiement sécurisé" : "Secure payment"}</h2>
+            <ul className="nx-pay">{pay.map(([n, f]) => <li key={f} title={n}><span role="img" aria-label={n} style={{ WebkitMaskImage: "url(assets/pay/" + f + ".svg)", maskImage: "url(assets/pay/" + f + ".svg)" }} /></li>)}</ul>
           </div>
         </div>
-        <div className="foot-bottom">
-          <span style={{ fontFamily: "var(--f-mono)", fontSize: 12, color: "var(--tx-mute)" }}>© 2022–2026 404</span>
-          <span style={{ fontFamily: "var(--f-mono)", fontSize: 12, color: "var(--tx-mute)" }}>Stay hidden. Stay 404.</span>
+        <div className="nx-foot-bottom">
+          <span>© 2022–2026 404</span>
+          <p className="nx-foot-legal">
+            {fr
+              ? "Toutes les marques, titres de jeux et logos appartiennent à leurs propriétaires respectifs. 404 fournit des logiciels de triche indépendants et n'est ni approuvé ni associé à un éditeur de jeux."
+              : "All trademarks, game titles and logos are property of their respective owners. 404 provides independent cheat software and is not endorsed by or associated with any game publisher."}
+          </p>
         </div>
-        <p className="disclaimer">
-          {lang === "fr"
-            ? "Toutes les marques, titres de jeux et logos appartiennent à leurs propriétaires respectifs. 404 fournit des logiciels de triche indépendants et n'est ni approuvé ni associé à un éditeur de jeux."
-            : "All trademarks, game titles and logos are property of their respective owners. 404 provides independent cheat software and is not endorsed by or associated with any game publisher."}
-        </p>
       </div>
     </footer>
   );
@@ -679,4 +712,4 @@ function SkyBackdrop() {
   );
 }
 
-Object.assign(window, { Icon, Stars, Btn, StatusBadge, GameCard, ReviewCard, BrandLogo, Header, Footer, Crumbs, navLabel, CountUp, Marquee, StarField, SkyBackdrop, Img, webpOf, planDays, planShortLabel, reviewSummary });
+Object.assign(window, { MediaSlot, Icon, Stars, Btn, StatusBadge, GameCard, ReviewCard, BrandLogo, Header, Footer, Crumbs, navLabel, CountUp, Marquee, StarField, SkyBackdrop, Img, webpOf, planDays, planShortLabel, reviewSummary });

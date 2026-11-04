@@ -140,13 +140,17 @@ function PfLicenseCard({ lic, lang }) {
   const loaderEndpoint = pfLoaderEndpoint(lic);
   const game = pfGameData(lic);
   const [show, setShow] = React.useState(false);
+  const [thumbErr, setThumbErr] = React.useState(false);
   const active = lic.status === "ACTIVE";
   const masked = lic.licenseKey.replace(/[A-Z0-9]/gi, "•");
   return (
     <div className={"pf-lic spot-card" + (active ? " is-active" : "")} style={{ "--st": st.col }}>
       <div className="pf-lic-head">
         <div className="pf-lic-thumb">
-          {game && game.image ? <Img src={game.image} alt="" /> : <span>{pfGameName(lic, lang).slice(0, 2).toUpperCase()}</span>}
+          {game && game.image ? <Img src={game.image} alt="" />
+            // pas d'image dans l'API : même visuel que la boutique, sinon les initiales
+            : game && !thumbErr ? <img src={NX_MEDIA.game(game.id)} alt="" loading="lazy" decoding="async" onError={() => setThumbErr(true)} />
+            : <span>{pfGameName(lic, lang).slice(0, 2).toUpperCase()}</span>}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="pf-lic-name">{pfGameName(lic, lang)}</div>
@@ -682,7 +686,7 @@ function PfResellerTab({ lang }) {
   const downloadCsv = async (batchId) => {
     try {
       const token = localStorage.getItem("404_token");
-      const resp = await fetch("https://api.404tweaks.tech/api/v1/reseller/batches/" + batchId + "/keys.csv", {
+      const resp = await fetch(API_BASE + "/reseller/batches/" + batchId + "/keys.csv", {
         headers: { Authorization: "Bearer " + token },
       });
       if (!resp.ok) throw new Error("Download failed");

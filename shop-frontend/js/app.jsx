@@ -2,7 +2,8 @@
 const { useState: useS, useEffect: useE, useRef: useR } = React;
 
 /* ---------- API / auth ---------- */
-const API_BASE = "https://api.404tweaks.tech/api/v1";
+// sur http://localhost (test local) on parle au backend lancé sur la machine ; partout ailleurs, à la prod
+const API_BASE = location.hostname === "localhost" ? "http://localhost:3000/api/v1" : "https://api.404tweaks.tech/api/v1";
 
 const Auth = {
   token: () => localStorage.getItem("404_token") || "",
@@ -152,6 +153,155 @@ function loadTweakDefaults() {
     if (raw) return { ...TWEAK_DEFAULTS, ...JSON.parse(raw) };
   } catch (e) {}
   return TWEAK_DEFAULTS;
+}
+
+// ── Réglages du design (admin) : variables CSS appliquées en direct, sauvegardées dans ce navigateur ──
+const NX_TWEAK_DEFAULTS = {
+  light: "#f7f7f7", beamInt: 0.9, poolInt: 1, hoverInt: 1, beamBlur: 28, beamTop: 3, sway: true, swayAmp: 0,
+  aX: -1, aW: 65, aRot: -1.5, bX: -4, bW: 44, bRot: -9, bOp: 0.9,
+  torch: true, beamAnim: true, torchSize: 390, torchInt: 0.6,
+  stage: true, stageW: 100, stageBright: 0.66, stageSat: 0.35, stageFade: 42, titleScale: 1.03, sweep: true, titleFx: true,
+  stretch: 75, accent: "#f75bda", bg: "#000000",
+  innerX: -3, innerRot: 6, innerW: 62, innerH: 720, innerOp: 1, still: false,
+  aOp: 1, poolX: 2, poolY: 4, poolW: 62, poolH: 26,
+  sX: 2, sW: 66, sRot: 5, sOp: 0.75, cX: 20, cW: 59, cRot: 0, cOp: 1,
+  h2X: 35, h2Y: 48, h2Size: 50, h2Int: 1,
+};
+function loadNxTweaks() {
+  try { return { ...NX_TWEAK_DEFAULTS, ...JSON.parse(localStorage.getItem("404_nx_tweaks") || "{}") }; }
+  catch (e) { return NX_TWEAK_DEFAULTS; }
+}
+function nxHexRgb(hex) {
+  const n = parseInt(String(hex).replace("#", ""), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255].join(", ");
+}
+function applyNxTweaks(v) {
+  const r = document.documentElement.style, b = document.body.style, c = document.documentElement.classList;
+  const set = { "--nx-light": nxHexRgb(v.light), "--nx-beam-int": v.beamInt, "--nx-pool-int": v.poolInt, "--nx-hover-int": v.hoverInt,
+    "--nx-beam-blur": v.beamBlur + "px", "--nx-beam-top": v.beamTop + "%", "--nx-sway": v.swayAmp + "deg",
+    "--nx-a-x": v.aX + "%", "--nx-a-w": v.aW + "%", "--nx-a-rot": v.aRot + "deg",
+    "--nx-b-x": v.bX + "%", "--nx-b-w": v.bW + "%", "--nx-b-rot": v.bRot + "deg", "--nx-b-op": v.bOp,
+    "--nx-torch-size": v.torchSize + "px", "--nx-torch-int": v.torchInt,
+    "--nx-stage-w": v.stageW + "%", "--nx-stage-bright": v.stageBright, "--nx-stage-sat": v.stageSat, "--nx-stage-fade": v.stageFade + "%",
+    "--nx-title-scale": v.titleScale, "--nx-stretch": v.stretch + "%",
+    "--nx-violet": v.accent, "--nx-violet-hi": v.accent, "--nx-bg": v.bg,
+    "--nx-inner-x": v.innerX + "%", "--nx-inner-rot": v.innerRot + "deg",
+    "--nx-inner-w": v.innerW + "vw", "--nx-inner-h": v.innerH + "px", "--nx-inner-op": v.innerOp, "--nx-a-op": v.aOp,
+    "--nx-pool-x": v.poolX + "%", "--nx-pool-y": v.poolY + "%", "--nx-pool-w": v.poolW + "%", "--nx-pool-h": v.poolH + "%",
+    "--nx-s-x": v.sX + "%", "--nx-s-w": v.sW + "%", "--nx-s-rot": v.sRot + "deg", "--nx-s-op": v.sOp,
+    "--nx-c-x": v.cX + "%", "--nx-c-w": v.cW + "%", "--nx-c-rot": v.cRot + "deg", "--nx-c-op": v.cOp,
+    "--nx-h2-x": v.h2X + "%", "--nx-h2-y": v.h2Y + "%", "--nx-h2-size": v.h2Size + "%", "--nx-h2-int": v.h2Int };
+  Object.keys(set).forEach((k) => r.setProperty(k, String(set[k])));
+  // les pages intérieures lisent leurs propres jetons sur <body>
+  b.setProperty("--acc", v.accent); b.setProperty("--acc-2", v.accent); b.setProperty("--acc-grad", v.accent);
+  b.setProperty("--bg-0", v.bg);
+  c.toggle("nx-no-sway", !v.sway); c.toggle("nx-no-torch", !v.torch); c.toggle("nx-no-stage", !v.stage);
+  c.toggle("nx-no-sweep", !v.sweep); c.toggle("nx-no-title-fx", !v.titleFx); c.toggle("nx-no-beam-anim", !v.beamAnim); c.toggle("nx-still", !!v.still);
+}
+if (TWEAKS_ADMIN) applyNxTweaks(loadNxTweaks());
+
+function NxTweaks() {
+  const [v, setV] = useS(loadNxTweaks);
+  const [copied, setCopied] = useS(false);
+  useE(() => {
+    applyNxTweaks(v);
+    try { localStorage.setItem("404_nx_tweaks", JSON.stringify(v)); } catch (e) {}
+  }, [v]);
+  const s = (k) => (val) => setV((p) => ({ ...p, [k]: val }));
+  const diff = () => Object.fromEntries(Object.entries(v).filter(([k, val]) => val !== NX_TWEAK_DEFAULTS[k]));
+  const copy = () => {
+    const txt = JSON.stringify(diff(), null, 2);
+    (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }, () => window.prompt("Copie ces réglages :", txt));
+  };
+  const reset = () => setV(NX_TWEAK_DEFAULTS);
+  const SL = (label, k, min, max, step, unit) => <TweakSlider label={label} value={v[k]} min={min} max={max} step={step} unit={unit || ""} onChange={s(k)} />;
+  const TG = (label, k) => <TweakToggle label={label} value={v[k]} onChange={s(k)} />;
+  return (
+    <TweaksPanel title="Réglages du design">
+      <TweakSection label="Lumière" />
+      <TweakColor label="Couleur de la lumière" value={v.light} options={["#ffe4f8", "#ffffff", "#ffe9c7", "#d8e6ff", "#f75bda"]} onChange={s("light")} />
+      <TweakColor label="Couleur libre" value={v.light} onChange={s("light")} />
+      {SL("Intensité des faisceaux", "beamInt", 0, 3, 0.05)}
+      {SL("Intensité de tous les halos", "poolInt", 0, 3, 0.05)}
+      {SL("Lumière au survol", "hoverInt", 0, 3, 0.05)}
+      {SL("Flou des faisceaux", "beamBlur", 0, 80, 1, "px")}
+      {SL("Ouverture en haut du faisceau", "beamTop", 0, 25, 0.5, "%")}
+      {TG("Allumage animé (haut de l'accueil)", "beamAnim")}
+      {TG("Balancement (haut de l'accueil)", "sway")}
+      {SL("Amplitude du balancement", "swayAmp", 0, 10, 0.5, "°")}
+
+      <TweakSection label="Accueil, en haut : projecteur gauche" />
+      {SL("Position", "aX", -50, 70, 1, "%")}
+      {SL("Largeur", "aW", 10, 140, 1, "%")}
+      {SL("Angle", "aRot", -40, 40, 0.5, "°")}
+      {SL("Opacité", "aOp", 0, 1, 0.05)}
+
+      <TweakSection label="Accueil, en haut : projecteur droit" />
+      {SL("Position depuis la droite", "bX", -50, 70, 1, "%")}
+      {SL("Largeur", "bW", 10, 140, 1, "%")}
+      {SL("Angle", "bRot", -40, 40, 0.5, "°")}
+      {SL("Opacité", "bOp", 0, 1, 0.05)}
+
+      <TweakSection label="Accueil, en haut : halo au sol" />
+      {SL("Position horizontale", "poolX", -30, 80, 1, "%")}
+      {SL("Hauteur depuis le bas", "poolY", -20, 80, 1, "%")}
+      {SL("Largeur", "poolW", 10, 140, 1, "%")}
+      {SL("Hauteur", "poolH", 5, 100, 1, "%")}
+
+      <TweakSection label="En-têtes boutique, statut, fiche produit" />
+      {SL("Position", "sX", -50, 70, 1, "%")}
+      {SL("Largeur", "sW", 10, 140, 1, "%")}
+      {SL("Angle", "sRot", -40, 40, 0.5, "°")}
+      {SL("Opacité", "sOp", 0, 1, 0.05)}
+
+      <TweakSection label="Accueil, en bas : projecteur final" />
+      {SL("Position", "cX", -30, 80, 1, "%")}
+      {SL("Largeur", "cW", 10, 140, 1, "%")}
+      {SL("Angle", "cRot", -40, 40, 0.5, "°")}
+      {SL("Opacité", "cOp", 0, 1, 0.05)}
+
+      <TweakSection label="Halo derrière les titres de section" />
+      {SL("Position horizontale", "h2X", 0, 100, 1, "%")}
+      {SL("Position verticale", "h2Y", 0, 100, 1, "%")}
+      {SL("Taille", "h2Size", 10, 100, 1, "%")}
+      {SL("Intensité", "h2Int", 0, 3, 0.05)}
+
+      <TweakSection label="Pages intérieures (FAQ, panier, compte…)" />
+      {SL("Position", "innerX", -30, 80, 1, "%")}
+      {SL("Angle", "innerRot", -40, 40, 0.5, "°")}
+      {SL("Largeur", "innerW", 20, 120, 1, "vw")}
+      {SL("Longueur", "innerH", 200, 1400, 10, "px")}
+      {SL("Opacité", "innerOp", 0, 1, 0.05)}
+
+      <TweakSection label="Lampe qui suit la souris" />
+      {TG("Activée", "torch")}
+      {SL("Taille", "torchSize", 200, 1800, 10, "px")}
+      {SL("Intensité", "torchInt", 0, 4, 0.05)}
+
+      <TweakSection label="Haut de l'accueil" />
+      {TG("Vidéo de fond", "stage")}
+      {SL("Largeur de la vidéo", "stageW", 30, 100, 1, "%")}
+      {SL("Luminosité de la vidéo", "stageBright", 0.1, 1.2, 0.02)}
+      {SL("Saturation de la vidéo (0 = noir et blanc)", "stageSat", 0, 1.2, 0.05)}
+      {SL("Fondu vers la gauche", "stageFade", 0, 90, 1, "%")}
+      {SL("Taille du titre", "titleScale", 0.6, 1.4, 0.01, "×")}
+      {TG("Balayage lumineux sur « Sans être vu. »", "sweep")}
+      {TG("« Domine. » éclairé (allumage + reflet souris)", "titleFx")}
+
+      <TweakSection label="Typo et couleurs" />
+      {SL("Largeur des titres (75 = étroit)", "stretch", 75, 125, 1, "%")}
+      <TweakColor label="Accent" value={v.accent} options={["#f75bda", "#7c4dff", "#ff4d6d", "#3ddc97", "#f0b03c"]} onChange={s("accent")} />
+      <TweakColor label="Accent libre" value={v.accent} onChange={s("accent")} />
+      <TweakColor label="Fond" value={v.bg} options={["#09080e", "#000000", "#0d0b14", "#100c18"]} onChange={s("bg")} />
+
+      <TweakSection label="Animations" />
+      {TG("Figer toutes les animations", "still")}
+
+      <TweakSection label="Enregistrer" />
+      <TweakButton label={copied ? "Copié ✓" : "Copier mes réglages"} onClick={copy} />
+      <TweakButton label="Revenir au design d'origine" secondary onClick={reset} />
+    </TweaksPanel>
+  );
 }
 
 function App() {
@@ -310,10 +460,8 @@ function App() {
 
   return (
     <>
-      <SkyBackdrop />
-      <div className="scroll-prog" ref={progRef} />
       <Header route={route} go={go} lang={lang} setLang={setLang} customer={customer} cartCount={cartCount} navVariant={t2.navVariant} navIconSet={t2.navIconSet} />
-      <main key={route}>{page}</main>
+      <main key={route} className={page.type === HomePage || page.type === ShopPage || page.type === StatusPage || page.type === ProductPage ? "" : "nx-inner"}>{page}</main>
       <Footer lang={lang} go={go} />
 
       {toast && (
@@ -324,58 +472,7 @@ function App() {
       )}
 
       {TWEAKS_ADMIN && <>
-      <TweaksPanel title={lang === "fr" ? "Personnalisation" : "Customize"}>
-        <TweakSection label={lang === "fr" ? "Direction du hero" : "Hero direction"} />
-        <TweakRadio label={lang === "fr" ? "Mise en page" : "Layout"} value={t2.heroVariant}
-          options={["split", "centered", "showcase"]}
-          onChange={(v) => setTweak("heroVariant", v)} />
-        <TweakRadio label={lang === "fr" ? "Séparation hero" : "Hero divider"} value={t2.heroSplit}
-          options={["slant-fade", "fade", "slant", "soft", "curve", "wave", "glass", "glow", "frame"]}
-          onChange={(v) => setTweak("heroSplit", v)} />
-        <div style={{ fontFamily: "var(--f-mono)", fontSize: 10.5, color: "var(--tx-mute)", padding: "2px 2px 10px", lineHeight: 1.5 }}>
-          {lang === "fr"
-            ? "slant-fade = biseau + fondu · fade = fondu · slant = biseau · soft = doux · curve = courbe · wave = vague · glass = verre · glow = lumière · frame = cadre"
-            : "slant-fade = slash + blend · fade = blend · slant = slash · soft = soft · curve = curve · wave = wave · glass = glass · glow = glow · frame = frame"}
-        </div>
-        <TweakSection label={lang === "fr" ? "Navigation" : "Navigation"} />
-        <TweakRadio label={lang === "fr" ? "Style des liens" : "Link style"} value={t2.navVariant}
-          options={["gradient", "line", "pills", "neon", "minimal", "ghost"]}
-          onChange={(v) => setTweak("navVariant", v)} />
-        <div style={{ fontFamily: "var(--f-mono)", fontSize: 10.5, color: "var(--tx-mute)", padding: "2px 2px 10px", lineHeight: 1.5 }}>
-          {lang === "fr"
-            ? "gradient = dégradé · line = souligné · pills = pastilles · neon = néon · minimal = horizontal · ghost = bordure"
-            : "gradient = gradient · line = underline · pills = pills · neon = neon · minimal = horizontal · ghost = border"}
-        </div>
-        <TweakSection label={lang === "fr" ? "Icônes navbar" : "Navbar icons"} />
-        <TweakRadio label={lang === "fr" ? "Jeu d'icônes" : "Icon set"} value={t2.navIconSet}
-          options={["default", "filled", "gaming", "cheat", "minimal", "bold"]}
-          onChange={(v) => setTweak("navIconSet", v)} />
-        <div style={{ fontFamily: "var(--f-mono)", fontSize: 10.5, color: "var(--tx-mute)", padding: "2px 2px 10px", lineHeight: 1.5 }}>
-          {lang === "fr"
-            ? "Boutique · Statut · Avis · Compte · Discord — default / filled / gaming / cheat / minimal / bold"
-            : "Store · Status · Reviews · Account · Discord — default / filled / gaming / cheat / minimal / bold"}
-        </div>
-        <TweakSection label={lang === "fr" ? "Animation vitrine" : "Showcase motion"} />
-        <TweakRadio label={lang === "fr" ? "Style page" : "Page style"} value={t2.pageAnim}
-          options={["fade", "glass", "cinematic", "lift", "snap", "float", "spotlight"]}
-          onChange={(v) => setTweak("pageAnim", v)} />
-        <div style={{ fontFamily: "var(--f-mono)", fontSize: 10.5, color: "var(--tx-mute)", padding: "2px 2px 10px", lineHeight: 1.5 }}>
-          {lang === "fr"
-            ? "fade = minimal · glass = reflet images · cinematic = zoom lent · lift = élévation · snap = sec · float = flottant · spotlight = lumière"
-            : "fade = minimal · glass = image shine · cinematic = slow zoom · lift = elevation · snap = crisp · float = floating · spotlight = light"}
-        </div>
-        <TweakSection label={lang === "fr" ? "Couleur d'accent" : "Accent color"} />
-        <TweakRadio label={lang === "fr" ? "Teinte" : "Hue"} value={String(t2.accentHue)}
-          options={["26", "16", "12", "200", "280", "150"]}
-          onChange={(v) => setTweak("accentHue", Number(v))} />
-        <div style={{ fontFamily: "var(--f-mono)", fontSize: 10.5, color: "var(--tx-mute)", padding: "2px 2px 6px" }}>
-          26 orange · 16 corail · 12 rouge · 200 cyan · 280 violet · 150 vert
-        </div>
-        <TweakSection label={lang === "fr" ? "Typographie" : "Typography"} />
-        <TweakRadio label="Display" value={t2.font}
-          options={["default", "condensed", "techno"]}
-          onChange={(v) => setTweak("font", v)} />
-      </TweaksPanel>
+      <NxTweaks />
 
       <button
         type="button"
@@ -393,7 +490,7 @@ function App() {
 
 // ── Boot: charge les jeux/plans depuis l'API (fallback = données statiques de data.jsx) ──
 async function boot() {
-  const API = "https://api.404tweaks.tech/api/v1";
+  const API = API_BASE;
   const fetchJson = async (path) => {
     const ctrl = new AbortController();
     const to = setTimeout(() => ctrl.abort(), 4000);

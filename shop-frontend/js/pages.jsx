@@ -10,274 +10,619 @@ function openShopDiscord() {
 }
 
 /* =================================================================
-   HERO — title animations (switch via tweak `heroTextAnim`)
-   reveal · shimmer · glitch · pulse · split · neon
+   HOME — direction « Noir couture » (classes nx-*)
    ================================================================= */
-function HeroTitle({ line1, line2, anim = "shimmer", className = "", style = {}, inline = false }) {
-  const cls = ["hero-title", `hero-title--${anim}`, className].filter(Boolean).join(" ");
-  const accentCls = anim === "split" ? "" : anim === "neon" ? "" : " grad-tx";
-  const line2Content = anim === "split"
-    ? line2.split(" ").map((w, i, arr) => (
-        <span key={i} className="hero-title-word" style={{ animationDelay: `${0.42 + i * 0.11}s` }}>{w}{i < arr.length - 1 ? "\u00A0" : ""}</span>
-      ))
-    : line2;
-
-  return (
-    <h1 className={cls} style={style}>
-      <span className="hero-title-line hero-title-line-1">{line1}</span>
-      {!inline && <br />}
-      {inline && " "}
-      <span className={"hero-title-line hero-title-line-2" + accentCls} data-text={anim === "glitch" ? line2 : undefined}>{line2Content}</span>
-    </h1>
-  );
-}
-
-/* ambient hero : ciel étoilé + nébuleuse + halos + spot qui suit la souris */
-function HeroAmbient() {
-  return (
-    <div className="hero-ambient" aria-hidden="true">
-      <i className="orb o1" /><i className="orb o2" /><i className="orb o3" />
-      <StarField density={1.1} />
-      <div className="nebula" />
-      <div className="hero-spot" />
-    </div>
-  );
-}
-
-const MARQUEE_ITEMS = {
-  fr: ["Loader sécurisé", "Mis à jour à chaque patch", "Livraison instantanée", "Support 24/7", "Stream-proof", "Paiement sécurisé", "Clé envoyée par email", "Configs incluses"],
-  en: ["Secure loader", "Updated every patch", "Instant delivery", "24/7 support", "Stream-proof", "Secure checkout", "Key sent by email", "Configs included"],
+/* emplacements des visuels fournis par le propriétaire (un fichier absent affiche un état vide) */
+const NX_MEDIA = {
+  heroPoster: "assets/hero/poster.jpg",
+  feed: "assets/hero/feed.mp4",
+  demo: { aimbot: "assets/demo/aimbot.mp4", esp: "assets/demo/esp.mp4", radar: "assets/demo/radar.mp4" },
+  game: (id) => "assets/games/" + id + ".jpg",
 };
 
-/* =================================================================
-   HERO — three art directions, switchable via tweak `heroVariant`
-   ================================================================= */
-function Hero({ lang, go, variant, textAnim = "shimmer", splitStyle = "slant-fade" }) {
-  const S = DATA.STATS;
-  const heroImg = (DATA.SETTINGS && DATA.SETTINGS.heroImage) || "";
-  const line1 = t("heroTitle1", lang);
-  const line2 = t("heroTitle2", lang);
-  const Copy = (
-    <>
-      <HeroTitle line1={line1} line2={line2} anim={textAnim} style={{ fontSize: "clamp(40px, 6vw, 76px)", maxWidth: 640 }} />
-      <p style={{ color: "var(--tx-dim)", fontSize: 17, maxWidth: 480, marginTop: 20 }}>{t("heroSub", lang)}</p>
-    </>
-  );
-  const StatsInline = (
-    <div style={{ display: "flex", alignItems: "center", gap: 38, marginTop: 34, flexWrap: "wrap" }}>
-      <div>
-        <div style={{ fontFamily: "var(--f-display)", fontWeight: 900, fontSize: 38, color: "var(--acc)", lineHeight: 1 }}>{S.delivered >= 1000 ? <><CountUp value={Math.round(S.delivered/1000)} />k+</> : <><CountUp value={S.delivered} />+</>}</div>
-        <div className="eyebrow" style={{ marginTop: 6 }}>{t("delivered", lang)}</div>
-      </div>
-      <div style={{ width: 1, height: 44, background: "var(--line-2)" }} />
-      <div>
-        <div style={{ fontFamily: "var(--f-display)", fontWeight: 900, fontSize: 38, color: "var(--acc)", lineHeight: 1 }}><CountUp value={S.members} /></div>
-        <div className="eyebrow" style={{ marginTop: 6 }}>{t("totalMembers", lang)}</div>
-      </div>
-    </div>
-  );
+const NX_CHAPTERS = [
+  { key: "aimbot", title: "Aimbot", text: { fr: "Lissage, FOV et prédiction réglables, pour viser juste sans viser trop bien.", en: "Adjustable smoothing, FOV and prediction: accurate, never obvious." } },
+  { key: "esp", title: "ESP", text: { fr: "Joueurs, squelettes et loot, visibles à travers les murs.", en: "Players, skeletons and loot, visible through walls." } },
+  { key: "radar", title: "Radar", text: { fr: "Une carte 2D de chaque ennemi autour de toi.", en: "A 2D map of every enemy around you." } },
+];
 
-  if (variant === "centered") {
-    return (
-      <section className="hero hero-live" style={{ padding: "92px 0 120px" }}>
-        <div className="hero-art" />
-        <HeroAmbient />
-        <div className="wrap" style={{ position: "relative", zIndex: 2, textAlign: "center" }}>
-          <HeroTitle line1={line1} line2={line2} anim={textAnim} inline style={{ fontSize: "clamp(44px, 8vw, 104px)", letterSpacing: "-0.04em" }} />
-          <p style={{ color: "var(--tx-dim)", fontSize: 18, maxWidth: 560, margin: "22px auto 0" }}>{t("heroSub", lang)}</p>
-          <div style={{ display: "flex", gap: 14, justifyContent: "center", marginTop: 34 }}>
-            <Btn kind="primary" size="lg" iconRight={<Icon.arrow />} onClick={() => go("store")}>{t("browse", lang)}</Btn>
-            <Btn kind="ghost" size="lg" icon={<Icon.discord />} onClick={openShopDiscord}>{t("joinDiscord", lang)}</Btn>
-          </div>
-          <div style={{ display: "inline-flex" }}>{StatsInline}</div>
-        </div>
-      </section>
-    );
-  }
+const NX_STATUS = {
+  updated: { fr: "Indétecté", en: "Undetected", cls: "" },
+  new: { fr: "Nouveau", en: "New", cls: " is-new" },
+  updating: { fr: "Mise à jour", en: "Updating", cls: " is-warn" },
+};
 
-  if (variant === "showcase") {
-    const top = DATA.GAMES.slice(0, 3);
-    return (
-      <section className="hero hero-live" style={{ padding: "72px 0 92px" }}>
-        <div className="hero-art" />
-        <HeroAmbient />
-        <div className="wrap" style={{ position: "relative", zIndex: 2, display: "grid", gridTemplateColumns: "1.05fr 0.95fr", gap: 50, alignItems: "center" }}>
-          <div>
-            {Copy}
-            <div style={{ display: "flex", gap: 14, marginTop: 30, flexWrap: "wrap" }}>
-              <Btn kind="primary" size="lg" iconRight={<Icon.arrow />} onClick={() => go("store")}>{t("browse", lang)}</Btn>
-              <Btn kind="ghost" size="lg" icon={<Icon.discord />} onClick={openShopDiscord}>{t("joinDiscord", lang)}</Btn>
-            </div>
-            {StatsInline}
-          </div>
-          <div style={{ display: "grid", gap: 16 }}>
-            {top.map((g, i) => (
-              <div key={g.id} className="card" style={{ display: "flex", alignItems: "center", gap: 16, padding: 14, cursor: "pointer", animation: `floaty ${5+i}s ease-in-out ${i*0.4}s infinite` }} onClick={() => go("game/" + g.id)}>
-                <div className="art-ph" data-label="" style={{ width: 96, height: 64, flex: "none", position: "relative" }}><div className="shard" /></div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: "var(--f-display)", fontWeight: 800, fontSize: 18 }}>{g.name}</div>
-                  <div className="eyebrow" style={{ marginTop: 3 }}>{g.tipsCount} {t("perGame", lang)} · {g.chip}</div>
-                </div>
-                <StatusBadge status={g.status} lang={lang} />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-    );
-  }
+function nxReduced() { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; }
+function nxFinePointer() { return window.matchMedia("(hover: hover) and (pointer: fine)").matches; }
+function nxGames() { return (DATA.GAMES || []).filter((g) => g.id !== "spoofer"); }
+function nxGo(go, route) { return (e) => { e.preventDefault(); go(route); }; }
 
-  /* default: split */
-  const splitCls = "hero hero--split-" + splitStyle;
+function useNxReveal(ref) {
+  useEffectP(() => {
+    const root = ref.current;
+    if (!root || nxReduced()) return;
+    root.classList.add("nx-anim");
+    const io = new IntersectionObserver((entries) => entries.forEach((en) => {
+      if (en.isIntersecting) { en.target.classList.add("is-in"); io.unobserve(en.target); }
+    }), { rootMargin: "0px 0px -10% 0px" });
+    root.querySelectorAll("[data-nx-reveal]").forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
+}
+
+function NxCta({ href, onClick, children }) {
+  const ref = React.useRef(null);
+  useEffectP(() => {
+    const el = ref.current;
+    if (!el || nxReduced() || !nxFinePointer()) return;
+    let raf = 0, x = 0, y = 0, tx = 0, ty = 0;
+    const loop = () => {
+      x += (tx - x) * 0.18; y += (ty - y) * 0.18;
+      el.style.transform = "translate(" + x.toFixed(2) + "px," + y.toFixed(2) + "px)";
+      raf = Math.abs(tx - x) + Math.abs(ty - y) > 0.05 ? requestAnimationFrame(loop) : 0;
+    };
+    const kick = () => { if (!raf) raf = requestAnimationFrame(loop); };
+    const move = (e) => {
+      const r = el.getBoundingClientRect();
+      tx = (e.clientX - r.left - r.width / 2) * 0.12;
+      ty = (e.clientY - r.top - r.height / 2) * 0.2;
+      kick();
+    };
+    const leave = () => { tx = 0; ty = 0; kick(); };
+    el.addEventListener("pointermove", move);
+    el.addEventListener("pointerleave", leave);
+    return () => { el.removeEventListener("pointermove", move); el.removeEventListener("pointerleave", leave); cancelAnimationFrame(raf); };
+  }, []);
+  return <span className="nx-magnet" ref={ref}><a className="nx-btn" href={href} onClick={onClick}>{children}</a></span>;
+}
+
+function NxHero({ lang, go }) {
+  const fr = lang === "fr";
+  const games = nxGames();
+  const list = games.length ? new Intl.ListFormat(fr ? "fr" : "en", { type: "conjunction" }).format(games.map((g) => g.name)) : "";
+  const live = games.filter((g) => g.status !== "updating").length;
+  const discord = shopDiscordUrl();
+  const line2 = fr ? "Sans être vu." : "Unseen.";
+  const heroRef = React.useRef(null);
+  const litRef = React.useRef(null);
+  const lit1Ref = React.useRef(null);
+  useEffectP(() => {
+    const sec = heroRef.current, lit = litRef.current, lit1 = lit1Ref.current;
+    if (!sec || !lit || !nxFinePointer()) return;
+    let raf = 0, ev = null;
+    const apply = () => {
+      raf = 0;
+      const r = lit.getBoundingClientRect();
+      lit.style.setProperty("--mx", (ev.clientX - r.left).toFixed(0) + "px");
+      lit.style.setProperty("--my", (ev.clientY - r.top).toFixed(0) + "px");
+      // reflet sur « Domine. » : suit la souris horizontalement
+      if (lit1) lit1.style.setProperty("--sx", (ev.clientX - lit1.getBoundingClientRect().left).toFixed(0) + "px");
+    };
+    const move = (e) => { ev = e; lit.classList.add("is-lit"); if (!raf) raf = requestAnimationFrame(apply); };
+    const leave = () => lit.classList.remove("is-lit");
+    sec.addEventListener("pointermove", move);
+    sec.addEventListener("pointerleave", leave);
+    return () => { sec.removeEventListener("pointermove", move); sec.removeEventListener("pointerleave", leave); cancelAnimationFrame(raf); };
+  }, []);
   return (
-    <section className={splitCls + " hero-live"}>
-      <div className="hero-art" />
-      <HeroAmbient />
-      {heroImg
-        ? <div className="hero-fig hero-fig-img"><Img src={heroImg} alt="" priority /></div>
-        : <div className="hero-fig"><span>HERO ARTWORK</span></div>}
-      <div className="hero-edge" aria-hidden="true" />
-      <div className="wrap" style={{ position: "relative", zIndex: 2, padding: "78px 0 96px" }}>
-        <div className="hero-copy hero-stagger">
-          {Copy}
-          <div style={{ display: "flex", gap: 14, marginTop: 30, flexWrap: "wrap" }}>
-            <Btn kind="primary" size="lg" iconRight={<Icon.arrow />} onClick={() => go("store")}>{t("browse", lang)}</Btn>
-            <Btn kind="ghost" size="lg" icon={<Icon.discord />} onClick={openShopDiscord}>{t("joinDiscord", lang)}</Btn>
+    <section ref={heroRef} className="nx-hero" aria-labelledby="nx-hero-title">
+      <div className="nx-hero-stage" data-nx-reveal aria-hidden="true">
+        {nxReduced()
+          ? <MediaSlot src={NX_MEDIA.heroPoster} priority />
+          : <MediaSlot src={NX_MEDIA.feed} type="video" autoPlayInView />}
+      </div>
+      <div className="nx-beams" data-nx-reveal aria-hidden="true">
+        <i className="nx-beam nx-beam--a" /><i className="nx-beam nx-beam--b" /><i className="nx-pool" />
+      </div>
+      <div className="nx-wrap nx-hero-grid">
+        <div className="nx-hero-copy">
+          <h1 id="nx-hero-title" className="nx-display nx-mask" data-nx-reveal>
+            <span className="nx-line"><span className="nx-lit1" ref={lit1Ref}>{fr ? "Domine." : "Dominate."}</span></span>
+            <span className="nx-line"><span className="nx-lit" ref={litRef} data-text={line2}>{line2}</span></span>
+          </h1>
+          <p className="nx-lede nx-fade" data-nx-reveal style={{ "--d": 3 }}>
+            {fr
+              ? <>Des cheats pour {list}. Ta clé arrive en 30 secondes, et chaque cheat revient en ligne sous 24 h après un patch.</>
+              : <>Cheats for {list}. Your key lands in 30 seconds, and every cheat is back online within 24 hours of a patch.</>}
+          </p>
+          <div className="nx-actions nx-fade" data-nx-reveal style={{ "--d": 4 }}>
+            <NxCta href="#store" onClick={nxGo(go, "store")}>{fr ? "Voir la boutique" : "Browse the store"}</NxCta>
+            {discord && <a className="nx-link" href={discord} target="_blank" rel="noopener noreferrer">{fr ? "Rejoindre le Discord" : "Join the Discord"}</a>}
           </div>
-          {StatsInline}
+          {games.length > 0 && (
+            <a className={"nx-status nx-fade" + (live < games.length ? " is-warn" : "")} href="#status" onClick={nxGo(go, "status")} data-nx-reveal style={{ "--d": 5 }}>
+              <span className="nx-dot" aria-hidden="true" />
+              <span>{fr ? `${live} cheats sur ${games.length} indétectés` : `${live} of ${games.length} cheats undetected`}</span>
+              <span className="nx-status-more">{fr ? "Voir le statut" : "View status"}</span>
+            </a>
+          )}
         </div>
       </div>
     </section>
   );
 }
 
-/* =================================================================
-   HOME
-   ================================================================= */
-function HomePage({ lang, go, onAdd, heroVariant, heroTextAnim = "shimmer", heroSplit = "slant-fade" }) {
-  const S = DATA.STATS;
-  const sideStats = [
-    [t("totalMembers", lang), S.members.toLocaleString(), Icon.users],
-    [t("mostOnline", lang), S.online.toLocaleString(), Icon.bolt],
-    [t("newest", lang), S.newestMemberUsername || "—", Icon.trophy],
-  ];
-  return (
-    <div className="page-enter">
-      <Hero lang={lang} go={go} variant={heroVariant} textAnim={heroTextAnim} splitStyle={heroSplit} />
-      <Crumbs trail={[t("home", lang)]} lang={lang} overlap />
-      <Marquee items={MARQUEE_ITEMS[lang] || MARQUEE_ITEMS.en} />
+const NX_GROW = 0.22;
+function NxShowcase({ lang }) {
+  const fr = lang === "fr";
+  const ref = React.useRef(null);
+  const maskRef = React.useRef(null);
+  const introRef = React.useRef(null);
+  const segs = React.useRef([]);
+  const vids = React.useRef([]);
+  const [pinned, setPinned] = useStateP(false);
+  const [active, setActive] = useStateP(-1);
+  const layers = [{ key: "feed", src: NX_MEDIA.feed }].concat(NX_CHAPTERS.map((c) => ({ key: c.key, src: NX_MEDIA.demo[c.key] })));
 
-      <div className="wrap section" style={{ paddingTop: 40 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 22, alignItems: "start" }} className="home-split">
-          {/* welcome panel */}
-          <div className="panel reveal spot-card" style={{ padding: "46px 44px" }}>
-            <h2 style={{ fontSize: "clamp(34px, 4.4vw, 56px)" }}>
-              {t("welcomeTo", lang)} <span className="grad-tx">404</span><br />{t("welcomeTail", lang)}
-            </h2>
-            <p style={{ color: "var(--tx-dim)", fontSize: 16, marginTop: 22, maxWidth: 620 }}>{t("welcomeBody", lang)}</p>
-            <div style={{ display: "flex", gap: 12, marginTop: 28, flexWrap: "wrap" }}>
-              <Btn kind="primary" iconRight={<Icon.arrow />} onClick={() => go("store")}>{t("browse", lang)}</Btn>
-              <Btn kind="outline" onClick={() => go("status")}>{navLabel("status", lang)}</Btn>
-            </div>
-          </div>
-          {/* side stat tiles */}
-          <div className="reveal-grid" style={{ display: "grid", gap: 14 }}>
-            {sideStats.map(([k, v, Ic], i) => (
-              <div key={i} className="card stat-tile spot-card">
-                <div><div className="k">{k}</div><div className="v">{typeof v === "string" && /^[\d\s,.\u202f]+$/.test(v) ? <CountUp value={parseInt(v.replace(/\D/g, ""), 10)} /> : v}</div></div>
-                <div className="stat-ic"><Ic /></div>
+  useEffectP(() => {
+    const mq = window.matchMedia("(min-width: 900px) and (prefers-reduced-motion: no-preference)");
+    const sync = () => setPinned(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  useEffectP(() => {
+    if (!pinned) return;
+    let raf = 0, last = -2;
+    const update = () => {
+      raf = 0;
+      const el = ref.current;
+      if (!el || !maskRef.current) return;
+      const total = el.offsetHeight - window.innerHeight;
+      const p = Math.min(1, Math.max(0, -el.getBoundingClientRect().top / total));
+      const g = Math.min(1, p / NX_GROW);
+      const e = g < 0.5 ? 4 * g * g * g : 1 - Math.pow(-2 * g + 2, 3) / 2;
+      const v = 1 - e;
+      maskRef.current.style.clipPath = "inset(" + (v * 15).toFixed(2) + "% " + (v * 30).toFixed(2) + "% " + (v * 15).toFixed(2) + "% " + (v * 30).toFixed(2) + "%)";
+      introRef.current.style.opacity = String(Math.max(0, 1 - g * 1.6));
+      introRef.current.style.transform = "translateY(" + (-g * 40).toFixed(1) + "px)";
+      const cp = Math.max(0, (p - NX_GROW) / (1 - NX_GROW)) * NX_CHAPTERS.length;
+      segs.current.forEach((s, i) => { if (s) s.style.transform = "scaleX(" + Math.min(1, Math.max(0, cp - i)).toFixed(3) + ")"; });
+      const idx = p < NX_GROW ? -1 : Math.min(NX_CHAPTERS.length - 1, Math.floor(cp));
+      if (idx !== last) { last = idx; setActive(idx); }
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => { window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", onScroll); cancelAnimationFrame(raf); };
+  }, [pinned]);
+
+  // en mode épinglé, seule la couche visible joue, et seulement quand la section est à l'écran
+  useEffectP(() => {
+    const el = ref.current;
+    if (!pinned || !el) return;
+    const io = new IntersectionObserver(([en]) => {
+      vids.current.forEach((v, i) => {
+        if (!v) return;
+        if (en.isIntersecting && i === active + 1) v.play().catch(() => {});
+        else v.pause();
+      });
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [pinned, active]);
+
+  return (
+    <section ref={ref} className={"nx-show" + (pinned ? " is-pinned" : "")} aria-labelledby="nx-show-title">
+      <div className="nx-show-stage">
+        {pinned && (
+          <div className="nx-show-mask" ref={maskRef}>
+            {layers.map((l, i) => (
+              <div key={l.key} className={"nx-show-layer" + (i === active + 1 ? " is-on" : "")}>
+                <MediaSlot type="video" src={l.src} videoRef={(v) => { vids.current[i] = v; }} label={fr ? "Démo en jeu" : "In-game demo"} />
               </div>
             ))}
+            <div className="nx-show-scrim" aria-hidden="true" />
           </div>
+        )}
+        <h2 id="nx-show-title" ref={introRef} className="nx-show-intro">
+          {fr ? <>Le cheat,<br /><em>en jeu.</em></> : <>See it<br /><em>in game.</em></>}
+        </h2>
+        <div className="nx-show-caps">
+          {NX_CHAPTERS.map((c, i) => (
+            <article key={c.key} className={"nx-chap" + (active === i ? " is-on" : "")}>
+              {!pinned && <MediaSlot type="video" src={NX_MEDIA.demo[c.key]} className="nx-chap-media" autoPlayInView label={c.title} />}
+              <h3 className="nx-chap-title">{c.title}</h3>
+              <p className="nx-chap-text">{c.text[lang] || c.text.en}</p>
+            </article>
+          ))}
         </div>
-
-        {/* support banner */}
-        <div className="panel reveal spot-card" style={{ display: "flex", alignItems: "center", gap: 20, padding: "22px 26px", marginTop: 22 }}>
-          <div className="stat-ic" style={{ width: 50, height: 50 }}><Icon.headset style={{ width: 26, height: 26 }} /></div>
-          <div>
-            <div style={{ fontFamily: "var(--f-display)", fontWeight: 800, fontSize: 18 }}>{t("support247", lang)}</div>
-            <div style={{ color: "var(--tx-dim)", fontSize: 14, marginTop: 3 }}>{t("supportBody", lang)}</div>
+        {pinned && (
+          <div className="nx-show-prog" aria-hidden="true">
+            {NX_CHAPTERS.map((c, i) => <span key={c.key} className="nx-seg"><i ref={(s) => { segs.current[i] = s; }} /></span>)}
           </div>
-        </div>
-
-        {/* all products */}
-        <div style={{ marginTop: 54 }}>
-          <div className="reveal" style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 22 }}>
-            <h2 className="h-accent" style={{ fontSize: 32 }}>{t("allProducts", lang)}</h2>
-            <a className="signin" style={{ cursor: "pointer" }} onClick={() => go("store")}>{t("browse", lang)} <Icon.arrow style={{ width: 14, height: 14 }} /></a>
-          </div>
-          <div className="grid-3 reveal-grid">
-            {DATA.GAMES.map(g => <GameCard key={g.id} game={g} lang={lang} go={go} onAdd={onAdd} />)}
-          </div>
-        </div>
-
-        {/* CTA */}
-        <CTA lang={lang} go={go} />
+        )}
       </div>
+    </section>
+  );
+}
+
+function NxGameRow({ game, lang, go, onHover }) {
+  const fr = lang === "fr";
+  const inventory = useSpooferStock(game.id === "spoofer");
+  const offers = game.id === "spoofer" ? inventory.plans : DATA.PLANS;
+  const cheapest = offers.reduce((a, p) => (!a || p.price < a.price ? p : a), null);
+  const st = NX_STATUS[game.status] || NX_STATUS.updated;
+  return (
+    <li>
+      <a className="nx-grow" href={"#game/" + game.id} onClick={nxGo(go, "game/" + game.id)} onPointerEnter={onHover} onFocus={onHover}>
+        <span className="nx-g-thumb"><MediaSlot src={game.image || NX_MEDIA.game(game.id)} /></span>
+        <span className="nx-g-name">{game.name}</span>
+        <span className="nx-g-genre">{game.chip}</span>
+        <span className={"nx-g-status" + st.cls}><span className="nx-dot" aria-hidden="true" />{st[lang] || st.en}</span>
+        <span className="nx-g-price">
+          {cheapest ? <>{fr ? "dès " : "from "}<b>{cheapest.price.toFixed(2)} €</b></> : (fr ? "Indisponible" : "Unavailable")}
+        </span>
+      </a>
+    </li>
+  );
+}
+
+function NxGames({ lang, go }) {
+  const fr = lang === "fr";
+  const games = DATA.GAMES || [];
+  const [hover, setHover] = useStateP(null);
+  const secRef = React.useRef(null);
+  const floatRef = React.useRef(null);
+
+  useEffectP(() => {
+    const sec = secRef.current, fl = floatRef.current;
+    if (!sec || !fl || !nxFinePointer()) return;
+    const ease = nxReduced() ? 1 : 0.14;
+    let raf = 0, x = 0, y = 0, tx = 0, ty = 0, placed = false;
+    const loop = () => {
+      x += (tx - x) * ease; y += (ty - y) * ease;
+      fl.style.transform = "translate3d(" + x.toFixed(1) + "px," + y.toFixed(1) + "px,0)";
+      raf = Math.abs(tx - x) + Math.abs(ty - y) > 0.1 ? requestAnimationFrame(loop) : 0;
+    };
+    const move = (e) => {
+      const w = fl.offsetWidth, h = fl.offsetHeight;
+      const name = e.target.closest && e.target.closest(".nx-grow") && e.target.closest(".nx-grow").querySelector(".nx-g-name");
+      tx = Math.max(e.clientX + 32, name ? name.getBoundingClientRect().right + 40 : 0);
+      if (tx + w > window.innerWidth - 16) tx = window.innerWidth - w - 16;
+      ty = Math.min(window.innerHeight - h - 16, Math.max(16, e.clientY - h / 2));
+      if (!placed) { x = tx; y = ty; placed = true; }
+      if (!raf) raf = requestAnimationFrame(loop);
+    };
+    const leave = () => { placed = false; };
+    sec.addEventListener("pointermove", move);
+    sec.addEventListener("pointerleave", leave);
+    return () => { sec.removeEventListener("pointermove", move); sec.removeEventListener("pointerleave", leave); cancelAnimationFrame(raf); };
+  }, []);
+
+  return (
+    <section ref={secRef} className={"nx-games" + (hover ? " is-hovering" : "")} aria-labelledby="nx-games-title">
+      <div className="nx-wrap">
+        <div className="nx-sec-head">
+          <h2 id="nx-games-title" className="nx-h2 nx-mask" data-nx-reveal>
+            <span className="nx-line"><span>{fr ? "Choisis ton terrain." : "Pick your ground."}</span></span>
+          </h2>
+          <a className="nx-link" href="#store" onClick={nxGo(go, "store")}>{fr ? "Toute la boutique" : "Full store"}</a>
+        </div>
+        <ul className="nx-glist" onPointerLeave={() => setHover(null)}>
+          {games.map((g) => <NxGameRow key={g.id} game={g} lang={lang} go={go} onHover={() => setHover(g.id)} />)}
+        </ul>
+      </div>
+      <div className="nx-gfloat" ref={floatRef} aria-hidden="true">
+        {games.map((g) => (
+          <div key={g.id} className={"nx-gfloat-img" + (hover === g.id ? " is-on" : "")}>
+            {hover === g.id && <MediaSlot src={g.image || NX_MEDIA.game(g.id)} priority />}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function NxSteps({ lang }) {
+  const fr = lang === "fr";
+  const steps = fr ? [
+    ["Choisis ton jeu et ta durée", "Prends la durée qui colle à ton rythme. Remise dès 2 licences : −5 %, puis −10 % à partir de 3 et −15 % à partir de 5."],
+    ["Paie en toute sécurité", "Carte, Apple Pay, Google Pay, Klarna ou crypto."],
+    ["Reçois ta clé et joue", "Ta clé arrive en 30 secondes environ, dans ton profil et par e-mail. Lance le loader et rejoins ta partie."],
+  ] : [
+    ["Pick your game and duration", "Take the length that fits how you play. Bulk discount from 2 licenses: −5%, then −10% from 3 and −15% from 5."],
+    ["Pay securely", "Card, Apple Pay, Google Pay, Klarna or crypto."],
+    ["Get your key and play", "Your key lands in about 30 seconds, in your profile and by email. Start the loader and join your match."],
+  ];
+  return (
+    <section className="nx-steps" aria-labelledby="nx-steps-title">
+      <div className="nx-wrap">
+        <h2 id="nx-steps-title" className="nx-h2 nx-mask" data-nx-reveal>
+          <span className="nx-line"><span>{fr ? "De l'achat au lobby, en trois étapes." : "From checkout to lobby, in three steps."}</span></span>
+        </h2>
+        <ol className="nx-steps-list">
+          {steps.map(([title, body], i) => (
+            <li key={i} className="nx-step" data-nx-reveal style={{ "--d": i }}>
+              <span className="nx-step-n" aria-hidden="true">{i + 1}</span>
+              <div>
+                <h3>{title}</h3>
+                <p>{body}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+        <div className="nx-steps-note">
+          <p>{fr ? "Un patch vient de sortir ? Ton cheat revient en ligne sous 24 h." : "A patch just dropped? Your cheat is back online within 24 hours."}</p>
+          <p>{fr ? "Bloqué à l'installation ? Le support répond sur Discord, en général en moins de 5 minutes." : "Stuck installing? Support answers on Discord, usually within 5 minutes."}</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function NxReviews({ lang, go }) {
+  const fr = lang === "fr";
+  const list = (DATA.REVIEWS || []).slice(0, 3);
+  const sum = reviewSummary();
+  if (!list.length || !sum) return null;
+  const players = fr ? (sum.count > 1 ? "joueurs" : "joueur") : (sum.count > 1 ? "players" : "player");
+  return (
+    <section className="nx-revs" aria-labelledby="nx-revs-title">
+      <div className="nx-wrap">
+        <div className="nx-sec-head">
+          <h2 id="nx-revs-title" className="nx-h2 nx-mask" data-nx-reveal>
+            <span className="nx-line"><span>{fr ? `${sum.avg.toFixed(1)} sur 5, selon ${sum.count} ${players}.` : `${sum.avg.toFixed(1)} out of 5, from ${sum.count} ${players}.`}</span></span>
+          </h2>
+          <a className="nx-link" href="#reviews" onClick={nxGo(go, "reviews")}>{fr ? "Tous les avis" : "All reviews"}</a>
+        </div>
+        <ul className="nx-rev-list">
+          {list.map((r, i) => (
+            <li key={i}>
+              <blockquote><p>« {r[lang] || r.en} »</p></blockquote>
+              <p className="nx-rev-by">{r.name}{r.game ? ", " + r.game : ""}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+function NxFaq({ lang, go }) {
+  const fr = lang === "fr";
+  const items = [4, 5, 1, 2, 6].map((i) => FAQ[i]).filter(Boolean);
+  const [open, setOpen] = useStateP(0);
+  return (
+    <section className="nx-faq" aria-labelledby="nx-faq-title">
+      <div className="nx-wrap nx-faq-grid">
+        <div className="nx-faq-side">
+          <h2 id="nx-faq-title" className="nx-h2 nx-mask" data-nx-reveal>
+            <span className="nx-line"><span>{fr ? "Avant d'acheter." : "Before you buy."}</span></span>
+          </h2>
+          <p className="nx-faq-sub">{fr ? "Les questions qu'on nous pose le plus. Le reste est dans la FAQ complète." : "The questions we get most. The rest is in the full FAQ."}</p>
+          <a className="nx-link" href="#faq" onClick={nxGo(go, "faq")}>{fr ? "Lire toute la FAQ" : "Read the full FAQ"}</a>
+        </div>
+        <div className="nx-acc">
+          {items.map((f, i) => {
+            const on = open === i;
+            const id = "nx-faq-" + i;
+            return (
+              <div key={i} className={"nx-acc-item" + (on ? " is-open" : "")}>
+                <h3>
+                  <button type="button" className="nx-acc-q" aria-expanded={on} aria-controls={id} onClick={() => setOpen(on ? -1 : i)}>
+                    <span>{f.q[lang] || f.q.en}</span>
+                    <span className="nx-acc-ic" aria-hidden="true" />
+                  </button>
+                </h3>
+                <div id={id} className="nx-acc-a" role="region" inert={on ? undefined : ""}>
+                  <div>
+                    <p>{f.a[lang] || f.a.en}</p>
+                    {f.link && <a className="nx-link" href={"#" + f.link} onClick={nxGo(go, f.link)}>{fr ? "Lire la politique de remboursement" : "Read the refund policy"}</a>}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function NxFinal({ lang, go }) {
+  const fr = lang === "fr";
+  const discord = shopDiscordUrl();
+  return (
+    <section className="nx-final" aria-labelledby="nx-final-title">
+      <div className="nx-beams nx-beams--final" data-nx-reveal aria-hidden="true">
+        <i className="nx-beam nx-beam--c" /><i className="nx-pool nx-pool--final" />
+      </div>
+      <div className="nx-wrap">
+        <h2 id="nx-final-title" className="nx-final-title nx-mask" data-nx-reveal>
+          <span className="nx-line"><span>{fr ? "Ton lobby" : "Your lobby"}</span></span>
+          <span className="nx-line"><span><em>{fr ? "t'attend." : "is waiting."}</em></span></span>
+        </h2>
+        <div className="nx-actions">
+          <NxCta href="#store" onClick={nxGo(go, "store")}>{fr ? "Voir la boutique" : "Browse the store"}</NxCta>
+        </div>
+        {discord && (
+          <p className="nx-final-sub">
+            {fr ? "Une question avant ? " : "A question first? "}
+            <a className="nx-link" href={discord} target="_blank" rel="noopener noreferrer">{fr ? "Rejoindre le Discord" : "Join the Discord"}</a>
+          </p>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function HomePage({ lang, go }) {
+  const ref = React.useRef(null);
+  const torchRef = React.useRef(null);
+  useNxReveal(ref);
+  useNxTorch(torchRef);
+  useEffectP(() => {
+    document.body.dataset.page = "home";
+    return () => { delete document.body.dataset.page; };
+  }, []);
+  return (
+    <div className="nx-home" ref={ref}>
+      <div className="nx-torch" ref={torchRef} aria-hidden="true" />
+      <NxHero lang={lang} go={go} />
+      <NxShowcase lang={lang} />
+      <NxGames lang={lang} go={go} />
+      <NxSteps lang={lang} />
+      <NxReviews lang={lang} go={go} />
+      <NxFaq lang={lang} go={go} />
+      <NxFinal lang={lang} go={go} />
     </div>
   );
 }
 
-function CTA({ lang, go }) {
-  return (
-    <div className="panel reveal cta-live" style={{ marginTop: 56, padding: "56px 44px", textAlign: "center", position: "relative", overflow: "hidden" }}>
-      <div className="hero-art" style={{ opacity: 0.6 }} />
-      <i className="orb o1" aria-hidden="true" /><i className="orb o2" aria-hidden="true" />
-      <div style={{ position: "relative", zIndex: 2 }}>
-        <h2 style={{ fontSize: "clamp(30px, 4vw, 48px)" }}>{t("ctaTitle", lang)}</h2>
-        <p style={{ color: "var(--tx-dim)", fontSize: 16, maxWidth: 480, margin: "16px auto 0" }}>{t("ctaSub", lang)}</p>
-        <div style={{ display: "flex", gap: 14, justifyContent: "center", marginTop: 28 }}>
-          <Btn kind="primary" size="lg" iconRight={<Icon.arrow />} onClick={() => go("store")}>{t("browse", lang)}</Btn>
-          {shopDiscordUrl() && <Btn kind="ghost" size="lg" icon={<Icon.discord />} onClick={openShopDiscord}>{t("joinDiscord", lang)}</Btn>}
-        </div>
-      </div>
-    </div>
-  );
+/* projecteur qui se pose sur l'onglet actif ([aria-pressed="true"]) */
+function useNxTabLight(tabsRef, lightRef, deps) {
+  useEffectP(() => {
+    const place = () => {
+      const L = lightRef.current, el = tabsRef.current && tabsRef.current.querySelector('[aria-pressed="true"]');
+      if (L && el) L.style.transform = "translateX(" + el.offsetLeft + "px) scaleX(" + el.offsetWidth / 100 + ")";
+    };
+    place();
+    if (document.fonts) document.fonts.ready.then(place);
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
+  }, deps);
+}
+
+/* lumière douce qui suit la souris (souris uniquement, mouvement autorisé) */
+function useNxTorch(torchRef) {
+  useEffectP(() => {
+    const el = torchRef.current;
+    if (!el || nxReduced() || !nxFinePointer()) return;
+    let raf = 0, x = 0, y = 0, tx = 0, ty = 0, placed = false;
+    const loop = () => {
+      x += (tx - x) * 0.12; y += (ty - y) * 0.12;
+      const h = el.offsetWidth / 2;
+      el.style.transform = "translate3d(" + (x - h).toFixed(1) + "px," + (y - h).toFixed(1) + "px,0)";
+      raf = Math.abs(tx - x) + Math.abs(ty - y) > 0.2 ? requestAnimationFrame(loop) : 0;
+    };
+    const move = (e) => {
+      tx = e.clientX; ty = e.clientY;
+      if (!placed) { x = tx; y = ty; placed = true; el.classList.add("is-on"); }
+      if (!raf) raf = requestAnimationFrame(loop);
+    };
+    const out = (e) => { if (!e.relatedTarget) { el.classList.remove("is-on"); placed = false; } };
+    window.addEventListener("pointermove", move, { passive: true });
+    document.addEventListener("pointerout", out);
+    return () => { window.removeEventListener("pointermove", move); document.removeEventListener("pointerout", out); cancelAnimationFrame(raf); };
+  }, []);
 }
 
 /* =================================================================
    SHOP
    ================================================================= */
-function ShopPage({ lang, go, onAdd }) {
-  const [filter, setFilter] = useStateP("all");
-  const [swapped, setSwapped] = useStateP(false);
-  const cats = ["all", ...new Set(DATA.GAMES.map(g => g.chip))];
-  const list = filter === "all" ? DATA.GAMES : DATA.GAMES.filter(g => g.chip === filter);
+function NxStoreCard({ game, lang, go, i }) {
+  const fr = lang === "fr";
+  const isSpoofer = game.id === "spoofer";
+  const inventory = useSpooferStock(isSpoofer);
+  const offers = isSpoofer ? inventory.plans : DATA.PLANS;
+  const cheapest = offers.reduce((a, p) => (!a || p.price < a.price ? p : a), null);
+  const remaining = isSpoofer ? offers.reduce((n, o) => n + o.stock, 0) : undefined;
+  const st = NX_STATUS[game.status] || NX_STATUS.updated;
+  const stock = isSpoofer ? (inventory.ready ? stockLabel(remaining, lang) : (fr ? "Vérification du stock…" : "Checking stock…")) : null;
   return (
-    <div className="page-enter">
-      <Crumbs trail={[{ label: t("home", lang), route: "home" }, navLabel("store", lang)]} lang={lang} go={go} />
-      <div className="wrap section" style={{ paddingTop: 40 }}>
-        <div className="panel reveal spot-card" style={{ display: "flex", alignItems: "center", gap: 20, padding: "22px 26px", marginBottom: 26 }}>
-          <div className="stat-ic" style={{ width: 50, height: 50 }}><Icon.headset style={{ width: 26, height: 26 }} /></div>
-          <div>
-            <div style={{ fontFamily: "var(--f-display)", fontWeight: 800, fontSize: 18 }}>{t("support247", lang)}</div>
-            <div style={{ color: "var(--tx-dim)", fontSize: 14, marginTop: 3 }}>{t("supportBody", lang)}</div>
-          </div>
-        </div>
+    <li className="nx-card" style={{ "--i": i }}>
+      <a href={"#game/" + game.id} onClick={nxGo(go, "game/" + game.id)}>
+        <span className="nx-card-media"><MediaSlot src={game.image || NX_MEDIA.game(game.id)} /></span>
+        <span className={"nx-card-status" + st.cls}><span className="nx-dot" aria-hidden="true" />{st[lang] || st.en}</span>
+        <span className="nx-card-body">
+          <span className="nx-card-name">{game.name}</span>
+          <span className="nx-card-genre">{game.chip}</span>
+          <span className="nx-card-price">
+            {cheapest
+              ? <>{fr ? "dès " : "from "}<b>{cheapest.price.toFixed(2)} €</b> <small>{planShortLabel(cheapest, lang)}</small></>
+              : (fr ? "Indisponible" : "Unavailable")}
+          </span>
+          {stock && <span className={"nx-card-stock" + (remaining === 0 ? " is-out" : "")}>{stock}</span>}
+        </span>
+      </a>
+    </li>
+  );
+}
 
-        <div className="panel reveal" style={{ padding: "32px 30px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16, marginBottom: 24 }}>
-            <h2 className="h-accent" style={{ fontSize: 30 }}>{t("allProducts", lang)}</h2>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {cats.map(c => (
-                <button key={c} className={"chip" + (filter === c ? " active" : "")} onClick={() => { setFilter(c); setSwapped(true); }}>
-                  {c === "all" ? t("all", lang) : c}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className={"grid-3 " + (swapped ? "grid-swap" : "reveal-grid")} key={filter}>
-            {list.map(g => <GameCard key={g.id} game={g} lang={lang} go={go} onAdd={onAdd} />)}
-          </div>
-        </div>
+function ShopPage({ lang, go }) {
+  const fr = lang === "fr";
+  const ref = React.useRef(null);
+  const torchRef = React.useRef(null);
+  const tabsRef = React.useRef(null);
+  const lightRef = React.useRef(null);
+  useNxReveal(ref);
+  useNxTorch(torchRef);
+  useEffectP(() => {
+    document.body.dataset.page = "store";
+    return () => { delete document.body.dataset.page; };
+  }, []);
 
-        <div style={{ marginTop: 40 }}>
-          <h2 className="reveal h-accent" style={{ fontSize: 26, marginBottom: 18 }}>{t("popular", lang)}</h2>
-          <div className="grid-4 reveal-grid">
-            {DATA.GAMES.slice(0, 4).map(g => <GameCard key={g.id} game={g} lang={lang} go={go} onAdd={onAdd} />)}
+  const games = DATA.GAMES || [];
+  const [filter, setFilter] = useStateP("all");
+  const cats = ["all", ...new Set(games.map((g) => g.chip))];
+  const list = filter === "all" ? games : games.filter((g) => g.chip === filter);
+  const live = games.filter((g) => g.status !== "updating").length;
+
+  useNxTabLight(tabsRef, lightRef, [filter, lang]);
+
+  return (
+    <div className="nx-home nx-store" ref={ref}>
+      <div className="nx-torch" ref={torchRef} aria-hidden="true" />
+
+      <section className="nx-store-head" aria-labelledby="nx-store-title">
+        <div className="nx-beams" data-nx-reveal aria-hidden="true">
+          <i className="nx-beam nx-beam--a" /><i className="nx-pool" />
+        </div>
+        <div className="nx-wrap">
+          <nav className="nx-crumbs" aria-label={fr ? "Fil d'Ariane" : "Breadcrumb"}>
+            <a href="#home" onClick={nxGo(go, "home")}>{t("home", lang)}</a>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">{navLabel("store", lang)}</span>
+          </nav>
+          <h1 id="nx-store-title" className="nx-store-title nx-mask" data-nx-reveal>
+            <span className="nx-line"><span>{fr ? "La boutique." : "The store."}</span></span>
+          </h1>
+          <div className="nx-store-meta nx-fade" data-nx-reveal style={{ "--d": 2 }}>
+            {games.length > 0 && (
+              <a className={"nx-status" + (live < games.length ? " is-warn" : "")} href="#status" onClick={nxGo(go, "status")}>
+                <span className="nx-dot" aria-hidden="true" />
+                <span>{fr ? `${live} cheats sur ${games.length} indétectés` : `${live} of ${games.length} cheats undetected`}</span>
+                <span className="nx-status-more">{fr ? "Voir le statut" : "View status"}</span>
+              </a>
+            )}
+            <p className="nx-store-support"><b>{t("support247", lang)}.</b> {t("supportBody", lang)}</p>
           </div>
         </div>
-      </div>
+      </section>
+
+      <section className="nx-store-list" aria-labelledby="nx-store-all">
+        <div className="nx-wrap">
+          <h2 id="nx-store-all" className="nx-sr">{t("allProducts", lang)}</h2>
+          <div className="nx-tabs" ref={tabsRef} role="group" aria-label={fr ? "Filtrer par genre" : "Filter by genre"}>
+            {cats.map((c) => (
+              <button key={c} type="button" aria-pressed={filter === c} onClick={() => setFilter(c)}>
+                {c === "all" ? t("all", lang) : c}
+                <span className="nx-tabs-n">{c === "all" ? games.length : games.filter((g) => g.chip === c).length}</span>
+              </button>
+            ))}
+            <span className="nx-tabs-light" ref={lightRef} aria-hidden="true" />
+          </div>
+          <ul className="nx-cards" key={filter}>
+            {list.map((g, i) => <NxStoreCard key={g.id} game={g} lang={lang} go={go} i={i} />)}
+          </ul>
+        </div>
+      </section>
+
+      <section className="nx-store-pop" aria-labelledby="nx-store-pop-title">
+        <div className="nx-wrap">
+          <div className="nx-sec-head">
+            <h2 id="nx-store-pop-title" className="nx-h2 nx-mask" data-nx-reveal>
+              <span className="nx-line"><span>{t("popular", lang)}</span></span>
+            </h2>
+          </div>
+          <ul className="nx-glist">
+            {games.slice(0, 4).map((g) => <NxGameRow key={g.id} game={g} lang={lang} go={go} />)}
+          </ul>
+        </div>
+      </section>
     </div>
   );
 }
@@ -350,9 +695,16 @@ function Gallery({ images, name, logo, lang }) {
    PRODUCT / GAME DETAIL
    ================================================================= */
 function ProductPage({ id, lang, go, onAdd }) {
+  const fr = lang === "fr";
   const game = DATA.GAMES.find(g => g.id === id) || DATA.GAMES[0];
   const [sel, setSel] = useStateP("1m");
   const [qty, setQty] = useStateP(1);
+  const ref = React.useRef(null);
+  useNxReveal(ref);
+  useEffectP(() => {
+    document.body.dataset.page = "store";
+    return () => { delete document.body.dataset.page; };
+  }, []);
   const gameReviews = DATA.REVIEWS.filter(r => r.game === game.name).slice(0, 3);
   const galleryImgs = (game.images && game.images.length) ? game.images : (game.image ? [game.image] : []);
   const sections = (game.sections && game.sections.length)
@@ -373,114 +725,164 @@ function ProductPage({ id, lang, go, onAdd }) {
     const save = Math.round((1 - perDay / refPerDay) * 100);
     return { perDay, save };
   };
-  return (
-    <div className="page-enter">
-      <Crumbs trail={[{ label: t("home", lang), route: "home" }, { label: navLabel("store", lang), route: "store" }, game.name]} lang={lang} go={go} />
+  const st = NX_STATUS[game.status] || NX_STATUS.updated;
+  const maxQty = Math.min(selPlan?.stock ?? 50, 50);
+  const meta = [
+    game.tipsCount > 0 && game.tipsCount + " " + t("perGame", lang),
+    sections.length > 0 && sections.length + " " + (fr ? (sections.length > 1 ? "catégories" : "catégorie") : (sections.length > 1 ? "categories" : "category")),
+    game.members > 0 && game.members + " " + (fr ? (game.members > 1 ? "clients" : "client") : (game.members > 1 ? "customers" : "customer")),
+  ].filter(Boolean);
+  const addLabel = unavailable ? (fr ? "Stock indisponible pour cette quantité" : "Insufficient stock") : (fr ? "Ajouter au panier" : "Add to cart");
 
-      <div className="wrap section" style={{ paddingTop: 40 }}>
-        {/* haut : galerie (gauche) + choix de la licence (droite) */}
-        <div className="prod-top">
-          <Gallery images={galleryImgs} name={game.name} logo={game.logo} lang={lang} />
-          <div className="prod-buy">
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10, flexWrap: "wrap" }}>
-              <h1 style={{ fontSize: 32 }}>{game.name}</h1>
-              <StatusBadge status={game.status} lang={lang} />
+  return (
+    <div className="nx-home nx-store nx-prod" ref={ref}>
+      <section className="nx-store-head nx-prod-head" aria-labelledby="nx-prod-title">
+        <div className="nx-beams" data-nx-reveal aria-hidden="true">
+          <i className="nx-beam nx-beam--a" /><i className="nx-pool" />
+        </div>
+        <div className="nx-wrap">
+          <nav className="nx-crumbs" aria-label={fr ? "Fil d'Ariane" : "Breadcrumb"}>
+            <a href="#home" onClick={nxGo(go, "home")}>{t("home", lang)}</a>
+            <span aria-hidden="true">/</span>
+            <a href="#store" onClick={nxGo(go, "store")}>{navLabel("store", lang)}</a>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">{game.name}</span>
+          </nav>
+          <h1 id="nx-prod-title" className="nx-store-title nx-mask" data-nx-reveal>
+            <span className="nx-line"><span>{game.name}</span></span>
+          </h1>
+          <div className="nx-prod-meta nx-fade" data-nx-reveal style={{ "--d": 2 }}>
+            <a className={"nx-prod-state" + st.cls} href="#status" onClick={nxGo(go, "status")}><span className="nx-dot" aria-hidden="true" />{st[lang] || st.en}</a>
+            {game.tagline && <p className="nx-prod-tag">{game.tagline[lang] || game.tagline.en}</p>}
+            {meta.length > 0 && <p className="nx-prod-facts">{meta.join(" · ")}</p>}
+          </div>
+        </div>
+      </section>
+
+      <section className="nx-prod-main">
+        <div className="nx-wrap nx-prod-grid">
+          <div className="nx-prod-media nx-fade" data-nx-reveal style={{ "--d": 3 }}>
+            {galleryImgs.length
+              ? <Gallery images={galleryImgs} name={game.name} logo={game.logo} lang={lang} />
+              : <div className="nx-prod-poster"><MediaSlot src={NX_MEDIA.game(game.id)} alt={game.name} priority /></div>}
+          </div>
+
+          <div className="nx-buy nx-fade" data-nx-reveal style={{ "--d": 4 }}>
+            <h2 className="nx-buy-h" id="nx-plans-h">{t("choosePlan", lang)}</h2>
+            <div className="nx-plans" role="radiogroup" aria-labelledby="nx-plans-h">
+              {plans.map(p => {
+                const v = planValue(p);
+                const on = selPlan?.id === p.id;
+                return (
+                  <button key={p.id} type="button" role="radio" aria-checked={on} disabled={p.stock === 0}
+                    className={"nx-plan" + (on ? " is-on" : "")} onClick={() => setSel(p.id)}>
+                    <span className="nx-plan-radio" aria-hidden="true" />
+                    <span className="nx-plan-info">
+                      <span className="nx-plan-name">{p.name[lang]}{p.featured && <em>{fr ? "Recommandé" : "Recommended"}</em>}</span>
+                      <span className="nx-plan-per">{p.per[lang]}{v && planDays(p) > 1 ? " · " + v.perDay.toFixed(2) + " " + currencyLabel + (fr ? " / jour" : " / day") : ""}</span>
+                      <span className={"nx-plan-stock" + (p.stock === 0 ? " is-out" : "")} aria-live="polite">{game.id === 'spoofer' && !inventory.ready ? (fr ? 'Vérification du stock…' : 'Checking stock…') : stockLabel(p.stock, lang)}</span>
+                    </span>
+                    <span className="nx-plan-right">
+                      {v && v.save >= 5 && <span className="nx-plan-save">−{v.save} %</span>}
+                      {!planDays(p) && /^life/i.test(p.id) && <span className="nx-plan-save">{fr ? "Payé une fois" : "Pay once"}</span>}
+                      <span className="nx-plan-price">{p.price.toFixed(2)} {currencyLabel}</span>
+                    </span>
+                  </button>
+                );
+              })}
             </div>
-            <p style={{ color: "var(--tx-dim)", fontSize: 15, marginBottom: 14 }}>{game.tagline[lang]}</p>
-            <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24, flexWrap: "wrap" }}>
-              {game.tipsCount > 0 && <span className="prod-stat"><Icon.bolt /><b><CountUp value={game.tipsCount} duration={900} /></b> {t("perGame", lang)}</span>}
-              {sections.length > 0 && <span className="prod-stat"><Icon.gear /><b>{sections.length}</b> {lang === "fr" ? (sections.length > 1 ? "catégories" : "catégorie") : (sections.length > 1 ? "categories" : "category")}</span>}
-              {game.members > 0 && <span className="prod-stat"><Icon.users /><b><CountUp value={game.members} duration={900} /></b> {lang === "fr" ? (game.members > 1 ? "clients" : "client") : (game.members > 1 ? "customers" : "customer")}</span>}
-            </div>
-            <h3 style={{ fontSize: 20, marginBottom: 14 }}>{t("choosePlan", lang)}</h3>
-            <div className="buybox">
-              {plans.map(p => (
-                <button key={p.id} type="button" disabled={p.stock === 0} className={"plan-row" + (selPlan?.id === p.id ? " on" : "")} onClick={() => setSel(p.id)}>
-                  <span className="pr-radio" />
-                  <span className="pr-info">
-                    <span className="pr-name">{p.name[lang]}{p.featured && <em className="pr-best">Best</em>}</span>
-                    <span className="pr-per">{p.per[lang]}{planValue(p) && planDays(p) > 1 ? " · " + planValue(p).perDay.toFixed(2) + currencyLabel + (lang === "fr" ? "/jour" : "/day") : ""}</span>
-                    <span style={{ display: 'block', marginTop: 4, fontSize: 12, color: p.stock === 0 ? '#f87171' : '#4ade80' }} aria-live="polite">{game.id === 'spoofer' && !inventory.ready ? (lang === 'fr' ? 'Vérification du stock…' : 'Checking stock…') : stockLabel(p.stock, lang)}</span>
-                  </span>
-                  {planValue(p) && planValue(p).save >= 5 && <span className="pr-save">−{planValue(p).save}%</span>}
-                  {!planDays(p) && /^life/i.test(p.id) && <span className="pr-save life">{lang === "fr" ? "Payé une fois" : "Pay once"}</span>}
-                  <span className="pr-price">{p.price.toFixed(2)}<span className="cur">{currencyLabel}</span></span>
-                </button>
-              ))}
-            </div>
+
             {selPlan?.perks[lang] && selPlan.perks[lang].length > 0 && (
-              <ul className="buybox-perks">
-                {selPlan.perks[lang].map((perk, i) => <li key={i}><Icon.check />{perk}</li>)}
+              <ul className="nx-perks">
+                {selPlan.perks[lang].map((perk, i) => <li key={i}><Icon.check aria-hidden="true" />{perk}</li>)}
               </ul>
             )}
-            <div className="qty-row">
-              <span className="qty-lab">{lang === "fr" ? "Quantité" : "Quantity"}</span>
-              <div className="qty-stepper">
-                <button type="button" onClick={() => setQty(q => Math.max(1, q - 1))}>−</button>
-                <input aria-label={lang === 'fr' ? 'Quantité' : 'Quantity'} type="number" min="1" max={Math.max(1, selPlan?.stock ?? 50)} value={qty} onChange={(e) => setQty(Math.max(1, Math.min(selPlan?.stock ?? 50, 50, parseInt(e.target.value) || 1)))} />
-                <button type="button" disabled={qty >= (selPlan?.stock ?? 50)} onClick={() => setQty(q => Math.min(selPlan?.stock ?? 50, 50, q + 1))}>+</button>
+
+            <div className="nx-buy-row">
+              <div className="nx-qty">
+                <span id="nx-qty-l">{fr ? "Quantité" : "Quantity"}</span>
+                <div className="nx-stepper">
+                  <button type="button" aria-label={fr ? "Une de moins" : "One less"} disabled={qty <= 1} onClick={() => setQty(q => Math.max(1, q - 1))}>−</button>
+                  <input aria-labelledby="nx-qty-l" type="number" min="1" max={Math.max(1, maxQty)} value={qty} onChange={(e) => setQty(Math.max(1, Math.min(selPlan?.stock ?? 50, 50, parseInt(e.target.value) || 1)))} />
+                  <button type="button" aria-label={fr ? "Une de plus" : "One more"} disabled={qty >= maxQty} onClick={() => setQty(q => Math.min(selPlan?.stock ?? 50, 50, q + 1))}>+</button>
+                </div>
               </div>
+              {selPlan && (
+                <div className="nx-total">
+                  <span>Total</span>
+                  <b>{(selPlan.price * qty).toFixed(2)} {currencyLabel}</b>
+                </div>
+              )}
             </div>
-            <Btn kind="primary" size="lg" block disabled={unavailable} icon={<Icon.cart />} onClick={() => !unavailable && onAdd(game, selPlan, qty)}>
-              {unavailable ? (lang === 'fr' ? 'Stock indisponible pour cette quantité' : 'Insufficient stock') : (lang === "fr" ? "Ajouter au panier" : "Add to cart")}
-            </Btn>
-            {inventory.error && game.id === 'spoofer' && <p role="alert">{lang === 'fr' ? 'Stock temporairement indisponible. Réessaie dans quelques instants.' : 'Stock temporarily unavailable. Please try again shortly.'}</p>}
-            <button className="link-cart" onClick={() => go("cart")}>{lang === "fr" ? "Voir le panier" : "View cart"} →</button>
-            <p className="bulk-hint">{lang === "fr" ? "Remise dès 2 licences : −5% · −10% (3+) · −15% (5+)" : "Bulk discount from 2: −5% · −10% (3+) · −15% (5+)"}</p>
-            <ul className="buy-trust">
-              <li><Icon.bolt />{lang === "fr" ? "Clé livrée instantanément (profil + email)" : "Instant key delivery (profile + email)"}</li>
-              <li><Icon.lock />{lang === "fr" ? "Paiement sécurisé : carte, Apple Pay, Google Pay, Klarna…" : "Secure checkout: card, Apple Pay, Google Pay, Klarna…"}</li>
-              <li><Icon.headset />{lang === "fr" ? "Support 24/7 pour l'installation" : "24/7 install support"} · <a onClick={() => go("faq")}>{lang === "fr" ? "Voir la FAQ" : "Read the FAQ"}</a></li>
+
+            <span className="nx-magnet nx-buy-cta">
+              <button type="button" className="nx-btn" disabled={unavailable} onClick={() => !unavailable && onAdd(game, selPlan, qty)}>{addLabel}</button>
+            </span>
+            {inventory.error && game.id === 'spoofer' && <p className="nx-buy-err" role="alert">{fr ? 'Stock temporairement indisponible. Réessaie dans quelques instants.' : 'Stock temporarily unavailable. Please try again shortly.'}</p>}
+            <div className="nx-buy-links">
+              <a className="nx-link" href="#cart" onClick={nxGo(go, "cart")}>{fr ? "Voir le panier" : "View cart"}</a>
+              <span>{fr ? "Remise dès 2 licences : −5 %, −10 % dès 3, −15 % dès 5" : "Bulk discount: −5% from 2, −10% from 3, −15% from 5"}</span>
+            </div>
+            <ul className="nx-trust">
+              <li><Icon.bolt aria-hidden="true" />{fr ? "Clé livrée instantanément (profil + email)" : "Instant key delivery (profile + email)"}</li>
+              <li><Icon.lock aria-hidden="true" />{fr ? "Paiement sécurisé : carte, Apple Pay, Google Pay, Klarna…" : "Secure checkout: card, Apple Pay, Google Pay, Klarna…"}</li>
+              <li><Icon.headset aria-hidden="true" /><span>{fr ? "Support 24/7 pour l'installation. " : "24/7 install support. "}<a className="nx-link" href="#faq" onClick={nxGo(go, "faq")}>{fr ? "Voir la FAQ" : "Read the FAQ"}</a></span></li>
             </ul>
           </div>
         </div>
+      </section>
 
-        {/* barre d'achat collante (mobile) — rendue dans <body> pour rester fixée à l'écran */}
-        {selPlan && ReactDOM.createPortal(<div className="sticky-buy">
-          <div className="sb-info">
-            <b>{game.name} · {selPlan.name[lang]}</b>
-            <span>{(selPlan.price * qty).toFixed(2)}{currencyLabel}{qty > 1 ? " (×" + qty + ")" : ""}</span>
-          </div>
-          <Btn kind="primary" disabled={unavailable} icon={<Icon.cart />} onClick={() => !unavailable && onAdd(game, selPlan, qty)}>{unavailable ? (lang === 'fr' ? 'Indisponible' : 'Unavailable') : (lang === "fr" ? "Ajouter" : "Add")}</Btn>
-        </div>, document.body)}
+      {/* barre d'achat collante (mobile) — rendue dans <body> pour rester fixée à l'écran */}
+      {selPlan && ReactDOM.createPortal(<div className="sticky-buy nx-sticky-buy">
+        <div className="sb-info">
+          <b>{game.name} · {selPlan.name[lang]}</b>
+          <span>{(selPlan.price * qty).toFixed(2)} {currencyLabel}{qty > 1 ? " (×" + qty + ")" : ""}</span>
+        </div>
+        <button type="button" className="nx-btn" disabled={unavailable} onClick={() => !unavailable && onAdd(game, selPlan, qty)}>{unavailable ? (fr ? 'Indisponible' : 'Unavailable') : (fr ? "Ajouter" : "Add")}</button>
+      </div>, document.body)}
 
-        {/* Product Information — catégories éditables dans un rectangle */}
-        <div className="panel prod-info reveal">
-          <h3 className="prod-info-h">{lang === "fr" ? "Informations produit" : "Product Information"}</h3>
-          <div className="prod-info-grid">
+      <section className="nx-prod-inc" aria-labelledby="nx-inc-title">
+        <div className="nx-wrap">
+          <h2 id="nx-inc-title" className="nx-h2 nx-mask" data-nx-reveal>
+            <span className="nx-line"><span>{fr ? "Ce qui est inclus." : "What's inside."}</span></span>
+          </h2>
+          <div className="nx-inc-grid">
             {sections.map((sec, si) => {
               const items = (sec.items && (sec.items[lang] || sec.items.fr || sec.items.en)) || [];
               const title = (sec.title && (sec.title[lang] || sec.title.fr || sec.title.en)) || t("whatsIncluded", lang);
               return (
-                <div key={si} className="prod-info-sec">
-                  <h4>{title}</h4>
-                  <ul>
-                    {items.map((it, i) => (
-                      <li key={i}>
-                        <span className="ck"><Icon.check style={{ width: 14, height: 14, color: "var(--acc)" }} /></span>
-                        {it}
-                      </li>
-                    ))}
-                  </ul>
+                <div key={si} className="nx-inc-sec">
+                  <h3>{title}</h3>
+                  <ul>{items.map((it, i) => <li key={i}>{it}</li>)}</ul>
                 </div>
               );
             })}
           </div>
+          <GameLicenseSection gameId={game.id} gameName={game.name} lang={lang} />
         </div>
+      </section>
 
-        {/* My License for this game */}
-        <GameLicenseSection gameId={game.id} gameName={game.name} lang={lang} />
-
-        {/* mini reviews */}
-        {gameReviews.length > 0 && (
-          <div style={{ marginTop: 44 }}>
-            <h3 style={{ fontSize: 22, marginBottom: 18 }}>{game.name} · {t("verifiedReviews", lang)}</h3>
-            <div className="grid-3">
-              {gameReviews.map((r, i) => <ReviewCard key={i} rev={r} lang={lang} />)}
+      {gameReviews.length > 0 && (
+        <section className="nx-revs" aria-labelledby="nx-prod-revs">
+          <div className="nx-wrap">
+            <div className="nx-sec-head">
+              <h2 id="nx-prod-revs" className="nx-h2 nx-mask" data-nx-reveal>
+                <span className="nx-line"><span>{t("verifiedReviews", lang)}</span></span>
+              </h2>
             </div>
+            <ul className="nx-rev-list">
+              {gameReviews.map((r, i) => (
+                <li key={i}>
+                  <blockquote>
+                    <p>{r[lang] || r.en}</p>
+                    <footer className="nx-rev-by">{r.name}{r.r ? ", " + r.r + "/5" : ""}</footer>
+                  </blockquote>
+                </li>
+              ))}
+            </ul>
           </div>
-        )}
-      </div>
+        </section>
+      )}
     </div>
   );
 }
@@ -586,45 +988,81 @@ function GameLicenseSection({ gameId, gameName, lang }) {
    STATUS
    ================================================================= */
 function StatusPage({ lang, go }) {
+  const fr = lang === "fr";
+  const ref = React.useRef(null);
+  const tabsRef = React.useRef(null);
+  const lightRef = React.useRef(null);
+  useNxReveal(ref);
+  useEffectP(() => {
+    document.body.dataset.page = "store";
+    return () => { delete document.body.dataset.page; };
+  }, []);
+  const games = DATA.GAMES || [];
   const [filter, setFilter] = useStateP("all");
-  const list = filter === "all" ? DATA.GAMES : DATA.GAMES.filter(g => g.id === filter);
-  const legend = [["updated","badge-ok",<span className="status-dot s-ok" key="a"/>],["updating","badge-warn",<Icon.gear key="b" style={{width:12,height:12}}/>],["isnew","badge-new",<Icon.bolt key="c" style={{width:11,height:11}}/>]];
+  const list = filter === "all" ? games : games.filter((g) => g.id === filter);
+  useNxTabLight(tabsRef, lightRef, [filter, lang]);
+  const count = (k) => games.filter((g) => (NX_STATUS[g.status] ? g.status : "updated") === k).length;
+  const live = games.filter((g) => g.status !== "updating").length;
   return (
-    <div className="page-enter">
-      <Crumbs trail={[{ label: t("home", lang), route: "home" }, navLabel("status", lang)]} lang={lang} go={go} />
-      <div className="wrap section" style={{ paddingTop: 40 }}>
-        <div className="panel" style={{ padding: "32px 32px" }}>
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
-            <div>
-              <h2 style={{ fontSize: 32 }}>{t("statusTitle", lang)}</h2>
-              <p style={{ color: "var(--tx-dim)", marginTop: 6 }}>{t("statusSub", lang)}</p>
-            </div>
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              {legend.map(([k, cls, ic]) => <span key={k} className={"badge " + cls}>{ic}{t(k, lang)}</span>)}
-            </div>
-          </div>
-
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", margin: "26px 0 8px", paddingBottom: 18, borderBottom: "1px solid var(--line)" }}>
-            <button className={"chip" + (filter === "all" ? " active" : "")} onClick={() => setFilter("all")}>{t("all", lang)}</button>
-            {DATA.GAMES.map(g => <button key={g.id} className={"chip" + (filter === g.id ? " active" : "")} onClick={() => setFilter(g.id)}>{g.name}</button>)}
-          </div>
-
-          {list.map(g => (
-            <div key={g.id}>
-              <div className="status-group-h">{g.name}</div>
-              <div className="status-row">
-                <div className="name">{g.name} <span style={{ fontFamily: "var(--f-mono)", fontSize: 12, fontWeight: 500, color: "var(--tx-mute)" }}>· {g.tipsCount} {t("perGame", lang)}</span></div>
-                <div className="since">
-                  <div className="lab">{t("upToDateSince", lang)}</div>
-                  <div className="val">{g.since[lang]}</div>
-                </div>
-                <StatusBadge status={g.status} lang={lang} />
-                <Btn kind="primary" size="sm" onClick={() => go("game/" + g.id)}>{t("purchaseNow", lang)}</Btn>
-              </div>
-            </div>
-          ))}
+    <div className="nx-home nx-store" ref={ref}>
+      <section className="nx-store-head" aria-labelledby="nx-status-title">
+        <div className="nx-beams" data-nx-reveal aria-hidden="true">
+          <i className="nx-beam nx-beam--a" /><i className="nx-pool" />
         </div>
-      </div>
+        <div className="nx-wrap">
+          <nav className="nx-crumbs" aria-label={fr ? "Fil d'Ariane" : "Breadcrumb"}>
+            <a href="#home" onClick={nxGo(go, "home")}>{t("home", lang)}</a>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">{navLabel("status", lang)}</span>
+          </nav>
+          <h1 id="nx-status-title" className="nx-store-title nx-mask" data-nx-reveal>
+            <span className="nx-line"><span>{fr ? "Statut." : "Status."}</span></span>
+          </h1>
+          <div className="nx-store-meta nx-fade" data-nx-reveal style={{ "--d": 2 }}>
+            <p className="nx-status-sum">
+              {fr ? <><b>{live} sur {games.length}</b> cheats utilisables en ce moment.</> : <><b>{live} of {games.length}</b> cheats usable right now.</>}
+            </p>
+            <ul className="nx-legend" aria-label={fr ? "Légende" : "Legend"}>
+              {["updated", "updating", "new"].map((k) => (
+                <li key={k} className={NX_STATUS[k].cls.trim()}><span className="nx-dot" aria-hidden="true" />{NX_STATUS[k][lang] || NX_STATUS[k].en}<b>{count(k)}</b></li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section className="nx-store-list" aria-label={t("statusTitle", lang)}>
+        <div className="nx-wrap">
+          <div className="nx-tabs" ref={tabsRef} role="group" aria-label={fr ? "Filtrer par jeu" : "Filter by game"}>
+            <button type="button" aria-pressed={filter === "all"} onClick={() => setFilter("all")}>{t("all", lang)}</button>
+            {games.map((g) => <button key={g.id} type="button" aria-pressed={filter === g.id} onClick={() => setFilter(g.id)}>{g.name}</button>)}
+            <span className="nx-tabs-light" ref={lightRef} aria-hidden="true" />
+          </div>
+          <ul className="nx-srows" key={filter}>
+            {list.map((g, i) => {
+              const st = NX_STATUS[g.status] || NX_STATUS.updated;
+              // « depuis » n'a de sens que pour un cheat indétecté ; « Release » = depuis la sortie
+              const raw = g.status === "updated" && g.since ? (g.since[lang] || g.since.en) : "";
+              const since = /^release$/i.test(raw) ? (fr ? "la sortie" : "launch") : raw;
+              return (
+                <li key={g.id} className={"nx-srow" + st.cls} style={{ "--i": i }}>
+                  <div className="nx-srow-game">
+                    <span className="nx-srow-name">{g.name}</span>
+                    {g.tipsCount != null && <span className="nx-srow-mods">{g.tipsCount} {t("perGame", lang)}</span>}
+                  </div>
+                  <div className="nx-srow-state"><span className="nx-dot" aria-hidden="true" />{st[lang] || st.en}</div>
+                  <div className="nx-srow-since">
+                    {since && <><span>{fr ? "Sans détection depuis" : "Undetected since"}</span><b>{since}</b></>}
+                  </div>
+                  <a className="nx-link nx-srow-buy" href={"#game/" + g.id} onClick={nxGo(go, "game/" + g.id)}>
+                    {fr ? "Voir les licences" : "View licenses"}<span className="nx-sr"> {g.name}</span>
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </section>
     </div>
   );
 }
@@ -735,7 +1173,7 @@ function AuthPage({ lang, go, route }) {
         <div className="wrap section" style={{ display: "grid", placeItems: "center", paddingTop: 60 }}>
           <div className="panel" style={{ width: "100%", maxWidth: 440, padding: "40px 38px", textAlign: "center" }}>
             <div className="logo" style={{ justifyContent: "center", marginBottom: 14 }}>
-              <span className="mark">404</span><span>404<span style={{ color: "var(--acc)" }}>·</span>GG</span>
+              <span className="nx-auth-mark">404</span>
             </div>
             <h2 style={{ fontSize: 24, marginBottom: 6 }}>{lang === "fr" ? "Connecté" : "Signed in"}</h2>
             <p style={{ color: "var(--tx-dim)", marginBottom: 24 }}>{me.displayName || me.username} · {me.email}</p>
@@ -795,7 +1233,7 @@ function AuthPage({ lang, go, route }) {
       <div className="wrap section" style={{ display: "grid", placeItems: "center", paddingTop: 60 }}>
         <div className="panel" style={{ width: "100%", maxWidth: 440, padding: "40px 38px" }}>
           <div className="logo" style={{ justifyContent: "center", marginBottom: 8 }}>
-            <span className="mark">404</span><span>404<span style={{ color: "var(--acc)" }}>·</span>GG</span>
+            <span className="nx-auth-mark">404</span>
           </div>
           <h2 style={{ fontSize: 26, textAlign: "center", marginBottom: 26 }}>{isUp ? t("signUpTitle", lang) : t("signInTitle", lang)}</h2>
           {forumReturn && (
@@ -1003,7 +1441,7 @@ function CartPage({ lang, go, flash }) {
     <div className="page-enter">
       <Crumbs trail={[{ label: t("home", lang), route: "home" }, lang === "fr" ? "Panier" : "Cart"]} lang={lang} go={go} />
       <div className="wrap section" style={{ paddingTop: 40, maxWidth: 820 }}>
-        <h1 style={{ fontSize: 30, marginBottom: 22 }}>{lang === "fr" ? "Mon panier" : "My cart"}</h1>
+        <h1 style={{ fontSize: "clamp(48px, 6vw, 84px)", marginBottom: 28 }}>{lang === "fr" ? "Mon panier" : "My cart"}</h1>
         {items.length === 0 ? (
           <div className="panel" style={{ padding: "44px 30px", textAlign: "center" }}>
             <p style={{ color: "var(--tx-dim)", marginBottom: 18 }}>{lang === "fr" ? "Ton panier est vide." : "Your cart is empty."}</p>
@@ -1103,7 +1541,7 @@ function FaqPage({ lang, go }) {
       <Crumbs trail={[{ label: t("home", lang), route: "home" }, "FAQ"]} lang={lang} go={go} />
       <div className="wrap section" style={{ paddingTop: 40, maxWidth: 860 }}>
         <div className="eyebrow" style={{ marginBottom: 10 }}>{lang === "fr" ? "Questions fréquentes" : "Frequently asked questions"}</div>
-        <h1 className="h-accent" style={{ fontSize: "clamp(30px, 4vw, 44px)", marginBottom: 30 }}>{lang === "fr" ? "Tout ce qu'il faut savoir avant d'acheter" : "Everything to know before buying"}</h1>
+        <h1 style={{ fontSize: "clamp(44px, 6vw, 84px)", marginBottom: 36, maxWidth: "16ch" }}>{lang === "fr" ? "Tout ce qu'il faut savoir avant d'acheter" : "Everything to know before buying"}</h1>
         <div className="faq">
           {FAQ.map((f, i) => (
             <div key={i} className={"faq-item" + (open === i ? " on" : "")}>
@@ -1131,4 +1569,4 @@ function FaqPage({ lang, go }) {
   );
 }
 
-Object.assign(window, { FaqPage, HomePage, ShopPage, ProductPage, StatusPage, ReviewsPage, AuthPage, SuccessPage, VerifyPage, CartPage, CTA, Hero, HeroTitle });
+Object.assign(window, { FaqPage, HomePage, ShopPage, ProductPage, StatusPage, ReviewsPage, AuthPage, SuccessPage, VerifyPage, CartPage });
