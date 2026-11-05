@@ -12,11 +12,18 @@ function openShopDiscord() {
 /* =================================================================
    HOME — direction « Noir couture » (classes nx-*)
    ================================================================= */
-/* emplacements des visuels fournis par le propriétaire (un fichier absent affiche un état vide) */
+/* emplacements des visuels fournis par le propriétaire.
+ * Les getters lisent window.DATA.SETTINGS (alimenté par le backend GET /shop/settings)
+ * et retombent sur les chemins locaux si rien n'est configuré côté dashboard. */
+function nxSettings() { return (window.DATA && window.DATA.SETTINGS) || {}; }
 const NX_MEDIA = {
-  heroPoster: "assets/hero/poster.jpg",
-  feed: "assets/hero/feed.mp4",
-  demo: { aimbot: "assets/demo/aimbot.mp4", esp: "assets/demo/esp.mp4", radar: "assets/demo/radar.mp4" },
+  get heroPoster() { return nxSettings().heroImage || "assets/hero/poster.jpg"; },
+  get feed()       { return nxSettings().heroVideo || "assets/hero/feed.mp4"; },
+  demo: {
+    get aimbot() { return nxSettings().demoAimbot || "assets/demo/aimbot.mp4"; },
+    get esp()    { return nxSettings().demoEsp    || "assets/demo/esp.mp4"; },
+    get radar()  { return nxSettings().demoRadar  || "assets/demo/radar.mp4"; },
+  },
   game: (id) => "assets/games/" + id + ".jpg",
 };
 

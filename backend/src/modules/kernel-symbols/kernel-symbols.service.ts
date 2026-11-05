@@ -20,7 +20,15 @@ const WANTED_SYMBOLS = [
   'MmSetPageProtection',
   'NtSetEaFile',
   'ExAllocatePool2',
+  'PiDDBLock',
+  'PiDDBCacheTable',
+  'MmUnloadedDrivers',
+  'EprocessVadRoot=udt:_EPROCESS.VadRoot',
 ];
+
+// Bump when WANTED_SYMBOLS changes so older cached rows get re-extracted
+// without touching their `validated` flag.
+const REQUIRED_SYMBOL_VERSION = 3;
 
 const VALID_PDB_NAMES = new Set(['ntkrnlmp.pdb', 'ntoskrnl.pdb']);
 const MAX_ATTEMPTS = 3;
@@ -53,7 +61,7 @@ export class KernelSymbolsService {
       where: { pdbGuid_age: { pdbGuid: guid, age } },
     });
 
-    if (cached) {
+    if (cached && (cached as any).symbolVersion >= REQUIRED_SYMBOL_VERSION) {
       this.prisma.kernelSymbolCache.update({
         where: { id: cached.id },
         data: { hitCount: { increment: 1 }, lastHit: new Date() },
@@ -66,6 +74,10 @@ export class KernelSymbolsService {
         symbols: cached.symbols,
       };
     }
+
+    // Cached but outdated symbol set — fall through to re-extraction.
+    // The upsert in processExtraction() will overwrite `symbols` and bump
+    // `symbolVersion` while preserving `validated`, `hitCount`, etc.
 
     // 2. Check extraction status
     const extraction = await this.prisma.kernelSymbolExtraction.findUnique({
@@ -150,8 +162,8 @@ export class KernelSymbolsService {
       // 3. Store in cache
       await this.prisma.kernelSymbolCache.upsert({
         where: { pdbGuid_age: { pdbGuid: guid, age } },
-        create: { pdbGuid: guid, age, pdbName, build, symbols },
-        update: { symbols, build, extractedAt: new Date() },
+        create: { pdbGuid: guid, age, pdbName, build, symbols, symbolVersion: REQUIRED_SYMBOL_VERSION } as any,
+        update: { symbols, build, extractedAt: new Date(), symbolVersion: REQUIRED_SYMBOL_VERSION } as any,
       });
 
       await this.prisma.kernelSymbolExtraction.update({
@@ -228,13 +240,36 @@ export class KernelSymbolsService {
   // ── Admin endpoints ──
 
   async overview() {
-    const [totalCachedBuilds, totalLookupsArr, activeExtractions, unvalidatedCount, unvalidatedWithHits, totalBsodReports] = await Promise.all([
+    const [totalCachedBuilds, totalLookupsArr, activeExtractions, unvalidatedCount, unvalidatedWithHits, totalBsodReports, outdatedCount, byWindowsVersion] = await Promise.all([
       this.prisma.kernelSymbolCache.count(),
       this.prisma.kernelSymbolCache.aggregate({ _sum: { hitCount: true } }),
       this.prisma.kernelSymbolExtraction.count({ where: { status: { in: ['queued', 'running'] } } }),
       this.prisma.kernelSymbolCache.count({ where: { validated: false } }),
       this.prisma.kernelSymbolCache.count({ where: { validated: false, hitCount: { gt: 0 } } }),
       this.prisma.kernelSymbolCache.aggregate({ _sum: { bsodReports: true } }),
+      this.prisma.kernelSymbolCache.count({ where: { symbolVersion: { lt: REQUIRED_SYMBOL_VERSION } } as any }),
+      this.prisma.$queryRawUnsafe<any[]>(`
+        SELECT
+          CASE
+            WHEN build LIKE '10.0.26100.%' THEN 'Windows 11 24H2'
+            WHEN build LIKE '10.0.22631.%' THEN 'Windows 11 23H2'
+            WHEN build LIKE '10.0.22621.%' THEN 'Windows 11 22H2'
+            WHEN build LIKE '10.0.22000.%' THEN 'Windows 11 21H2'
+            WHEN build LIKE '10.0.19045.%' THEN 'Windows 10 22H2'
+            WHEN build LIKE '10.0.19044.%' THEN 'Windows 10 21H2'
+            WHEN build LIKE '10.0.19043.%' THEN 'Windows 10 21H1'
+            WHEN build LIKE '10.0.19042.%' THEN 'Windows 10 20H2'
+            WHEN build LIKE '10.0.19041.%' THEN 'Windows 10 2004'
+            ELSE 'Other'
+          END AS "version",
+          COUNT(*)::int AS "total",
+          COUNT(*) FILTER (WHERE validated = true)::int AS "validated",
+          COUNT(*) FILTER (WHERE bsod_reports > 0)::int AS "bsod",
+          SUM(hit_count)::int AS "hits"
+        FROM kernel_symbol_cache
+        GROUP BY "version"
+        ORDER BY "version" DESC
+      `),
     ]);
     return {
       totalCachedBuilds,
@@ -243,7 +278,34 @@ export class KernelSymbolsService {
       unvalidatedCount,
       unvalidatedWithHits,
       totalBsodReports: totalBsodReports._sum.bsodReports || 0,
+      outdatedCount,
+      requiredSymbolVersion: REQUIRED_SYMBOL_VERSION,
+      wantedSymbolsCount: WANTED_SYMBOLS.length,
+      wantedSymbols: WANTED_SYMBOLS,
+      byWindowsVersion: byWindowsVersion.map(r => ({
+        version: r.version,
+        total: Number(r.total),
+        validated: Number(r.validated),
+        bsod: Number(r.bsod),
+        hits: Number(r.hits || 0),
+      })),
     };
+  }
+
+  async reextractOutdated() {
+    const outdated = await this.prisma.kernelSymbolCache.findMany({
+      where: { symbolVersion: { lt: REQUIRED_SYMBOL_VERSION } } as any,
+      select: { id: true, pdbGuid: true, age: true, pdbName: true, build: true },
+    });
+    for (const row of outdated) {
+      await this.prisma.kernelSymbolExtraction.upsert({
+        where: { pdbGuid_age: { pdbGuid: row.pdbGuid, age: row.age } },
+        create: { pdbGuid: row.pdbGuid, age: row.age, pdbName: row.pdbName, status: 'queued' },
+        update: { status: 'queued', error: null, attemptCount: 0 },
+      });
+      this.enqueueExtraction(row.pdbGuid, row.age, row.pdbName, row.build);
+    }
+    return { ok: true, queued: outdated.length };
   }
 
   async listCache(opts: { build?: string; search?: string; limit?: number; offset?: number; sortBy?: string; order?: string; filter?: string }) {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  ChevronLeft, Ban, CheckCircle, Cpu, Calendar, Trash2,
+  ChevronLeft, Ban, CheckCircle, Cpu, Calendar, Trash2, Skull, ShieldCheck,
 } from 'lucide-react';
 import { api } from '../lib/api';
 import Loading from '../components/Loading';
@@ -29,6 +29,11 @@ export default function LicenseDetailPage({ id, navigate }) {
       else if (action === 'unban')      await api.unbanLicense(id);
       else if (action === 'resetHwid')  await api.resetHwid(id);
       else if (action === 'extend')     await api.extendLicense(id, extendDays);
+      else if (action === 'kill') {
+        if (!confirm('Armer le KILL ? La prochaine activation renverra "KILL:" au loader (session terminée).')) return;
+        await api.killLicense(id);
+      }
+      else if (action === 'unkill')     await api.unkillLicense(id);
       else if (action === 'delete') {
         if (!confirm('Supprimer définitivement cette licence ?')) return;
         await api.deleteLicense(id);
@@ -47,9 +52,15 @@ export default function LicenseDetailPage({ id, navigate }) {
       <button onClick={() => navigate('/licenses')} className="text-gray-400 hover:text-white text-sm mb-4 flex items-center gap-1">
         <ChevronLeft className="w-4 h-4" /> Retour
       </button>
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-6 flex-wrap">
         <h1 className="text-2xl font-bold font-mono">{lic.licenseKey}</h1>
         <StatusBadge status={lic.status} />
+        {lic.killPending && (
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold border bg-red-500/10 border-red-500/40 text-red-400">
+            <Skull className="w-3.5 h-3.5" /> KILL ARMED
+            {lic.killedAt && <span className="text-red-400/70 font-normal ml-1">· fired {formatDate(lic.killedAt)}</span>}
+          </span>
+        )}
       </div>
       <div className="grid lg:grid-cols-3 gap-4 mb-6">
         <InfoCard label="Plan" value={formatPlan(lic.plan)} />
@@ -95,6 +106,17 @@ export default function LicenseDetailPage({ id, navigate }) {
             className="bg-gray-700 hover:bg-red-700 text-white py-2 rounded-lg text-sm flex items-center justify-center gap-2">
             <Trash2 className="w-4 h-4" /> {actionLoading === 'delete' ? '...' : 'Supprimer'}
           </button>
+          {lic.killPending ? (
+            <button onClick={() => doAction('unkill')} disabled={!!actionLoading}
+              className="bg-green-700 hover:bg-green-600 text-white py-2 rounded-lg text-sm flex items-center justify-center gap-2">
+              <ShieldCheck className="w-4 h-4" /> {actionLoading === 'unkill' ? '...' : 'Désarmer KILL'}
+            </button>
+          ) : (
+            <button onClick={() => doAction('kill')} disabled={!!actionLoading}
+              className="bg-red-700 hover:bg-red-600 text-white py-2 rounded-lg text-sm flex items-center justify-center gap-2">
+              <Skull className="w-4 h-4" /> {actionLoading === 'kill' ? '...' : 'KILL'}
+            </button>
+          )}
         </div>
       </div>
 

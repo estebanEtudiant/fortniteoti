@@ -70,6 +70,7 @@ const STATIC_PRODUCTS = [
   { key: 'MARVEL_RIVALS_CLIENT', label: 'Marvel Rivals Client', emoji: '🦸', sub: 'Cheat loader Marvel Rivals' },
   { key: 'NG_RECUBE_CLIENT', label: 'NG Recube Client', emoji: '🧊', sub: 'NG Recube cheat loader (driver/reader/byovd)' },
   { key: 'RUST_CLIENT', label: 'Rust Client', emoji: '🦀', sub: 'Cheat loader Rust (Facepunch)' },
+  { key: '404SPOOFER_V2', label: '404 Spoofer V2', emoji: '🛡️', sub: 'Driver spoofer (disk/smbios/uuid)' },
 ];
 
 export default function GeneratePage() {

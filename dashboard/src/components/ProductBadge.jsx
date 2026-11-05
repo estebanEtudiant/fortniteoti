@@ -22,6 +22,7 @@ const FALLBACKS = {
   MARVEL_RIVALS_CLIENT: { label: 'MR Client', bg: 'bg-pink-500/20', text: 'text-pink-400' },
   NG_RECUBE_CLIENT:     { label: 'NG Recube', bg: 'bg-cyan-500/20', text: 'text-cyan-400' },
   RUST_CLIENT:          { label: 'Rust',      bg: 'bg-yellow-700/20', text: 'text-yellow-500' },
+  '404SPOOFER_V2':      { label: '404 Spoof', bg: 'bg-emerald-500/20', text: 'text-emerald-400' },
 };
 
 function hexToClasses(hex) {

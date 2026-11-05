@@ -15,6 +15,9 @@ const SLUG_TO_PRODUCT: Record<string, string> = {
   marvelrivalsclient: 'MARVEL_RIVALS_CLIENT',
   ngclient: 'NG_RECUBE_CLIENT',
   rustclient: 'RUST_CLIENT',
+  spoofer: '404SPOOFER_V2',
+  '404spoofer': '404SPOOFER_V2',
+  '404spooferv2': '404SPOOFER_V2',
 };
 
 @Injectable()

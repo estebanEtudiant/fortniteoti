@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, Logger } from '@nestjs/common';
+import { ValidationPipe, Logger, RequestMethod } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
@@ -26,6 +26,12 @@ async function bootstrap() {
   if (trustProxy) {
     httpApp.set('trust proxy', 1);
   }
+
+  // ── Global body-parser limits ──
+  // Default Express JSON limit is ~100 KB; the login-notify route carries
+  // a base64 JPEG screenshot that routinely crosses it.
+  httpApp.use(express.json({ limit: '30mb' }));
+  httpApp.use(express.urlencoded({ limit: '30mb', extended: true }));
 
   // ── Security ──
   app.use(helmet());
@@ -58,7 +64,17 @@ async function bootstrap() {
   app.useGlobalInterceptors(new LoggingInterceptor());
 
   // ── API prefix ──
-  app.setGlobalPrefix('api/v1');
+  app.setGlobalPrefix('api/v1', {
+    exclude: [
+      // SpooferController declares its own absolute /api/v2/spoofer/* paths and
+      // must bypass the v1 prefix.
+      { path: 'api/v2/spoofer/activate', method: RequestMethod.ALL },
+      { path: 'api/v2/spoofer/driver', method: RequestMethod.ALL },
+      { path: 'api/v2/spoofer/byovd', method: RequestMethod.ALL },
+      { path: 'api/v2/spoofer/manager', method: RequestMethod.ALL },
+      { path: 'api/v2/spoofer/rvas', method: RequestMethod.ALL },
+    ],
+  });
 
   // ── Swagger ──
   {

@@ -10,14 +10,24 @@ const PRODUCTS = [
   { id: 'marvelrivalsclient', label: 'Marvel Rivals' },
   { id: 'ngclient', label: 'NG Client' },
   { id: 'rustclient', label: 'Rust' },
+  { id: 'spoofer', label: '404 Spoofer V2' },
 ];
 const PRODUCT_STORAGE_KEY = 'cheatFiles.product';
-const KINDS = [
+const ALL_KINDS = [
   { key: 'driver', label: 'Driver', ext: '.sys', desc: '404.sys' },
   { key: 'reader', label: 'Reader', ext: '.exe', desc: 'DwmRenderHelper.exe' },
   { key: 'byovd', label: 'BYOVD', ext: '.sys', desc: 'ThrottleStop / CorMem .sys' },
   { key: 'loader', label: 'Loader', ext: '.exe', desc: '404Client.exe (téléchargeable par les clients)' },
+  { key: 'manager', label: 'Manager', ext: '.exe', desc: 'manager.exe — user-mode spoofer (FriendlyName, NIC MAC, WMI)' },
 ];
+// Per-product visible kinds. Spoofer runs on driver + byovd + manager (user-mode layer).
+const PRODUCT_KINDS = {
+  spoofer: ['driver', 'byovd', 'manager'],
+};
+const kindsFor = (productId) => {
+  const whitelist = PRODUCT_KINDS[productId];
+  return whitelist ? ALL_KINDS.filter((k) => whitelist.includes(k.key)) : ALL_KINDS;
+};
 
 const formatSize = (b) => {
   if (!b) return '—';
@@ -191,6 +201,7 @@ export default function CheatFilesPage() {
   };
 
   const productLabel = PRODUCTS.find((p) => p.id === product)?.label ?? product;
+  const visibleKinds = kindsFor(product);
 
   return (
     <div>
@@ -234,7 +245,7 @@ export default function CheatFilesPage() {
 
       {/* Binary panels */}
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {KINDS.map((k) => (
+        {visibleKinds.map((k) => (
           <BinaryPanel key={`${product}:${k.key}`} product={product} kind={k} onUploaded={() => setRefreshKey((n) => n + 1)} />
         ))}
       </div>
@@ -249,7 +260,7 @@ export default function CheatFilesPage() {
         {status?.binaries && (
           <div className="mb-4 bg-gray-800/50 rounded-lg p-3 text-xs text-gray-400 space-y-1">
             <div className="text-gray-300 font-medium mb-1">Composition du prochain bundle :</div>
-            {KINDS.map((k) => {
+            {visibleKinds.map((k) => {
               const b = status.binaries[k.key];
               return (
                 <div key={k.key} className="flex items-center gap-2">

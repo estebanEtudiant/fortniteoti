@@ -56,6 +56,31 @@ export class SoftwareAdminController {
     }
   }
 
+  @Post('spoofer/rvas/:build')
+  @Throttle({ default: { ttl: 60000, limit: 20 } })
+  @ApiOperation({ summary: 'Upload un snapshot RVAS pré-calculé pour un build Windows donné (sync_rvas.py)' })
+  @ApiConsumes('multipart/form-data')
+  @ApiParam({ name: 'build', description: 'Windows build id, ex. 10.0.26200' })
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: tempStorage,
+      limits: { fileSize: 2 * 1024 * 1024 },
+    }),
+  )
+  async uploadRvas(
+    @Param('build') build: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: Request,
+  ) {
+    if (!/^[0-9]+(?:\.[0-9]+){1,3}$/.test(build)) {
+      throw new BadRequestException(`Build invalide: ${build}. Attendu: major.minor[.build[.rev]]`);
+    }
+    if (!file) throw new BadRequestException('Aucun fichier fourni');
+    if (file.size < 32) throw new BadRequestException('Snapshot RVAS trop petit (< 32 bytes)');
+    const admin = (req as any).admin;
+    return this.service.uploadRvasSnapshot(build, file, admin?.adminId);
+  }
+
   @Post(':productId/binary/:kind')
   @Throttle({ default: { ttl: 60000, limit: 20 } })
   @ApiOperation({ summary: 'Upload un binaire (driver/reader/byovd)' })

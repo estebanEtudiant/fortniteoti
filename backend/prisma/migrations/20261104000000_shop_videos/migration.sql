@@ -1,0 +1,5 @@
+ALTER TABLE "shop_settings"
+  ADD COLUMN "hero_video"  VARCHAR(500) NOT NULL DEFAULT '',
+  ADD COLUMN "demo_aimbot" VARCHAR(500) NOT NULL DEFAULT '',
+  ADD COLUMN "demo_esp"    VARCHAR(500) NOT NULL DEFAULT '',
+  ADD COLUMN "demo_radar"  VARCHAR(500) NOT NULL DEFAULT '';

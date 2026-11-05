@@ -20,5 +20,6 @@ import { KillSwitchModule } from '../kill-switch/kill.module';
   ],
   controllers: [SoftwareController],
   providers: [SoftwareService, AdminAuthGuard, LicenseAuthGuard, CustomerAuthGuard],
+  exports: [SoftwareService],
 })
 export class SoftwareModule {}

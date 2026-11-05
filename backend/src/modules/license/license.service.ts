@@ -246,6 +246,33 @@ export class LicenseService {
     return license;
   }
 
+  // ── Per-license kill switch ──
+  async setKillPending(id: string, pending: boolean): Promise<any> {
+    const existing = await this.prisma.license.findUnique({ where: { id } });
+    if (!existing) throw new NotFoundException('License not found');
+
+    const license = await this.prisma.license.update({
+      where: { id },
+      data: pending
+        ? ({ killPending: true, killedAt: null } as any)
+        : ({ killPending: false } as any),
+    });
+
+    if (pending) {
+      await this.prisma.refreshToken.updateMany({
+        where: { licenseId: id },
+        data: { revoked: true },
+      });
+    }
+
+    await this.prisma.activationLog.create({
+      data: { licenseId: id, action: pending ? 'kill:pending' : 'kill:cleared' },
+    });
+
+    this.logger.warn(`License ${license.licenseKey} kill ${pending ? 'armed' : 'cleared'}`);
+    return license;
+  }
+
   // ── Extend license ──
   async extend(id: string, days: number): Promise<any> {
     const license = await this.prisma.license.findUnique({ where: { id } });

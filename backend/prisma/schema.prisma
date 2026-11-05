@@ -80,6 +80,11 @@ model License {
   // User info
   email           String?       @db.VarChar(255)
   discordId       String?       @map("discord_id") @db.VarChar(50)
+  discordUsername String?       @map("discord_username") @db.VarChar(100)
+
+  // Per-license kill switch (loader-side kill via KILL: prefix in auth response)
+  killPending     Boolean       @default(false) @map("kill_pending")
+  killedAt        DateTime?     @map("killed_at")
 
   // Stripe
   stripeSubId     String?       @map("stripe_sub_id") @db.VarChar(255)
@@ -305,9 +310,13 @@ model Game {
 }
 
 model ShopSetting {
-  id        Int      @id @default(1)
-  heroImage String   @default("") @map("hero_image") @db.VarChar(500)
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id         Int      @id @default(1)
+  heroImage  String   @default("") @map("hero_image")  @db.VarChar(500)
+  heroVideo  String   @default("") @map("hero_video")  @db.VarChar(500)
+  demoAimbot String   @default("") @map("demo_aimbot") @db.VarChar(500)
+  demoEsp    String   @default("") @map("demo_esp")    @db.VarChar(500)
+  demoRadar  String   @default("") @map("demo_radar")  @db.VarChar(500)
+  updatedAt  DateTime @updatedAt   @map("updated_at")
 
   @@map("shop_settings")
 }
@@ -338,7 +347,7 @@ model SoftwareVersion {
   bundleSha256 String   @map("bundle_sha256") @db.VarChar(64)
   bundleSize   Int      @map("bundle_size")
   driverId     String   @map("driver_id")
-  readerId     String   @map("reader_id")
+  readerId     String?  @map("reader_id")
   byovdId      String   @map("byovd_id")
   isActive     Boolean  @default(false) @map("is_active")
   createdAt    DateTime @default(now()) @map("created_at")
@@ -771,6 +780,7 @@ model KernelSymbolCache {
   notSupportedReason String    @default("Cette version de Windows n'a pas encore ete validee.") @map("not_supported_reason")
   bsodReports        Int       @default(0) @map("bsod_reports")
   lastBsodAt         DateTime? @map("last_bsod_at")
+  symbolVersion      Int       @default(1) @map("symbol_version")
 
   @@unique([pdbGuid, age])
   @@index([build])

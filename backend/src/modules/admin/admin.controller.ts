@@ -340,7 +340,7 @@ export class AdminController {
   @UseGuards(AdminAuthGuard)
   @ApiBearerAuth()
   async createLicense(@Body() dto: CreateLicenseBody) {
-    const VALID_PRODUCTS = ['FTN_OPTIMIZER', 'NG_LOADER', 'NG_LAUNCHER', 'NG_RECUBE_CLIENT', 'MENORIA', 'LOADER', 'VELTHAR_LOADER', 'FORTNITE_CLIENT', 'MARVEL_RIVALS_CLIENT', 'RUST_CLIENT'];
+    const VALID_PRODUCTS = ['FTN_OPTIMIZER', 'NG_LOADER', 'NG_LAUNCHER', 'NG_RECUBE_CLIENT', 'MENORIA', 'LOADER', 'VELTHAR_LOADER', 'FORTNITE_CLIENT', 'MARVEL_RIVALS_CLIENT', 'RUST_CLIENT', '404SPOOFER_V2'];
     return this.licenseService.create({
       ...dto,
       product: (VALID_PRODUCTS.includes(dto.product!) ? dto.product : 'FTN_OPTIMIZER') as any,
@@ -351,7 +351,7 @@ export class AdminController {
   @UseGuards(AdminAuthGuard)
   @ApiBearerAuth()
   async generateBatch(@Body() dto: GenerateBatchBody) {
-    const VALID_PRODUCTS = ['FTN_OPTIMIZER', 'NG_LOADER', 'NG_LAUNCHER', 'NG_RECUBE_CLIENT', 'MENORIA', 'LOADER', 'VELTHAR_LOADER', 'FORTNITE_CLIENT', 'MARVEL_RIVALS_CLIENT', 'RUST_CLIENT'];
+    const VALID_PRODUCTS = ['FTN_OPTIMIZER', 'NG_LOADER', 'NG_LAUNCHER', 'NG_RECUBE_CLIENT', 'MENORIA', 'LOADER', 'VELTHAR_LOADER', 'FORTNITE_CLIENT', 'MARVEL_RIVALS_CLIENT', 'RUST_CLIENT', '404SPOOFER_V2'];
     const keys = await this.licenseService.generateBatch({
       ...dto,
       product: (VALID_PRODUCTS.includes(dto.product!) ? dto.product : 'FTN_OPTIMIZER') as any,
@@ -378,6 +378,22 @@ export class AdminController {
   @ApiBearerAuth()
   async resetHwid(@Param('id') id: string) {
     return this.licenseService.resetHwid(id);
+  }
+
+  @Post('licenses/:id/kill')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Per-license kill switch: next activate returns KILL: prefix' })
+  async killLicense(@Param('id') id: string) {
+    return this.licenseService.setKillPending(id, true);
+  }
+
+  @Post('licenses/:id/unkill')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Clear the per-license kill flag' })
+  async unkillLicense(@Param('id') id: string) {
+    return this.licenseService.setKillPending(id, false);
   }
 
   @Put('licenses/:id/extend')
@@ -727,6 +743,51 @@ export class AdminController {
     if (!file) throw new BadRequestException('Aucun fichier fourni');
     const folder = galleryFolder(type);
     return { url: `https://404tweaks.tech/uploads/gallery/${folder}/${file.filename}` };
+  }
+
+  @Post('shop/video-upload')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Upload a video for the shop (hero / demos)' })
+  @UseInterceptors(FileInterceptor('file', {
+    storage: diskStorage({
+      destination: (_req, _file, cb) => {
+        const dir = '/var/www/uploads/shop-videos';
+        if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+        cb(null, dir);
+      },
+      filename: (_req, file, cb) => {
+        const unique = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        cb(null, `shop-${unique}${extname(file.originalname).toLowerCase()}`);
+      },
+    }),
+    fileFilter: (_req, file, cb) => {
+      const allowed = ['.mp4', '.webm', '.mov', '.m4v'];
+      if (!allowed.includes(extname(file.originalname).toLowerCase())) {
+        return cb(new BadRequestException('Format non supporté (mp4, webm, mov, m4v)'), false);
+      }
+      cb(null, true);
+    },
+    limits: { fileSize: 100 * 1024 * 1024 }, // 100 MB
+  }))
+  async uploadShopVideo(@UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('Aucun fichier fourni');
+    // Served from api.404tweaks.tech (DNS-only, bypasses Cloudflare bot challenge)
+    return { url: `https://api.404tweaks.tech/uploads/shop-videos/${file.filename}` };
+  }
+
+  @Delete('shop/video/:filename')
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete a shop video' })
+  async deleteShopVideo(@Param('filename') filename: string) {
+    if (filename.includes('..') || filename.includes('/')) {
+      throw new BadRequestException('Nom de fichier invalide');
+    }
+    const filePath = `/var/www/uploads/shop-videos/${filename}`;
+    if (!existsSync(filePath)) throw new BadRequestException('Fichier introuvable');
+    unlinkSync(filePath);
+    return { success: true };
   }
 
   @Delete('gallery/:filename')

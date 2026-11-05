@@ -16,6 +16,7 @@ const PRODUCTS = [
   { key: 'MARVEL_RIVALS_CLIENT', label: 'Marvel Rivals Client' },
   { key: 'NG_RECUBE_CLIENT', label: 'NG Recube Client' },
   { key: 'RUST_CLIENT', label: 'Rust Client' },
+  { key: '404SPOOFER_V2', label: '404 Spoofer V2' },
   { key: 'NG_LOADER', label: 'NG Loader' },
   { key: 'MENORIA', label: 'Menoria' },
   { key: 'VELTHAR_LOADER', label: 'Velthar' },

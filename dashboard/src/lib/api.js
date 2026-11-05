@@ -104,6 +104,8 @@ class ApiClient {
   banLicense(id, reason) { return this.put(`/admin/licenses/${id}/ban`, { reason }); }
   unbanLicense(id) { return this.put(`/admin/licenses/${id}/unban`); }
   resetHwid(id) { return this.put(`/admin/licenses/${id}/reset-hwid`); }
+  killLicense(id)   { return this.post(`/admin/licenses/${id}/kill`); }
+  unkillLicense(id) { return this.post(`/admin/licenses/${id}/unkill`); }
   extendLicense(id, days) { return this.put(`/admin/licenses/${id}/extend`, { days }); }
   bulkExtendLicenses(data) { return this.post('/admin/licenses/bulk-extend', data); }
   deleteLicense(id) { return this.del(`/admin/licenses/${id}`); }
@@ -244,6 +246,37 @@ class ApiClient {
   }
   deleteGallery(type, filename) {
     return this.del(`/admin/gallery/${encodeURIComponent(filename)}?type=${type}`);
+  }
+
+  async uploadShopVideo(formData, onProgress) {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `${this.baseUrl}/admin/shop/video-upload`);
+      if (this.token) xhr.setRequestHeader('Authorization', `Bearer ${this.token}`);
+      if (onProgress) {
+        xhr.upload.addEventListener('progress', (e) => {
+          if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
+        });
+      }
+      xhr.onload = () => {
+        const text = xhr.responseText;
+        let data = null; try { data = text ? JSON.parse(text) : null; } catch {}
+        if (xhr.status === 401 && this.token) {
+          this.clearToken(); window.location.hash = '/';
+          return reject(new Error('Session expirée, veuillez vous reconnecter'));
+        }
+        if (xhr.status < 200 || xhr.status >= 300) {
+          const m = data?.message;
+          return reject(new Error(Array.isArray(m) ? m[0] : (m || `Erreur ${xhr.status}`)));
+        }
+        resolve(data);
+      };
+      xhr.onerror = () => reject(new Error('Erreur réseau'));
+      xhr.send(formData);
+    });
+  }
+  deleteShopVideo(filename) {
+    return this.del(`/admin/shop/video/${encodeURIComponent(filename)}`);
   }
 
   // Reviews (admin)
@@ -422,6 +455,7 @@ class ApiClient {
   symbolsPurgeFailedExtractions(mins) { return this.post(`/admin/symbols/extractions/purge-failed?olderThanMinutes=${mins || 60}`); }
   symbolsValidate(id, validatedBy, notes) { return this.post(`/admin/symbols/cache/${id}/validate`, { validatedBy, notes }); }
   symbolsUnvalidate(id, reason, wasBsod) { return this.post(`/admin/symbols/cache/${id}/unvalidate`, { reason, wasBsod }); }
+  symbolsReextractOutdated()          { return this.post('/admin/symbols/reextract-outdated'); }
 
   cheatPublish(productId, data)  { return this.post(`/admin/software/${productId}/publish`, data); }
   cheatVersions(productId)       { return this.get(`/admin/software/${productId}/versions`); }

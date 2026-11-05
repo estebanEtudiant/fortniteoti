@@ -14,7 +14,7 @@ import * as crypto from 'crypto';
 import { execFileSync } from 'child_process';
 import { SOFTWARE_UPLOAD_DIR } from './software.paths';
 
-export type ProductType = 'FTN_OPTIMIZER' | 'NG_LOADER' | 'NG_LAUNCHER' | 'MENORIA' | 'LOADER' | 'JRE' | 'VELTHAR_LOADER' | 'VELTHAR_LAUNCHER' | 'FORTNITE_CLIENT' | 'MARVEL_RIVALS_CLIENT' | 'NG_RECUBE_CLIENT' | 'RUST_CLIENT' | 'SHOP_SPOOFER';
+export type ProductType = 'FTN_OPTIMIZER' | 'NG_LOADER' | 'NG_LAUNCHER' | 'MENORIA' | 'LOADER' | 'JRE' | 'VELTHAR_LOADER' | 'VELTHAR_LAUNCHER' | 'FORTNITE_CLIENT' | 'MARVEL_RIVALS_CLIENT' | 'NG_RECUBE_CLIENT' | 'RUST_CLIENT' | 'SHOP_SPOOFER' | '404SPOOFER_V2';
 
 // Product slug used in URL params → maps to DB enum
 const PRODUCT_SLUGS: Record<string, ProductType> = {
@@ -37,11 +37,12 @@ const PRODUCT_SLUGS: Record<string, ProductType> = {
 
 // Products served through the software-admin bundle pipeline (binaries → XOR-obfuscated bundle).
 // Maps License.product string ↔ the productId used inside software-admin storage.
-export const BUNDLED_PRODUCTS: Record<Extract<ProductType, 'FORTNITE_CLIENT' | 'MARVEL_RIVALS_CLIENT' | 'NG_RECUBE_CLIENT' | 'RUST_CLIENT'>, string> = {
+export const BUNDLED_PRODUCTS: Record<Extract<ProductType, 'FORTNITE_CLIENT' | 'MARVEL_RIVALS_CLIENT' | 'NG_RECUBE_CLIENT' | 'RUST_CLIENT' | '404SPOOFER_V2'>, string> = {
   FORTNITE_CLIENT: 'fortniteclient',
   MARVEL_RIVALS_CLIENT: 'marvelrivalsclient',
   NG_RECUBE_CLIENT: 'ngclient',
   RUST_CLIENT: 'rustclient',
+  '404SPOOFER_V2': 'spoofer',
 };
 
 export function bundledProductId(product: ProductType): string | null {

@@ -162,6 +162,12 @@ export class KernelSymbolsAdminController {
     return this.svc.purgeFailedExtractions(olderThanMinutes ? parseInt(olderThanMinutes) : 60);
   }
 
+  @Post('reextract-outdated')
+  @HttpCode(HttpStatus.OK)
+  async reextractOutdated() {
+    return this.svc.reextractOutdated();
+  }
+
   @Post('cache/:id/validate')
   @HttpCode(HttpStatus.OK)
   async validate(@Param('id') id: string, @Body() dto: ValidateDto) {

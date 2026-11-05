@@ -372,58 +372,147 @@ function PlansManager() {
   );
 }
 
-// ════════════════════════════════ SETTINGS (HERO) ════════════════════════════════
+// ════════════════════════════════ SETTINGS (HERO + VIDÉOS) ════════════════════════════════
+function MediaPicker({ label, hint, value, onChange, kind, onUpload }) {
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [localErr, setLocalErr] = useState('');
+
+  const pick = async (e) => {
+    const file = e.target.files?.[0]; e.target.value = '';
+    if (!file) return;
+    setLocalErr(''); setUploading(true); setProgress(0);
+    try {
+      const url = await onUpload(file, setProgress);
+      onChange(url);
+    } catch (err) { setLocalErr(err.message || "Erreur lors de l'upload"); }
+    finally { setUploading(false); setProgress(0); }
+  };
+
+  const accept = kind === 'video' ? '.mp4,.webm,.mov,.m4v' : '.jpg,.jpeg,.png,.webp,.gif';
+  const previewBox = (
+    <div className="w-56 h-32 rounded-lg border border-gray-800 bg-gray-900 overflow-hidden flex items-center justify-center shrink-0">
+      {!value ? (
+        <span className="text-gray-600 text-xs">{kind === 'video' ? 'aucune vidéo' : 'aucune image'}</span>
+      ) : kind === 'video' ? (
+        <video src={value} className="w-full h-full object-cover" muted playsInline preload="metadata" />
+      ) : (
+        <img src={value} alt="" className="w-full h-full object-cover" />
+      )}
+    </div>
+  );
+
+  return (
+    <div className="space-y-2 border-t border-gray-800 pt-3 first:border-0 first:pt-0">
+      <div>
+        <div className="text-sm font-medium text-gray-200">{label}</div>
+        {hint && <div className="text-xs text-gray-500">{hint}</div>}
+      </div>
+      {localErr && <div className="text-red-400 text-xs">{localErr}</div>}
+      <div className="flex items-start gap-4">
+        {previewBox}
+        <div className="flex-1 space-y-2">
+          <label className="inline-flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-gray-200 text-sm px-3 py-2 rounded-lg cursor-pointer">
+            <Upload className="w-4 h-4" />
+            {uploading
+              ? (kind === 'video' ? `Envoi… ${progress}%` : 'Envoi…')
+              : (kind === 'video' ? 'Uploader une vidéo' : 'Uploader une image')}
+            <input type="file" accept={accept} className="hidden" onChange={pick} disabled={uploading} />
+          </label>
+          {uploading && (
+            <div className="h-1 bg-gray-800 rounded overflow-hidden">
+              <div className="h-full bg-cyan-500 transition-[width]" style={{ width: `${progress}%` }} />
+            </div>
+          )}
+          <input value={value} onChange={(e) => onChange(e.target.value)}
+            className="w-full text-xs"
+            placeholder={kind === 'video' ? "…ou colle une URL de vidéo (mp4/webm)" : "…ou colle une URL d'image"} />
+          {value && (
+            <button type="button" onClick={() => onChange('')} className="block text-xs text-gray-500 hover:text-red-400">
+              Retirer
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SettingsManager() {
   const [hero, setHero] = useState('');
+  const [heroVideo, setHeroVideo] = useState('');
+  const [demoAimbot, setDemoAimbot] = useState('');
+  const [demoEsp, setDemoEsp] = useState('');
+  const [demoRadar, setDemoRadar] = useState('');
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [msg, setMsg] = useState('');
   const [err, setErr] = useState('');
 
   useEffect(() => {
-    api.getShopSettings().then((s) => { setHero(s.heroImage || ''); setLoaded(true); }).catch((e) => setErr(e.message));
+    api.getShopSettings().then((s) => {
+      setHero(s.heroImage || '');
+      setHeroVideo(s.heroVideo || '');
+      setDemoAimbot(s.demoAimbot || '');
+      setDemoEsp(s.demoEsp || '');
+      setDemoRadar(s.demoRadar || '');
+      setLoaded(true);
+    }).catch((e) => setErr(e.message));
   }, []);
 
-  const upload = async (e) => {
-    const file = e.target.files?.[0]; e.target.value = '';
-    if (!file) return;
-    setErr(''); setMsg(''); setUploading(true);
-    try {
-      const fd = new FormData(); fd.append('file', file);
-      const { url } = await api.uploadGallery('shop', fd);
-      setHero(url);
-    } catch (e2) { setErr(e2.message || "Erreur lors de l'upload"); }
-    finally { setUploading(false); }
+  const uploadImage = async (file) => {
+    const fd = new FormData(); fd.append('file', file);
+    const { url } = await api.uploadGallery('shop', fd);
+    return url;
+  };
+  const uploadVideo = async (file, onProgress) => {
+    const fd = new FormData(); fd.append('file', file);
+    const { url } = await api.uploadShopVideo(fd, onProgress);
+    return url;
   };
 
   const save = async () => {
     setErr(''); setMsg(''); setSaving(true);
-    try { await api.updateShopSettings({ heroImage: hero }); setMsg('Enregistré ✓'); }
-    catch (e) { setErr(e.message); }
+    try {
+      await api.updateShopSettings({
+        heroImage: hero,
+        heroVideo,
+        demoAimbot,
+        demoEsp,
+        demoRadar,
+      });
+      setMsg('Enregistré ✓');
+    } catch (e) { setErr(e.message); }
     finally { setSaving(false); }
   };
 
   if (!loaded) return <div className="text-gray-500 text-sm">Chargement…</div>;
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {err && <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm rounded px-3 py-2">{err}</div>}
       {msg && <div className="bg-green-500/10 border border-green-500/30 text-green-400 text-sm rounded px-3 py-2">{msg}</div>}
-      <span className="block text-xs text-gray-400">Image du Hero (accueil) — remplace le quadrillage. Format paysage conseillé (~1600×900).</span>
-      <div className="flex items-start gap-4">
-        <div className="w-56 h-32 rounded-lg border border-gray-800 bg-gray-900 overflow-hidden flex items-center justify-center shrink-0">
-          {hero ? <img src={hero} alt="" className="w-full h-full object-cover" /> : <span className="text-gray-600 text-xs">aucune image</span>}
-        </div>
-        <div className="flex-1 space-y-2">
-          <label className="inline-flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-gray-200 text-sm px-3 py-2 rounded-lg cursor-pointer">
-            <Upload className="w-4 h-4" /> {uploading ? 'Envoi…' : 'Uploader une image'}
-            <input type="file" accept=".jpg,.jpeg,.png,.webp,.gif" className="hidden" onChange={upload} disabled={uploading} />
-          </label>
-          <input value={hero} onChange={(e) => setHero(e.target.value)} className="w-full text-xs" placeholder="…ou colle une URL d'image" />
-          {hero && <button type="button" onClick={() => setHero('')} className="block text-xs text-gray-500 hover:text-red-400">Retirer l'image</button>}
-        </div>
-      </div>
+
+      <MediaPicker kind="image" label="Image du Hero (accueil)"
+        hint="Remplace le quadrillage. Format paysage conseillé (~1600×900)."
+        value={hero} onChange={setHero} onUpload={uploadImage} />
+
+      <MediaPicker kind="video" label="Vidéo du Hero (accueil)"
+        hint="MP4/WebM, ≤ 100 Mo. Si renseignée, la vidéo peut remplacer l'image sur la page d'accueil."
+        value={heroVideo} onChange={setHeroVideo} onUpload={uploadVideo} />
+
+      <MediaPicker kind="video" label="Démo — Aimbot"
+        hint="Clip court (10–30 s) montrant l'aimbot en action."
+        value={demoAimbot} onChange={setDemoAimbot} onUpload={uploadVideo} />
+
+      <MediaPicker kind="video" label="Démo — ESP"
+        hint="Clip court (10–30 s) montrant l'ESP en action."
+        value={demoEsp} onChange={setDemoEsp} onUpload={uploadVideo} />
+
+      <MediaPicker kind="video" label="Démo — Radar"
+        hint="Clip court (10–30 s) montrant le radar en action."
+        value={demoRadar} onChange={setDemoRadar} onUpload={uploadVideo} />
+
       <button onClick={save} disabled={saving} className="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-500 disabled:bg-gray-700 text-white text-sm px-4 py-2 rounded-lg">
         <Save className="w-4 h-4" /> {saving ? 'Enregistrement…' : 'Enregistrer'}
       </button>

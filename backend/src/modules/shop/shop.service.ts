@@ -219,16 +219,42 @@ export class ShopService {
       update: {},
       create: { id: 1 },
     });
-    return { heroImage: s.heroImage, cryptoEnabled: !!process.env.NOWPAYMENTS_API_KEY };
+    return {
+      heroImage:  s.heroImage,
+      heroVideo:  s.heroVideo,
+      demoAimbot: s.demoAimbot,
+      demoEsp:    s.demoEsp,
+      demoRadar:  s.demoRadar,
+      cryptoEnabled: !!process.env.NOWPAYMENTS_API_KEY,
+    };
   }
 
-  async updateSettings(dto: { heroImage?: string }) {
+  async updateSettings(dto: {
+    heroImage?: string;
+    heroVideo?: string;
+    demoAimbot?: string;
+    demoEsp?: string;
+    demoRadar?: string;
+  }) {
+    const data: Record<string, string> = {};
+    if (dto.heroImage  !== undefined) data.heroImage  = dto.heroImage;
+    if (dto.heroVideo  !== undefined) data.heroVideo  = dto.heroVideo;
+    if (dto.demoAimbot !== undefined) data.demoAimbot = dto.demoAimbot;
+    if (dto.demoEsp    !== undefined) data.demoEsp    = dto.demoEsp;
+    if (dto.demoRadar  !== undefined) data.demoRadar  = dto.demoRadar;
+
     const s = await this.prisma.shopSetting.upsert({
       where: { id: 1 },
-      update: { ...(dto.heroImage !== undefined ? { heroImage: dto.heroImage } : {}) },
-      create: { id: 1, heroImage: dto.heroImage ?? '' },
+      update: data,
+      create: { id: 1, ...data },
     });
-    return { heroImage: s.heroImage };
+    return {
+      heroImage:  s.heroImage,
+      heroVideo:  s.heroVideo,
+      demoAimbot: s.demoAimbot,
+      demoEsp:    s.demoEsp,
+      demoRadar:  s.demoRadar,
+    };
   }
 
   // ─────────────── Admin: Games CRUD ───────────────

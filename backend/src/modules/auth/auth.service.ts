@@ -87,6 +87,19 @@ export class AuthService {
       throw new ForbiddenException('License has expired');
     }
 
+    // ── 5b. Per-license kill switch (admin-triggered) ──
+    // Loader detects the "KILL:" prefix and nukes the session.
+    // killPending stays true so every subsequent launch nukes again
+    // until an admin explicitly unkills.
+    if ((license as any).killPending) {
+      await this.prisma.license.update({
+        where: { id: license.id },
+        data: { killedAt: new Date() } as any,
+      });
+      await this.logActivation(license.id, ActivationStatus.BANNED, ip, dto, userAgent);
+      throw new ForbiddenException({ error: 'KILL:Session terminated by admin' });
+    }
+
     // ── 6. HWID Binding ──
     const serverHwid = hashHwid(dto.hwid, this.hwidSalt);
 

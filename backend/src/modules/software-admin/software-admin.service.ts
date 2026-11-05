@@ -10,7 +10,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
 import * as zlib from 'zlib';
-import { BinaryKind, VALID_KINDS, VALID_PRODUCTS, CHEAT_PRODUCT_TO_LICENSE, CheatProductId } from './software-admin.dto';
+import { BinaryKind, VALID_KINDS, VALID_PRODUCTS, CHEAT_PRODUCT_TO_LICENSE, CheatProductId, requiredKindsFor } from './software-admin.dto';
 
 // process.cwd() is the backend/ directory in both dev and production
 const STORAGE_ROOT = path.resolve(process.cwd(), 'storage', 'software');
@@ -23,6 +23,7 @@ const KIND_EXTENSIONS: Record<BinaryKind, string[]> = {
   reader: ['.exe'],
   byovd: ['.sys'],
   loader: ['.exe'],
+  manager: ['.exe'],
 };
 
 @Injectable()
@@ -136,10 +137,11 @@ export class SoftwareAdminService {
   }
 
   async publish(productId: string, notes?: string, version?: string, adminId?: string) {
+    const required = requiredKindsFor(productId);
     const missing: string[] = [];
     const latestBinaries: Record<string, any> = {};
 
-    for (const kind of VALID_KINDS) {
+    for (const kind of required) {
       const latest = await this.prisma.softwareBinary.findFirst({
         where: { productId, kind },
         orderBy: { uploadedAt: 'desc' },
@@ -158,7 +160,9 @@ export class SoftwareAdminService {
     }
 
     const driverBuf = fs.readFileSync(latestBinaries['driver'].storagePath);
-    const readerBuf = fs.readFileSync(latestBinaries['reader'].storagePath);
+    const readerBuf = latestBinaries['reader']
+      ? fs.readFileSync(latestBinaries['reader'].storagePath)
+      : Buffer.alloc(0);
     const byovdBuf = fs.readFileSync(latestBinaries['byovd'].storagePath);
 
     const concat = Buffer.concat([driverBuf, readerBuf, byovdBuf]);
@@ -194,7 +198,7 @@ export class SoftwareAdminService {
           bundleSha256,
           bundleSize: bundle.length,
           driverId: latestBinaries['driver'].id,
-          readerId: latestBinaries['reader'].id,
+          readerId: latestBinaries['reader']?.id ?? null,
           byovdId: latestBinaries['byovd'].id,
           isActive: true,
           createdBy: adminId,
@@ -241,7 +245,7 @@ export class SoftwareAdminService {
 
     const [driver, reader, byovd] = await Promise.all([
       this.prisma.softwareBinary.findUnique({ where: { id: sv.driverId } }),
-      this.prisma.softwareBinary.findUnique({ where: { id: sv.readerId } }),
+      sv.readerId ? this.prisma.softwareBinary.findUnique({ where: { id: sv.readerId } }) : Promise.resolve(null),
       this.prisma.softwareBinary.findUnique({ where: { id: sv.byovdId } }),
     ]);
 
@@ -364,5 +368,23 @@ export class SoftwareAdminService {
     });
     if (!latest || !fs.existsSync(latest.storagePath)) return null;
     return latest.storagePath;
+  }
+
+  async uploadRvasSnapshot(build: string, file: Express.Multer.File, adminId?: string) {
+    const dir = path.resolve(process.cwd(), 'storage', 'software', 'spoofer', 'rvas');
+    fs.mkdirSync(dir, { recursive: true });
+    const dst = path.join(dir, `${build}.bin`);
+    const buf = fs.readFileSync(file.path);
+    const sha256 = crypto.createHash('sha256').update(buf).digest('hex');
+    fs.writeFileSync(dst, buf);
+    try { fs.unlinkSync(file.path); } catch { /* best-effort */ }
+    return {
+      build,
+      size: buf.length,
+      sha256,
+      path: dst,
+      uploadedBy: adminId ?? null,
+      uploadedAt: new Date().toISOString(),
+    };
   }
 }

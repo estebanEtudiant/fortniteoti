@@ -149,4 +149,16 @@ export class UpdatePlanDto extends CreatePlanDto {
 export class UpdateShopSettingsDto {
   @IsString() @IsOptional() @MaxLength(500)
   heroImage?: string;
+
+  @IsString() @IsOptional() @MaxLength(500)
+  heroVideo?: string;
+
+  @IsString() @IsOptional() @MaxLength(500)
+  demoAimbot?: string;
+
+  @IsString() @IsOptional() @MaxLength(500)
+  demoEsp?: string;
+
+  @IsString() @IsOptional() @MaxLength(500)
+  demoRadar?: string;
 }
